@@ -254,22 +254,40 @@
            📌 BANCO DE DADOS BASE DA PROFESSORA ANALICE
            ========================================================================== */
         const DEFAULT_DATABASE = {
-            "sala_kids": {
-                name: "Inglês Iniciante - Kids",
-                password: "kids",
-                cards: [
-                    { id: "k1", week: "Semana 1", date: "27/05/2026", front: "What time is it?", pronunciation: "uót táim ízit?", back: "Que horas são?" },
-                    { id: "k2", week: "Semana 1", date: "27/05/2026", front: "I need some help.", pronunciation: "ái níd sãm hélp.", back: "Eu preciso de ajuda." }
-                ]
+           const DATABASE = {
+    "IQ15/0003": {
+        "name": "Turma IQ15/0003",
+        "password": "iq15",
+        "cards": []
+    },
+    "Turma_IQ19/00013": {
+        "name": "Turma IQ19/0013 Noite",
+        "password": "iq1913",
+        "cards": [
+            {
+                "id": "id_10v8",
+                "week": "Semana 01",
+                "date": "26/05/2026",
+                "front": "The kitchen is equipped with a modern stove",
+                "pronunciation": "thâ KEE-tchâ-ne e-ze e-KWEEPD wi-thâ MAH-dârn STOHV",
+                "back": "A cozinha é equipada com um fogão moderno."
             },
-            "sala_seniors": {
-                name: "Inglês Prático - Melhor Idade",
-                password: "123",
-                cards: [
-                    { id: "s1", week: "Semana 1", date: "27/05/2026", front: "How are you doing?", pronunciation: "háu ár iú dúin?", back: "Como vai você?" }
-                ]
+            {
+                "id": "id_koog",
+                "week": "Semana 01",
+                "date": "26/05/2026",
+                "front": "My living room is so cozy.",
+                "pronunciation": "mâi lívin rum íz sôu côuzi",
+                "back": "Minha sala de estar é tão aconchegante."
             }
-        };
+        ]
+    },
+    "Turma_iq19/0004": {
+        "name": "Turma IQ19/0004 Quinta",
+        "password": "iq194",
+        "cards": []
+    }
+};
 
         const TEACHER_PASSWORD = "admin"; // 🔐 Senha do painel do professor
         let DATABASE = {};
