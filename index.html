@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Idiomas - Prof. Analice</title>
-    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716853500"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716855600"></script>
+    <link class="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .perspective { perspective: 1000px; }
         .flip-card-inner {
@@ -78,6 +78,7 @@
 
             <div class="w-full h-96 perspective cursor-pointer" onclick="flipCard()">
                 <div id="flashcard" class="w-full h-full flip-card-inner relative shadow-md rounded-2xl bg-white border border-slate-100">
+                    
                     <div class="flip-card-front absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-white rounded-2xl">
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Como se diz?</span>
@@ -88,7 +89,7 @@
                         <div class="text-center flex flex-col items-center justify-center flex-1 px-2 space-y-4">
                             <p id="card-english-text" class="text-2xl font-bold text-slate-900 leading-snug">English</p>
                             <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 w-full">
-                                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Pronúncia Prática Combinada:</span>
+                                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Pronúncia Prática Facilitada:</span>
                                 <p id="card-pronunciation-text" class="text-sm font-medium text-indigo-900 italic">pronunciation</p>
                             </div>
                         </div>
@@ -109,10 +110,10 @@
             </div>
 
             <div id="action-buttons" class="grid grid-cols-2 gap-4 pt-2 hidden">
-                <button onclick="handleResponse(false)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1 shadow-sm">
+                <button onclick="handleResponse(false)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1">
                     <i class="fa-solid fa-circle-xmark text-lg text-orange-500"></i>Estudar Mais
                 </button>
-                <button onclick="handleResponse(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1 shadow-sm">
+                <button onclick="handleResponse(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1">
                     <i class="fa-solid fa-forward text-lg text-slate-500"></i>Próxima Frase
                 </button>
             </div>
@@ -245,7 +246,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Pronúncia Conectada/Unida</label>
-                    <input type="text" id="form-pronunciation" placeholder="Ex: uót táim ízit?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
+                    <input type="text" id="form-front-pronunciation" placeholder="Ex: uót táim ízit?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tradução em Português</label>
@@ -315,37 +316,59 @@
             },
             "Turma_iq19/0004": { "name": "Turma IQ19/0004 Quinta", "password": "iq194", "cards": [] },
             
-            /* 👑 REESTRUTURAÇÃO COMPLETA: SALA IQ19/0007 ALINHADA ÀS SUAS DIRETRIZES DIRETAS */
+            /* 👑 SALA IQ19/0007 COMPLETAMENTE CARREGADA (42 CARTÕES DE ESTUDO) */
             "Turma_IQ19/0007": {
                 "name": "Turma IQ19/0007",
                 "password": "iq1907",
                 "cards": [
-                    { "id": "id_v01", "week": "Semana 01", "date": "27/05/2026", "front": "Can you grab a carton of milk from the fridge?", "pronunciation": "kæn iú græb á kár-ton óv mílk fróm đá frídj", "back": "Você pode pegar uma caixinha de leite da geladeira?" },
-                    { "id": "id_v02", "week": "Semana 01", "date": "27/05/2026", "front": "I'd like a glass of water, please.", "pronunciation": "áid láik á glæs óv uá-tér, plíz", "back": "Eu gostaria de um copo de água, por favor." },
-                    { "id": "id_v03", "week": "Semana 01", "date": "27/05/2026", "front": "Open a can of beer for me!", "pronunciation": "óu-pên á kæn óv bí-er fór mí", "back": "Abre uma lata de cerveja para mim!" },
-                    { "id": "id_v04", "week": "Semana 01", "date": "27/05/2026", "front": "The jar of honey is sticky.", "pronunciation": "đá djár óv há-ni íz stí-ki", "back": "O pote de mel está grudento." },
-                    { "id": "id_v05", "week": "Semana 01", "date": "27/05/2026", "front": "I ate a whole bag of cookies yesterday.", "pronunciation": "ái éit á hóul bæg óv cú-kiz iés-tér-déi", "back": "Eu comi um pacote inteiro de biscoitos ontem." },
-                    { "id": "id_v06", "week": "Semana 01", "date": "27/05/2026", "front": "How much is it?", "pronunciation": "háu mâtch íz ít", "back": "Quanto custa isto?" },
-                    { "id": "id_v07", "week": "Semana 01", "date": "27/05/2026", "front": "Thanks a lot!", "pronunciation": "tæ-nks á lót", "back": "Muito obrigado!" },
-                    { "id": "id_v08", "week": "Semana 01", "date": "27/05/2026", "front": "I have too many things to do today.", "pronunciation": "ái hæv tú mé-ni tí-ngz tú dú tú-déi", "back": "Eu tenho coisas demais para fazer hoje." },
-                    { "id": "id_v09", "week": "Semana 01", "date": "27/05/2026", "front": "Can I have a little water, please?", "pronunciation": "kæn ái hæv á lít-tol uá-tér, plíz", "back": "Você pode me dar um pouco de água, por favor?" },
-                    { "id": "id_v10", "week": "Semana 01", "date": "27/05/2026", "front": "I have a few questions.", "pronunciation": "ái hæv á fiú qués-tchônz", "back": "Eu tenho algumas perguntas." },
-                    { "id": "id_v11", "week": "Semana 01", "date": "27/05/2026", "front": "I have a few hours before my flight.", "pronunciation": "ái hæv á fiú áu-erz bí-fór mái fláit", "back": "Eu tenho algumas horas antes do meu voo." },
-                    { "id": "id_v12", "week": "Semana 01", "date": "27/05/2026", "front": "Don't lose hope!", "pronunciation": "dóunt lúz hóup", "back": "Não perca a esperança!" },
-                    { "id": "id_v13", "week": "Semana 01", "date": "27/05/2026", "front": "There is little chance of rain today.", "pronunciation": "đér íz lít-tol tchæns óv réin tú-déi", "back": "Há pouca chance de chuva hoje." },
-                    { "id": "id_v14", "week": "Semana 01", "date": "27/05/2026", "front": "Many companies are working from home now.", "pronunciation": "mé-ni kóm-pæ-niz ár uór-kín fróm hóum náu", "back": "Muitas empresas estão trabalhando de home office agora." },
-                    { "id": "id_v15", "week": "Semana 01", "date": "27/05/2026", "front": "Give me a little time to think.", "pronunciation": "gív mí á lít-tol táim tú tí-nk", "back": "Me dê um tempinho para pensar." },
-                    { "id": "id_v16", "week": "Semana 01", "date": "27/05/2026", "front": "We bought a fresh baguette from the bakery.", "pronunciation": "uic BAHT-â FRECH bâ-GET frâm-thâ BEI-kâ-ree", "back": "Nós compramos uma baguete fresquinha na padaria." },
-                    { "id": "id_v17", "week": "Semana 01", "date": "27/05/2026", "front": "Whole wheat bread is healthier for breakfast.", "pronunciation": "HOHL UIIT BRE-DEEZ HEL-thee-âr fâr BREK-fâst", "back": "Pão integral é mais saudável para o café da manhã." },
-                    { "id": "id_v18", "week": "Semana 01", "date": "27/05/2026", "front": "She ordered a warm croissant and coffee.", "pronunciation": "chi OR-dârd-â UAHRM krwâ-SAHN ân KAH-fee", "back": "Ela pediu um croissant quentinho e café." },
-                    { "id": "id_v19", "week": "Semana 01", "date": "27/05/2026", "front": "Toast the bun before making the burger.", "pronunciation": "TOHST thâ BAN bee-FOR MEI-kin thâ BÂR-gâr", "back": "Torre o pão antes de fazer o hambúrguer." },
-                    { "id": "id_v20", "week": "Semana 01", "date": "27/05/2026", "front": "Would you like a dinner roll with your soup?", "pronunciation": "wuh-djû LAI-kâ DI-nâr ROHL wi-thâr SUUP", "back": "Você gostaria de um pãozinho para acompanhar a sua sopa?" },
-                    { "id": "id_v21", "week": "Semana 01", "date": "27/05/2026", "front": "I always buy French bread in the morning.", "pronunciation": "ai AL-ueiz BAI FRENTCH BRED in-thâ MOR-ning", "back": "Eu sempre compro pão francês de manhã." }
+                    { "id": "id_v01", "week": "Semana 01", "date": "27/05/2026", "front": "Can you grab a carton of milk from the fridge?", "pronunciation": "Kén iú græb â KÁR-ton óv mɪlk frâm-đâ frídj?", "back": "Você pode pegar uma caixinha de leite da geladeira?" },
+                    { "id": "id_v02", "week": "Semana 01", "date": "27/05/2026", "front": "I'd like a glass of water, please.", "pronunciation": "Áid láik â glæs óv UÁ-têr, plíz.", "back": "Eu gostaria de um copo de água, por favor. (Diferenciando o copo da jarra)" },
+                    { "id": "id_v03", "week": "Semana 01", "date": "27/05/2026", "front": "Open a can of beer for me!", "pronunciation": "Óu-pên â kæn óv bí-êr fór mí!", "back": "Abre uma lata de cerveja para mim!" },
+                    { "id": "id_v04", "week": "Semana 01", "date": "27/05/2026", "front": "The jar of honey is sticky.", "pronunciation": "Đâ djár óv HÁ-ni íz STÍ-ki.", "back": "O pote de mel está grudento." },
+                    { "id": "id_v05", "week": "Semana 01", "date": "27/05/2026", "front": "I ate a whole bag of cookies yesterday.", "pronunciation": "Ái éit â hohl bæg óv CÚ-kiz iés-têr-dêi.", "back": "Eu comi um pacote inteiro de biscoitos ontem." },
+                    { "id": "id_v06", "week": "Semana 01", "date": "27/05/2026", "front": "How much is it?", "pronunciation": "Háu mâtch íz ít?", "back": "Quanto custa isto? (Usado para preços/incontáveis)" },
+                    { "id": "id_v07", "week": "Semana 01", "date": "27/05/2026", "front": "Thanks a lot!", "pronunciation": "Tænks â lót!", "back": "Muito obrigado! / Um monte de obrigado!" },
+                    { "id": "id_v08", "week": "Semana 01", "date": "27/05/2026", "front": "I have too many things to do today.", "pronunciation": "Ái hæv tú MÉ-ni tíngz tú dú tú-dêi.", "back": "Eu tenho coisas demais para fazer hoje. (Contável)" },
+                    { "id": "id_v09", "week": "Semana 01", "date": "27/05/2026", "front": "Can I have a little water, please?", "pronunciation": "Kén ái hæv â LÍT-tol UÁ-têr, plíz?", "back": "Você pode me dar um pouco de água, por favor?" },
+                    { "id": "id_v10", "week": "Semana 01", "date": "27/05/2026", "front": "I have a few questions.", "pronunciation": "Ái hæv â fiú QUÉS-tchônz.", "back": "Eu tenho algumas perguntas. (Contável)" },
+                    { "id": "id_v11", "week": "Semana 01", "date": "27/05/2026", "front": "I have a few hours before my flight.", "pronunciation": "Ái hæv â fiú ÁU-êrz bi-fór mái fláit.", "back": "Eu tenho algumas horas antes do meu voo." },
+                    { "id": "id_v12", "week": "Semana 01", "date": "27/05/2026", "front": "Don't lose hope!", "pronunciation": "Dóunt lúz hohp!", "back": "Não perca a esperança! (Hope não aceita plural)" },
+                    { "id": "id_v13", "week": "Semana 01", "date": "27/05/2026", "front": "There is little chance of rain today.", "pronunciation": "Đér íz LÍT-tol tchæns óv rêin tú-dêi.", "back": "Há pouca chance de chuva hoje." },
+                    { "id": "id_v14", "week": "Semana 01", "date": "27/05/2026", "front": "Many companies are working from home now.", "pronunciation": "MÉ-ni KÓM-pâ-niz ár UÓR-kín frâm hohm náu.", "back": "Muitas empresas estão trabalhando de home office agora." },
+                    { "id": "id_v15", "week": "Semana 01", "date": "27/05/2026", "front": "Give me a little time to think.", "pronunciation": "Gív mí â LÍT-tol táim tú tí-nk.", "back": "Me dê um tempinho para pensar." },
+                    { "id": "id_v16", "week": "Semana 01", "date": "27/05/2026", "front": "We bought a fresh baguette from the bakery.", "pronunciation": "Ui baht â frech bâ-GÉT frâm-đâ BÊI-kâ-ri.", "back": "Nós compramos uma baguete fresquinha na padaria." },
+                    { "id": "id_v17", "week": "Semana 01", "date": "27/05/2026", "front": "Whole wheat bread is healthier for breakfast.", "pronunciation": "Hohl uíit brêd íz HÉL-fi-êr fár BRÉK-fâst.", "back": "Pão integral é mais saudável para o café da manhã." },
+                    { "id": "id_v18", "week": "Semana 01", "date": "27/05/2026", "front": "She ordered a warm croissant and coffee.", "pronunciation": "Xi ÓR-dârd â uárm krwâ-SÁN ân KÁ-fi.", "back": "Ela pediu um croissant quentinho e café." },
+                    { "id": "id_v19", "week": "Semana 01", "date": "27/05/2026", "front": "Toast the bun before making the burger.", "pronunciation": "Tohst đâ BAN bi-fór MÊI-kin đâ BÛR-gûr.", "back": "Torre o pão antes de fazer o hambúrguer." },
+                    { "id": "id_v20", "week": "Semana 01", "date": "27/05/2026", "front": "Would you like a dinner roll with your soup?", "pronunciation": "Uuh-djú láik â DÍ-nêr rohl uíđ iór suup?", "back": "Você gostaria de um pãozinho para acompanhar a sua sopa?" },
+                    { "id": "id_v21", "week": "Semana 01", "date": "27/05/2026", "front": "I always buy French bread in the morning.", "pronunciation": "Ái ÁL-uêiz bái frentch brêd ín-đâ MÓR-níng.", "back": "Eu sempre compro pão francês de manhã." },
+                    // 🌾 INJEÇÃO DOS NOVOS COMPONENTES DA RECEITA DE CANJICA TRADUZIDA E FACILITADA
+                    { "id": "id_c01", "week": "Semana 01", "date": "27/05/2026", "front": "Five hundred grams", "pronunciation": "Fáiv RÁN-drêd grémz", "back": "500 gramas" },
+                    { "id": "id_c02", "week": "Semana 01", "date": "27/05/2026", "front": "Canjica (white corn)", "pronunciation": "Can-jí-ca (uáit córn)", "back": "Canjica (milho branco)" },
+                    { "id": "id_c03", "week": "Semana 01", "date": "27/05/2026", "front": "A can of condensed milk", "pronunciation": "Â kæn óv con-DÉNST mɪlk", "back": "Uma lata de leite condensado" },
+                    { "id": "id_c04", "week": "Semana 01", "date": "27/05/2026", "front": "Two hundred milliliters", "pronunciation": "Tú RÁN-drêd MÍ-li-li-têrz", "back": "200 mililitros" },
+                    { "id": "id_c05", "week": "Semana 01", "date": "27/05/2026", "front": "Coconut milk", "pronunciation": "CÓU-có-nat mɪlk", "back": "Leite de coco" },
+                    { "id": "id_c06", "week": "Semana 01", "date": "27/05/2026", "front": "Fifty grams", "pronunciation": "FÍF-ti grémz", "back": "50 gramas" },
+                    { "id": "id_c07", "week": "Semana 01", "date": "27/05/2026", "front": "Grated coconut", "pronunciation": "GRÊI-têd CÓU-có-nat", "back": "Coco ralado" },
+                    { "id": "id_c08", "week": "Semana 01", "date": "27/05/2026", "front": "One liter of milk", "pronunciation": "Uán LÍ-têr óv mɪlk", "back": "Um litro de leite" },
+                    { "id": "id_c09", "week": "Semana 01", "date": "27/05/2026", "front": "Eight tablespoons", "pronunciation": "Êit TÊI-bol-spunz", "back": "Oito colheres de sopa" },
+                    { "id": "id_c10", "week": "Semana 01", "date": "27/05/2026", "front": "Sugar", "pronunciation": "CHÚ-gâr", "back": "Açúcar" },
+                    { "id": "id_c11", "week": "Semana 01", "date": "27/05/2026", "front": "Dessert", "pronunciation": "di-ZÊRT", "back": "Sobremesa" },
+                    { "id": "id_c12", "week": "Semana 01", "date": "27/05/2026", "front": "After the break", "pronunciation": "ÁF-têr đâ brêik", "back": "Depois do intervalo / comercial" },
+                    { "id": "id_c13", "week": "Semana 01", "date": "27/05/2026", "front": "Host", "pronunciation": "RÔUST", "back": "Apresentador / Anfitrião" },
+                    { "id": "id_c14", "week": "Semana 01", "date": "27/05/2026", "front": "Recipe", "pronunciation": "RÉ-si-pi", "back": "Receita (Enfatize o som final 'pi')" },
+                    { "id": "id_c15", "week": "Semana 01", "date": "27/05/2026", "front": "Ingredients", "pronunciation": "in-GRÍ-di-ents", "back": "Ingredientes" },
+                    { "id": "id_c16", "week": "Semana 01", "date": "27/05/2026", "front": "Can you pass me a tablespoon of sugar, please?", "pronunciation": "Kén iú pæs mí â TÊI-bol-spun óv CHÚ-gâr, plíz?", "back": "Você pode me passar uma colher de sopa de açúcar, por favor?" },
+                    { "id": "id_c17", "week": "Semana 01", "date": "27/05/2026", "front": "Hold on, I need to take notes of this.", "pronunciation": "RÔULD ÓN, ái níd tu têik nôuts óv đís.", "back": "Espera aí, eu preciso anotar isso." },
+                    { "id": "id_c18", "week": "Semana 01", "date": "27/05/2026", "front": "I didn't get what you said. Can you repeat?", "pronunciation": "Ái DÍ-dent guét uát iú séd. Kén iú ri-PÍT?", "back": "Eu não entendi o que você disse. Pode repetir?" },
+                    { "id": "id_c19", "week": "Semana 01", "date": "27/05/2026", "front": "We are out of milk. We need to buy a liter.", "pronunciation": "Uí ár ÁUT óv mɪlk. Uí níd tu bái â LÍ-têr.", "back": "Estamos sem leite. Precisamos comprar um litro." },
+                    { "id": "id_c20", "week": "Semana 01", "date": "27/05/2026", "front": "Just add a pinch of salt to the recipe.", "pronunciation": "Djhâst éd â píntch óv sôlt tu đâ RÉ-si-pi.", "back": "Só adicione uma pitada de sal na receita." },
+                    { "id": "id_c21", "week": "Semana 01", "date": "27/05/2026", "front": "Let's take a quick break and we'll be right back.", "pronunciation": "Léts têik â kuík brêik ænd uíl bí ráit bæk.", "back": "Vamos fazer um intervalo rápido e já voltamos." }
                 ]
             }
         };
 
-        const CODE_VERSION = 1716853500;
+        const CODE_VERSION = 1716855600;
         const TEACHER_PASSWORD = "admin"; 
         let DATABASE = {};
 
@@ -456,7 +479,7 @@
         /* JOGO 2: MEMÓRIA */
         function startMemoryGame() { let cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(cards.length === 0) { alert("Sem conteúdo!"); return; } cards.sort(() => Math.random() - 0.5); let selectedCards = cards.slice(0, 4); memoryCardsArray = []; selectedCards.forEach(c => { memoryCardsArray.push({ id: c.id, type: 'en', text: c.front }); memoryCardsArray.push({ id: c.id, type: 'pt', text: c.back }); }); memoryCardsArray.sort(() => Math.random() - 0.5); memoryPairsFound = 0; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; document.getElementById('memory-score-text').innerText = `Pares: 0 / ${selectedCards.length}`; changeView('game-memory'); const grid = document.getElementById('memory-grid'); grid.innerHTML = ""; memoryCardsArray.forEach((item, index) => { const block = document.createElement('div'); block.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer shadow-sm select-none transition-all"; block.innerText = "?"; block.dataset.index = index; block.onclick = () => { if(lockMemoryBoard) return; if(block.classList.contains('bg-white') || block.classList.contains('bg-emerald-50')) return; block.className = "h-24 bg-white border-2 border-purple-500 rounded-xl flex items-center justify-center p-2 text-center text-[10px] font-extrabold text-purple-950 shadow-md"; block.innerText = item.text; if(item.type === 'en') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const ut = new SpeechSynthesisUtterance(item.text); ut.lang = 'en-US'; ut.rate = 0.75; window.speechSynthesis.speak(ut); } } if(!firstSelectedCard) { firstSelectedCard = { element: block, item }; } else { if(firstSelectedCard.element.dataset.index === block.dataset.index) return; secondSelectedCard = { element: block, item }; lockMemoryBoard = true; if(firstSelectedCard.item.id === secondSelectedCard.item.id) { setTimeout(() => { firstSelectedCard.element.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; secondSelectedCard.element.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; memoryPairsFound++; document.getElementById('memory-score-text').innerText = `Pares: ${memoryPairsFound} / ${selectedCards.length}`; if(memoryPairsFound === selectedCards.length) { setTimeout(() => { document.getElementById('success-custom-text').innerText = `Excelente! Você completou a Memória da ${activeWeek}!`; changeView('success'); }, 500); } firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 600); } else { setTimeout(() => { firstSelectedCard.element.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; firstSelectedCard.element.innerText = "?"; secondSelectedCard.element.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; secondSelectedCard.element.innerText = "?"; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 1100); } } }; grid.appendChild(block); }); }
 
-        /* JOGO 3: VOCABULÁRIO COM SEU MAPEAMENTO INTEGRAL ATUALIZADO */
+        /* JOGO 3: VOCABULÁRIO */
         function startVocabGame() {
             const cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek);
             if(cards.length === 0) { alert("Sem conteúdo cadastrado!"); return; }
@@ -484,10 +507,13 @@
                 "companies": "empresas / companhias", "economists": "economistas", "government": "governo",
                 "hours": "horas", "hope": "esperança", "chance": "chance / probabilidade", "instructions": "instruções",
                 "steps": "passos / etapas", "connectors": "conectores", "subscribe": "inscrever-se / assinar", "network": "rede",
-                // Novos termos de panificação e embalagens injetados
                 "baguette": "baguete", "bakery": "padaria", "bread": "pão", "breakfast": "café da manhã",
                 "croissant": "croissant", "bun": "pão de hambúrguer / pão redondo", "burger": "hambúrguer",
-                "dinner": "jantar", "roll": "pãozinho / pão de forma", "soup": "sopa", "glass": "copo"
+                "dinner": "jantar", "roll": "pãozinho / pão de forma", "soup": "sopa", "glass": "copo",
+                // Novos vocabulários da receita adicionados de forma explícita
+                "sugar": "açúcar", "recipe": "receita", "ingredients": "ingredientes", "host": "apresentador / anfitrião",
+                "break": "intervalo / comercial", "grams": "gramas", "milliliters": "mililitros", "liter": "litro",
+                "tablespoons": "colheres de sopa", "notes": "notas / anotações", "salt": "sal", "pinch": "pitada"
             };
 
             vocabSessionArray = [];
@@ -501,7 +527,7 @@
             });
 
             if(vocabSessionArray.length === 0) {
-                vocabSessionArray = [{ en: "baguette", pt: "baguete" }, { en: "bread", pt: "pão" }, { en: "glass", pt: "copo" }];
+                vocabSessionArray = [{ en: "sugar", pt: "açúcar" }, { en: "recipe", pt: "receita" }, { en: "milk", pt: "leite" }];
             }
 
             vocabSessionArray.sort(() => Math.random() - 0.5);
@@ -557,7 +583,7 @@
         function createNewClassroom() { const id = document.getElementById('new-room-id').value.trim(); const name = document.getElementById('new-room-name').value.trim(); const password = document.getElementById('new-room-password').value.trim(); if (!id || !name || !password) { alert("Campos incompletos!"); return; } DATABASE[id] = { name: name, password: password, cards: [] }; saveDatabaseToStorage(); document.getElementById('new-room-id').value = ""; document.getElementById('new-room-name').value = ""; document.getElementById('new-room-password').value = ""; renderClassrooms(); updateTeacherSelectorsAndLists(); alert(`Sala criada!`); }
         function deleteClassroom(key) { if (!confirm(`Deletar sala?`)) return; delete DATABASE[key]; saveDatabaseToStorage(); renderClassrooms(); updateTeacherSelectorsAndLists(); }
         function updateTeacherSelectorsAndLists() { const select = document.getElementById('form-room-id'); const deleteListContainer = document.getElementById('teacher-rooms-delete-list'); if(!select || !deleteListContainer) return; select.innerHTML = ""; deleteListContainer.innerHTML = ""; Object.keys(DATABASE).forEach(key => { const option = document.createElement('option'); option.value = key; option.innerText = DATABASE[key].name; select.appendChild(option); const div = document.createElement('div'); div.className = "flex justify-between items-center bg-slate-50 p-2 rounded-lg text-xs"; div.innerHTML = `<span>${DATABASE[key].name}</span><button onclick="deleteClassroom('${key}')" class="text-rose-500 font-bold px-2"><i class="fa-solid fa-trash-can"></i></button>`; deleteListContainer.appendChild(div); }); }
-        function generateCardCode() { const targetRoom = document.getElementById('form-room-id').value; const week = document.getElementById('form-week').value.trim(); const date = document.getElementById('form-date').value.trim(); const front = document.getElementById('form-front').value.trim(); const pronunciation = document.getElementById('form-pronunciation').value.trim(); const back = document.getElementById('form-back').value.trim(); if(!targetRoom || !week || !date || !front || !pronunciation || !back) { alert("Campos incompletos!"); return; } const randomId = "id_" + Math.random().toString(36).substr(2, 4); DATABASE[targetRoom].cards.push({ id: randomId, week, date, front, pronunciation, back }); saveDatabaseToStorage(); document.getElementById('form-front').value = ""; document.getElementById('form-pronunciation').value = ""; document.getElementById('form-back').value = ""; renderClassrooms(); alert(`Card Injetado!`); }
+        function generateCardCode() { const targetRoom = document.getElementById('form-room-id').value; const week = document.getElementById('form-week').value.trim(); const date = document.getElementById('form-date').value.trim(); const front = document.getElementById('form-front').value.trim(); const pronunciation = document.getElementById('form-front-pronunciation').value.trim(); const back = document.getElementById('form-back').value.trim(); if(!targetRoom || !week || !date || !front || !pronunciation || !back) { alert("Campos incompletos!"); return; } const randomId = "id_" + Math.random().toString(36).substr(2, 4); DATABASE[targetRoom].cards.push({ id: randomId, week, date, front, pronunciation, back }); saveDatabaseToStorage(); document.getElementById('form-front').value = ""; document.getElementById('form-front-pronunciation').value = ""; document.getElementById('form-back').value = ""; renderClassrooms(); alert(`Card Injetado!`); }
 
         function updateDatabaseOutputArea() {
             const updatedDatabaseJSON = JSON.stringify(DATABASE, null, 4);
