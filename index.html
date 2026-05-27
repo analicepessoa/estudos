@@ -24,7 +24,7 @@
 
     <!-- CABEÇALHO -->
     <header class="bg-white border-b border-slate-100 py-4 px-6 sticky top-0 z-50 shadow-sm flex justify-between items-center">
-        <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>Ana's Estudos</h1>
+        <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>ClassStudy</h1>
         <span id="current-badge" class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden">Sala</span>
     </header>
 
@@ -157,42 +157,70 @@
             </button>
         </section>
 
-        <!-- TELA 6: PAINEL DO PROFESSOR (CADASTRO INTERATIVO) -->
+        <!-- TELA 6: PAINEL DO PROFESSOR (GERENCIADOR COMPLETO) -->
         <section id="view-teacher" class="w-full hidden space-y-6">
             <div>
-                <h2 class="text-lg font-bold text-slate-700">Fábrica de Flashcards</h2>
-                <p class="text-xs text-slate-500">Crie os blocos de frases organizados para atualizar seu site</p>
+                <h2 class="text-lg font-bold text-slate-700">Painel de Controle do Professor</h2>
+                <p class="text-xs text-slate-500">Gerencie salas, senhas e gere códigos de flashcards.</p>
             </div>
 
+            <!-- SUB-SEÇÃO A: CRIAR/DELETAR SALAS -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-folder-plus mr-1"></i> Gerenciar Salas de Aula</h3>
+                
+                <div class="space-y-3 pt-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">ID Único da Sala (Sem espaços)</label>
+                        <input type="text" id="new-room-id" placeholder="Ex: sala_kids3, sala_adultos" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome de Exibição da Sala</label>
+                        <input type="text" id="new-room-name" placeholder="Ex: Inglês Iniciante - Turma C" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Senha dos Alunos</label>
+                        <input type="text" id="new-room-password" placeholder="Ex: kids2026" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <button onclick="createNewClassroom()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-xs transition shadow hover:bg-emerald-700">
+                        <i class="fa-solid fa-plus mr-1"></i> Criar Nova Sala
+                    </button>
+                </div>
+
+                <!-- Lista de remoção de salas -->
+                <div class="pt-3 border-t border-slate-100">
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2">Salas Ativas Atualmente (Clique para Deletar):</label>
+                    <div id="teacher-rooms-delete-list" class="space-y-1.5"></div>
+                </div>
+            </div>
+
+            <!-- SUB-SEÇÃO B: CRIAR FLASHCARDS PARA AS SALAS -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-file-medical mr-1"></i> Fabricar Flashcards</h3>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">ID Turma</label>
-                        <select id="form-room-id" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none">
-                            <option value="sala_kids">Turma IQ15/0003</option>
-                            <option value="sala_seniors">Turma IQ19/0004</option>
-                        </select>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Escolher Sala</label>
+                        <select id="form-room-id" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none"></select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Semana</label>
-                        <input type="text" id="form-week" placeholder="Ex: Semana 3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                        <input type="text" id="form-week" placeholder="Ex: Semana 1" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Data da Aula</label>
-                    <input type="text" id="form-date" placeholder="Ex: 26/05/2026" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="form-date" placeholder="Ex: 27/05/2026" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Frase em Inglês</label>
-                    <input type="text" id="form-front" placeholder="Ex: I will call you later." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="form-front" placeholder="Ex: What time is it?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Pronúncia Conectada/Unida</label>
-                    <input type="text" id="form-pronunciation" placeholder="Ex: ái uíl cóliú léitêr." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="form-pronunciation" placeholder="Ex: uót táim ízit?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tradução em Português</label>
-                    <input type="text" id="form-back" placeholder="Ex: Eu te ligo mais tarde." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="form-back" placeholder="Ex: Que horas são?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
                 </div>
                 <button onclick="generateCardCode()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg text-sm transition shadow hover:bg-indigo-700">
                     <i class="fa-solid fa-gears mr-1"></i> Gerar Linha de Código
@@ -201,9 +229,9 @@
 
             <!-- RESULTADO DO CÓDIGO FONTE PARA COPIAR -->
             <div class="space-y-2">
-                <label class="block text-xs font-bold text-slate-500 uppercase">📋 Código Gerado para Copiar:</label>
-                <p class="text-[11px] text-slate-400 leading-tight">Cole este resultado dentro da lista de cards correspondente na tabela de dados no final do arquivo HTML.</p>
-                <textarea id="output-code" rows="5" readonly class="w-full bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-xs focus:outline-none" placeholder="O código estruturado aparecerá aqui automaticamente..."></textarea>
+                <label class="block text-xs font-bold text-slate-500 uppercase">📋 Código da Estrutura Geral Atualizada:</label>
+                <p class="text-[11px] text-slate-400 leading-tight">Se você quiser salvar as alterações permanentemente no seu arquivo index.html, copie todo o bloco abaixo e substitua a variável DATABASE inteira do seu código.</p>
+                <textarea id="output-code" rows="6" readonly class="w-full bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-xs focus:outline-none"></textarea>
             </div>
         </section>
 
@@ -223,29 +251,28 @@
 
     <script>
         /* ==========================================================================
-           📌 BANCO DE DADOS DA PROFESSORA ANALICE (MUDE AS FRASES E SENHAS AQUI)
+           📌 BANCO DE DADOS BASE DA PROFESSORA ANALICE
            ========================================================================== */
-        const DATABASE = {
-            "sala_IQ15/0003": {
-                name: "Turma IQ15/0003",
-                password: "tarde",
+        const DEFAULT_DATABASE = {
+            "sala_kids": {
+                name: "Inglês Iniciante - Kids",
+                password: "kids",
                 cards: [
-                    { id: "k1", week: "Semana 1", date: "26/05/2026", front: "What time is it?", pronunciation: "uót táim ízit?", back: "Que horas são?" },
-                    { id: "k2", week: "Semana 1", date: "26/05/2026", front: "I need some help.", pronunciation: "ái níd sãm hélp.", back: "Eu preciso de ajuda." },
-                    { id: "k3", week: "Semana 2", date: "02/06/2026", front: "Nice to meet you.", pronunciation: "náis tchu mít iú.", back: "Prazer em conhecer você." }
+                    { id: "k1", week: "Semana 1", date: "27/05/2026", front: "What time is it?", pronunciation: "uót táim ízit?", back: "Que horas são?" },
+                    { id: "k2", week: "Semana 1", date: "27/05/2026", front: "I need some help.", pronunciation: "ái níd sãm hélp.", back: "Eu preciso de ajuda." }
                 ]
             },
-            "sala_IQ19/0004": {
-                name: "IQ19/0004",
-                password: "noite",
+            "sala_seniors": {
+                name: "Inglês Prático - Melhor Idade",
+                password: "123",
                 cards: [
-                    { id: "s1", week: "Semana 1", date: "26/05/2026", front: "How are you doing?", pronunciation: "háu ár iú dúin?", back: "Como vai você?" },
-                    { id: "s2", week: "Semana 1", date: "26/05/2026", front: "Could you repeat that, please?", pronunciation: "cúdjiú ripít dét, plíz?", back: "Você poderia repetir isso, por favor?" }
+                    { id: "s1", week: "Semana 1", date: "27/05/2026", front: "How are you doing?", pronunciation: "háu ár iú dúin?", back: "Como vai você?" }
                 ]
             }
         };
 
-        const TEACHER_PASSWORD = "admin"; // 🔐 Sua senha mestra para entrar no painel
+        const TEACHER_PASSWORD = "admin"; // 🔐 Senha do painel do professor
+        let DATABASE = {};
 
         let activeRoomKey = "";
         let activeWeek = "";
@@ -253,14 +280,39 @@
         let currentIndex = 0;
         let isFlipped = false;
 
+        // Carrega o banco de dados do LocalStorage ou usa o padrão
+        function loadDatabase() {
+            const saved = localStorage.getItem('prof_analice_database');
+            if (saved) {
+                DATABASE = JSON.parse(saved);
+            } else {
+                DATABASE = DEFAULT_DATABASE;
+                localStorage.setItem('prof_analice_database', JSON.stringify(DATABASE));
+            }
+            updateDatabaseOutputArea();
+        }
+
+        function saveDatabaseToStorage() {
+            localStorage.setItem('prof_analice_database', JSON.stringify(DATABASE));
+            updateDatabaseOutputArea();
+        }
+
         function init() {
+            loadDatabase();
             renderClassrooms();
+            updateTeacherSelectorsAndLists();
             changeView('classrooms');
         }
 
         function renderClassrooms() {
             const container = document.getElementById('classrooms-list');
             container.innerHTML = "";
+            
+            if (Object.keys(DATABASE).length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Nenhuma sala ativa. Entre no painel do professor para criar uma.</p>`;
+                return;
+            }
+
             Object.keys(DATABASE).forEach(key => {
                 const room = DATABASE[key];
                 const div = document.createElement('div');
@@ -269,6 +321,83 @@
                 div.innerHTML = `<div><h3 class="font-bold text-slate-800 text-base">${room.name}</h3><p class="text-xs text-slate-400"><i class="fa-solid fa-lock mr-1"></i> Requer senha</p></div><i class="fa-solid fa-chevron-right text-slate-300"></i>`;
                 container.appendChild(div);
             });
+        }
+
+        /* 🆕 ADICIONAR NOVA SALA */
+        function createNewClassroom() {
+            const id = document.getElementById('new-room-id').value.trim();
+            const name = document.getElementById('new-room-name').value.trim();
+            const password = document.getElementById('new-room-password').value.trim();
+
+            if (!id || !name || !password) {
+                alert("Por favor, preencha todos os campos para criar a sala!");
+                return;
+            }
+
+            if (DATABASE[id]) {
+                alert("Esse ID de sala já existe! Escolha outro identificador.");
+                return;
+            }
+
+            // Cria a estrutura limpa da nova turma
+            DATABASE[id] = {
+                name: name,
+                password: password,
+                cards: []
+            };
+
+            saveDatabaseToStorage();
+            
+            // Limpa os campos
+            document.getElementById('new-room-id').value = "";
+            document.getElementById('new-room-name').value = "";
+            document.getElementById('new-room-password').value = "";
+
+            renderClassrooms();
+            updateTeacherSelectorsAndLists();
+            alert(`Sala "${name}" criada com sucesso!`);
+        }
+
+        /* 🆕 DELETAR UMA SALA */
+        function deleteClassroom(key) {
+            if (!confirm(`⚠️ ATENÇÃO:\nTem certeza que deseja apagar a sala "${DATABASE[key].name}" e TODOS os flashcards vinculados a ela?`)) return;
+
+            delete DATABASE[key];
+            saveDatabaseToStorage();
+            
+            renderClassrooms();
+            updateTeacherSelectorsAndLists();
+        }
+
+        // Atualiza os seletores e listas na aba do professor
+        function updateTeacherSelectorsAndLists() {
+            const select = document.getElementById('form-room-id');
+            const deleteListContainer = document.getElementById('teacher-rooms-delete-list');
+            
+            select.innerHTML = "";
+            deleteListContainer.innerHTML = "";
+
+            Object.keys(DATABASE).forEach(key => {
+                // Preenche o Select de criação de cards
+                const option = document.createElement('option');
+                option.value = key;
+                option.innerText = DATABASE[key].name;
+                select.appendChild(option);
+
+                // Preenche a lista de exclusão de salas
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-100 text-xs";
+                div.innerHTML = `
+                    <span class="font-medium text-slate-700">${DATABASE[key].name} <code class="text-[10px] text-slate-400">(${key})</code></span>
+                    <button onclick="deleteClassroom('${key}')" class="text-rose-500 hover:text-rose-700 font-bold px-2 py-0.5 rounded"><i class="fa-solid fa-trash-can"></i></button>
+                `;
+                deleteListContainer.appendChild(div);
+            });
+        }
+
+        function updateDatabaseOutputArea() {
+            // Converte a base atual em formato de texto estruturado JS para facilitar a cópia permanente
+            document.getElementById('output-code').value = "const DATABASE = " + JSON.stringify(DATABASE, null, 4) + ";";
         }
 
         function accessClassroom(key) {
@@ -464,7 +593,7 @@
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'en-US';
-                utterance.rate = 0.70; // Pronúncia confortável e lenta
+                utterance.rate = 0.70;
                 window.speechSynthesis.speak(utterance);
             }
         }
@@ -474,36 +603,33 @@
             changeView('decks');
         }
 
-        /* 🛠️ ENGENHARIA DE DESIGN DO PROFESSOR */
+        /* 🛠️ GERAR CARDS E ADICIONAR NA BASE VOLÁTIL */
         function generateCardCode() {
+            const targetRoom = document.getElementById('form-room-id').value;
             const week = document.getElementById('form-week').value.trim();
             const date = document.getElementById('form-date').value.trim();
             const front = document.getElementById('form-front').value.trim();
             const pronunciation = document.getElementById('form-pronunciation').value.trim();
             const back = document.getElementById('form-back').value.trim();
 
-            if(!week || !date || !front || !pronunciation || !back) {
-                alert("Preencha todos os campos antes de gerar!");
+            if(!targetRoom || !week || !date || !front || !pronunciation || !back) {
+                alert("Preencha todos os campos da fábrica antes de gerar!");
                 return;
             }
 
-            // Cria uma ID randômica curta
             const randomId = "id_" + Math.random().toString(36).substr(2, 4);
+            const newCardObj = { id: randomId, week, date, front, pronunciation, back };
 
-            const codeTemplate = `{ id: "${randomId}", week: "${week}", date: "${date}", front: "${front}", pronunciation: "${pronunciation}", back: "${back}" },`;
-            
-            const outputArea = document.getElementById('output-code');
-            if(outputArea.value === "") {
-                outputArea.value = codeTemplate;
-            } else {
-                outputArea.value += "\n" + codeTemplate;
-            }
+            // Injeta o novo card diretamente na sala selecionada
+            DATABASE[targetRoom].cards.push(newCardObj);
+            saveDatabaseToStorage();
 
-            // Limpa apenas os campos de texto para agilizar lote
+            // Limpa apenas campos de texto fluidos
             document.getElementById('form-front').value = "";
             document.getElementById('form-pronunciation').value = "";
             document.getElementById('form-back').value = "";
-            alert("Linha de código gerada com sucesso abaixo! Pode criar a próxima.");
+            
+            alert(`Card adicionado com sucesso na sala "${DATABASE[targetRoom].name}" localmente!`);
         }
 
         function changeView(view) {
