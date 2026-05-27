@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Idiomas - Prof. Analice</title>
-    <!-- Script do Tailwind com quebra de cache automática gerenciada pelo painel -->
-    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716849999"></script>
+    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716848000"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .perspective { perspective: 1000px; }
@@ -23,7 +22,6 @@
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col pb-24">
 
-    <!-- CABEÇALHO -->
     <header class="bg-white border-b border-slate-100 py-4 px-6 sticky top-0 z-50 shadow-sm flex justify-between items-center">
         <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>ClassStudy</h1>
         <span id="current-badge" class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden">Sala</span>
@@ -31,7 +29,6 @@
 
     <main class="flex-1 max-w-md w-full mx-auto px-4 py-6 flex flex-col justify-center">
         
-        <!-- TELA 1: SELEÇÃO DE SALAS -->
         <section id="view-classrooms" class="w-full space-y-4">
             <div class="mb-4">
                 <h2 class="text-xl font-bold text-slate-800">Seja Bem-vindo(a)!</h2>
@@ -40,7 +37,6 @@
             <div id="classrooms-list" class="space-y-3"></div>
         </section>
 
-        <!-- TELA 2: SELEÇÃO DE SEMANAS (DECKS) COM GAMES POR SEMANA -->
         <section id="view-decks" class="w-full space-y-6 hidden">
             <div class="flex items-center justify-between">
                 <div>
@@ -52,7 +48,6 @@
             
             <div id="decks-list" class="space-y-4"></div>
 
-            <!-- SEÇÃO DE REVISÃO DO QUE JÁ FOI ESTUDADO -->
             <div class="pt-4 border-t border-slate-200 space-y-3">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Seu Progresso Geral</h3>
                 <div onclick="openStudiedHistory()" class="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-xl text-white shadow-sm hover:opacity-95 transition cursor-pointer flex justify-between items-center">
@@ -70,7 +65,6 @@
             </div>
         </section>
 
-        <!-- TELA 3: FLASHCARDS -->
         <section id="view-study" class="w-full hidden flex-col justify-between space-y-6">
             <div class="w-full space-y-2">
                 <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
@@ -125,7 +119,6 @@
             <p id="flip-hint" class="text-center text-xs text-slate-400 font-medium">Toque no cartão para liberar os botões de treino.</p>
         </section>
 
-        <!-- JOGO 1: QUIZ DE FRASES DA SEMANA -->
         <section id="view-game-quiz" class="w-full hidden space-y-6">
             <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
                 <button onclick="changeView('decks')" class="text-indigo-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
@@ -145,7 +138,6 @@
             </div>
         </section>
 
-        <!-- JOGO 2: JOGO DA MEMÓRIA DA SEMANA -->
         <section id="view-game-memory" class="w-full hidden space-y-4">
             <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
                 <button onclick="changeView('decks')" class="text-purple-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
@@ -157,7 +149,6 @@
             <div id="memory-grid" class="grid grid-cols-2 gap-3 pt-2"></div>
         </section>
 
-        <!-- JOGO 3: DESAFIO DE VOCABULÁRIO (PALAVRAS SOLTAS EXTRAÍDAS) -->
         <section id="view-game-vocab" class="w-full hidden space-y-6">
             <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
                 <button onclick="changeView('decks')" class="text-amber-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
@@ -177,7 +168,6 @@
             </div>
         </section>
 
-        <!-- TELA HISTÓRICO -->
         <section id="view-history-list" class="w-full hidden space-y-4">
             <div class="flex items-center justify-between mb-2">
                 <div>
@@ -189,7 +179,6 @@
             <div id="history-items-container" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
         </section>
 
-        <!-- TELA SUCESSO -->
         <section id="view-success" class="w-full hidden text-center space-y-6 py-8">
             <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-4xl">
                 <i class="fa-solid fa-star animate-bounce"></i>
@@ -203,14 +192,12 @@
             </button>
         </section>
 
-        <!-- TELA 6: PAINEL DO PROFESSOR -->
         <section id="view-teacher" class="w-full hidden space-y-6">
             <div>
                 <h2 class="text-lg font-bold text-slate-700">Painel de Controle do Professor</h2>
                 <p class="text-xs text-slate-500">Gerencie salas, senhas e atualize o cache dos alunos de forma automática.</p>
             </div>
 
-            <!-- GERENCIAR SALAS -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-folder-plus mr-1"></i> Gerenciar Salas de Aula</h3>
                 <div class="space-y-3 pt-2">
@@ -236,7 +223,6 @@
                 </div>
             </div>
 
-            <!-- FABRICAR CARDS -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-file-medical mr-1"></i> Fabricar Flashcards</h3>
                 <div class="grid grid-cols-2 gap-3">
@@ -270,7 +256,6 @@
                 </button>
             </div>
 
-            <!-- RESULTADO PARA COPIAR -->
             <div class="space-y-2">
                 <label class="block text-xs font-bold text-slate-500 uppercase">📋 CÓDIGO FONTE TOTAL DO APP (ANTI-CACHE):</label>
                 <p class="text-[11px] text-slate-400 leading-tight bg-slate-100 p-2 border border-slate-200 rounded-lg">Clique na caixa verde abaixo, use <b>Ctrl + A</b> para selecionar tudo e cole substituindo todo o seu arquivo do GitHub.</p>
@@ -280,7 +265,6 @@
 
     </main>
 
-    <!-- NAVEGAÇÃO -->
     <nav class="bg-white border-t border-slate-100 fixed bottom-0 left-0 right-0 py-2 shadow-lg z-50">
         <div class="max-w-md mx-auto grid grid-cols-2 text-center">
             <button onclick="changeView('classrooms')" id="nav-btn-decks" class="flex flex-col items-center justify-center text-indigo-600 font-medium text-xs gap-0.5">
@@ -294,7 +278,7 @@
 
     <script id="main-script-tag">
         /* ==========================================================================
-           📌 BANCO DE DADOS BASE DINÂMICO CONSOLIDADO COM AS 25 FRASES REAIS
+           📌 BANCO DE DADOS BASE DINÂMICO CONSOLIDADO COM TODAS AS TURMAS REAIS
            ========================================================================== */
         const DEFAULT_DATABASE = {
             "IQ15/0003": { "name": "Turma IQ15/0003", "password": "iq15", "cards": [] },
@@ -319,7 +303,6 @@
                     { "id": "id_tfbv", "week": "Semana 01", "date": "26/05/2026", "front": "The kitchen is equipped with stainless steel appliances.", "pronunciation": "Dá kít-chin ís i-cuípt uíf stêin-les stíl a-plái-an-siz.", "back": "A cozinha é equipada com eletrodomésticos de aço inoxidável." },
                     { "id": "id_frsm", "week": "Semana 01", "date": "26/05/2026", "front": "This neighborhood is perfect for raising a family.", "pronunciation": "Dís nêi-bor-rud ís pér-fict fór rêi-zin a fá-mi-li.", "back": "Este bairro é perfeito para criar uma família." },
                     { "id": "id_xr6b", "week": "Semana 01", "date": "26/05/2026", "front": "Are you looking to buy or to rent?", "pronunciation": "Ár iú lú-kin tu bái ór tu rént?", "back": "Você está procurando para comprar ou para alugar?" },
-                    // Injeção Oficial dos Novos 8 Cartões de Conversação Doméstica
                     { "id": "id_n101", "week": "Semana 01", "date": "26/05/2026", "front": "Make yourself at home.", "pronunciation": "Mêik ior-sélf ét rôm.", "back": "Sinta-se em casa." },
                     { "id": "id_n102", "week": "Semana 01", "date": "26/05/2026", "front": "My house is a bit messy today.", "pronunciation": "Mai ráus is a bít mé-ssi tu-dêi.", "back": "Minha casa está um pouco bagunçada hoje." },
                     { "id": "id_n103", "week": "Semana 01", "date": "26/05/2026", "front": "I need to clean up my room.", "pronunciation": "Ai níd tu clín áp mai rúm.", "back": "Eu preciso arrumar/limpar o meu quarto." },
@@ -330,10 +313,35 @@
                     { "id": "id_n108", "week": "Semana 01", "date": "26/05/2026", "front": "I love just chilling on the couch.", "pronunciation": "Ai láv djâst tchí-lin on dá cáutch.", "back": "Eu amo ficar apenas relaxando no sofá." }
                 ]
             },
-            "Turma_iq19/0004": { "name": "Turma IQ19/0004 Quinta", "password": "iq194", "cards": [] }
+            "Turma_iq19/0004": { "name": "Turma IQ19/0004 Quinta", "password": "iq194", "cards": [] },
+            
+            /* 👑 NOVIDADE: SALA IQ19/0007 INTEGRADA DIRETAMENTE DO SEU PDF DE REVISÃO */
+            "Turma_IQ19/0007": {
+                "name": "Turma IQ19/0007",
+                "password": "iq1907",
+                "cards": [
+                    { "id": "id_v01", "week": "Semana 01", "date": "27/05/2026", "front": "Can I have a carton of milk?", "pronunciation": "kæn ái hæv á kár-ton óv mílk?", "back": "Você me dá uma caixinha de leite?" },
+                    { "id": "id_v02", "week": "Semana 01", "date": "27/05/2026", "front": "I'd like a bottle of champagne, please.", "pronunciation": "áid láik á bót-tol óv chæm-péin, plíz.", "back": "Eu gostaria de uma garrafa de champanhe, por favor." },
+                    { "id": "id_v03", "week": "Semana 01", "date": "27/05/2026", "front": "Open a can of beer for me!", "pronunciation": "óu-pên á kæn óv bí-er fór mí!", "back": "Abre uma lata de cerveja para mim!" },
+                    { "id": "id_v04", "week": "Semana 01", "date": "27/05/2026", "front": "I ate a whole bag of cookies.", "pronunciation": "ái éit á hóul bæg óv cú-kiz.", "back": "Eu comi um saco inteiro de biscoitos." },
+                    { "id": "id_v05", "week": "Semana 01", "date": "27/05/2026", "front": "The jar of honey is sticky.", "pronunciation": "đá djár óv há-ni íz stí-ki.", "back": "O pote de mel está grudento." },
+                    { "id": "id_v06", "week": "Semana 01", "date": "27/05/2026", "front": "Bring me a tube of cream from the bathroom.", "pronunciation": "bríng mí á tiúb óv krím fróm dá báth-rum.", "back": "Traga-me um tubo de creme do banheiro." },
+                    { "id": "id_v07", "week": "Semana 01", "date": "27/05/2026", "front": "Just a bowl of cereal for breakfast.", "pronunciation": "djâst á bóul óv sí-ri-ôl fór brék-fâst.", "back": "Apenas uma tigela de cereal para o café da manhã." },
+                    { "id": "id_v08", "week": "Semana 01", "date": "27/05/2026", "front": "Can you bring a jug of water to the table?", "pronunciation": "kæn iú bríng á djâg óv uá-tér tú dá têi-bôl?", "back": "Você pode trazer uma jarra de água para a mesa?" },
+                    { "id": "id_v09", "week": "Semana 01", "date": "27/05/2026", "front": "The financial crisis forced many companies to close.", "pronunciation": "Dá fi-næn-shôl crái-sís fórst mé-ni kóm-pæ-niz tú klóuz.", "back": "A crise financeira forçou muitas empresas a fecharem." },
+                    { "id": "id_v10", "week": "Semana 01", "date": "27/05/2026", "front": "There is little chance the economic situation will change.", "pronunciation": "Dér íz lít-tol tchæns dá i-co-nó-mic sí-tchú-éi-chôn uíl tchéindj.", "back": "Há pouca chance de a situação econômica mudar." },
+                    { "id": "id_v11", "week": "Semana 01", "date": "27/05/2026", "front": "The government will announce a package in a few hours.", "pronunciation": "Dá gá-vêrn-ment uíl á-náuns á pæ-kédj ín á fiú áu-erz.", "back": "O governo anunciará um pacote em algumas horas." },
+                    { "id": "id_v12", "week": "Semana 01", "date": "27/05/2026", "front": "Only few economists are optimists about this market.", "pronunciation": "Óun-li fiú í-kó-nó-místs ár óp-tí-místs á-báut dís már-kêt.", "back": "Apenas poucos economistas estão otimistas sobre este mercado." },
+                    { "id": "id_v13", "week": "Semana 01", "date": "27/05/2026", "front": "People do not have much hope right now.", "pronunciation": "Pí-pol dú nót hæv mâtch hóup ráit náu.", "back": "As pessoas não têm muita esperança agora." },
+                    { "id": "id_v14", "week": "Semana 01", "date": "27/05/2026", "front": "There is a little chance to impact the whole economy.", "pronunciation": "Dér íz á lít-tol tchæns tú ím-pækt dá hóul i-cón-o-mi.", "back": "Há uma pequena chance de causar impacto em toda a economia." },
+                    { "id": "id_v15", "week": "Semana 01", "date": "27/05/2026", "front": "First of all, follow these step-by-step instructions.", "pronunciation": "Férst óv ól, fó-lou đíz stép bái stép ín-strák-chônz.", "back": "Antes de tudo, siga estas instruções passo a passo." },
+                    { "id": "id_v16", "week": "Semana 01", "date": "27/05/2026", "front": "Bear in mind it's important to use connectors.", "pronunciation": "Bér ín máind ít-s ím-pór-tânt tú iúz co-néc-tôrz.", "back": "Tenha em mente que é importante usar conectores." },
+                    { "id": "id_v17", "week": "Semana 01", "date": "27/05/2026", "front": "Don't forget to subscribe to our new social network.", "pronunciation": "Dóunt fór-guét tú sâb-scráib tú áur niú só-shôl nét-uórk.", "back": "Não se esqueça de se inscrever na nossa nova rede social." }
+                ]
+            }
         };
 
-        const CODE_VERSION = 1716849999;
+        const CODE_VERSION = 1716848000;
         const TEACHER_PASSWORD = "admin"; 
         let DATABASE = {};
 
@@ -390,7 +398,7 @@
         }
 
         function verifyTeacherAccess() {
-            const inputPassword = prompt("Acesso Restrito:"); if (inputPassword === null) return;
+            const inputPassword = prompt("Senha Administrativa:"); if (inputPassword === null) return;
             if (inputPassword === TEACHER_PASSWORD) { changeView('teacher'); } else { alert("Acesso negado!"); }
         }
 
@@ -399,7 +407,7 @@
 
         function renderDecksView() {
             const container = document.getElementById('decks-list'); const room = DATABASE[activeRoomKey]; const studiedIds = getStudiedIds(); const decksMap = {};
-            if(room.cards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhum conteúdo cadastrado.</p>`; return; }
+            if(room.cards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhum conteúdo nesta sala.</p>`; return; }
             room.cards.forEach(card => { if (!decksMap[card.week]) { decksMap[card.week] = { date: card.date, cardsList: [] }; } decksMap[card.week].cardsList.push(card); });
             container.innerHTML = "";
             Object.keys(decksMap).forEach(weekName => {
@@ -444,11 +452,12 @@
         /* JOGO 2: MEMÓRIA */
         function startMemoryGame() { let cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(cards.length === 0) { alert("Sem conteúdo!"); return; } cards.sort(() => Math.random() - 0.5); let selectedCards = cards.slice(0, 4); memoryCardsArray = []; selectedCards.forEach(c => { memoryCardsArray.push({ id: c.id, type: 'en', text: c.front }); memoryCardsArray.push({ id: c.id, type: 'pt', text: c.back }); }); memoryCardsArray.sort(() => Math.random() - 0.5); memoryPairsFound = 0; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; document.getElementById('memory-score-text').innerText = `Pares: 0 / ${selectedCards.length}`; changeView('game-memory'); const grid = document.getElementById('memory-grid'); grid.innerHTML = ""; memoryCardsArray.forEach((item, index) => { const block = document.createElement('div'); block.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer shadow-sm select-none transition-all"; block.innerText = "?"; block.dataset.index = index; block.onclick = () => { if(lockMemoryBoard) return; if(block.classList.contains('bg-white') || block.classList.contains('bg-emerald-50')) return; block.className = "h-24 bg-white border-2 border-purple-500 rounded-xl flex items-center justify-center p-2 text-center text-[10px] font-extrabold text-purple-950 shadow-md"; block.innerText = item.text; if(item.type === 'en') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const ut = new SpeechSynthesisUtterance(item.text); ut.lang = 'en-US'; ut.rate = 0.75; window.speechSynthesis.speak(ut); } } if(!firstSelectedCard) { firstSelectedCard = { element: block, item }; } else { if(firstSelectedCard.element.dataset.index === block.dataset.index) return; secondSelectedCard = { element: block, item }; lockMemoryBoard = true; if(firstSelectedCard.item.id === secondSelectedCard.item.id) { setTimeout(() => { firstSelectedCard.element.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; secondSelectedCard.element.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; memoryPairsFound++; document.getElementById('memory-score-text').innerText = `Pares: ${memoryPairsFound} / ${selectedCards.length}`; if(memoryPairsFound === selectedCards.length) { setTimeout(() => { document.getElementById('success-custom-text').innerText = `Excelente! Você completou a Memória da ${activeWeek}!`; changeView('success'); }, 500); } firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 600); } else { setTimeout(() => { firstSelectedCard.element.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; firstSelectedCard.element.innerText = "?"; secondSelectedCard.element.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; secondSelectedCard.element.innerText = "?"; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 1100); } } }; grid.appendChild(block); }); }
 
-        /* JOGO 3: VOCABULÁRIO COM SEU MAPEAMENTO INTEGRAL ATUALIZADO */
+        /* JOGO 3: VOCABULÁRIO */
         function startVocabGame() {
             const cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek);
             if(cards.length === 0) { alert("Sem conteúdo cadastrado!"); return; }
 
+            // DICIONÁRIO AMPLIADO (PROPRIEDADES + REVISÃO DO SEU NOVO ARQUIVO PDF)
             const vocabMap = {
                 "neighborhood": "bairro / vizinhança", "perfect": "perfeito / perfeita", "raising": "criar / educando", "family": "família",
                 "kitchen": "cozinha", "equipped": "equipada / equipado", "modern": "moderno / moderna", "stove": "fogão",
@@ -464,7 +473,15 @@
                 "buy": "comprar", "rent": "alugar", "yourself": "você mesmo / a si mesmo", "home": "lar / casa", 
                 "house": "casa", "messy": "bagunçada / desorganizada", "today": "hoje", "clean": "limpar / arrumar", 
                 "place": "lugar", "quiet": "silencioso / tranquilo", "heart": "coração", "love": "amar / amo", 
-                "chilling": "relaxando / de boa", "couch": "sofá"
+                "chilling": "relaxando / de boa", "couch": "sofá",
+                // Termos Injetados das Embalagens e Economia Global do PDF
+                "carton": "caixa de papelão", "bottle": "garrafa", "champagne": "champanhe / espumante", "can": "lata",
+                "beer": "cerveja", "bag": "saco / sacola", "cookies": "biscoitos / bolachas", "tube": "tubo / bisnaga",
+                "cream": "creme / pomada", "jar": "pote de vidro", "honey": "mel", "bowl": "tigela / pote fundo",
+                "cereal": "cereal", "jug": "jarra (com alça)", "water": "água", "crisis": "crise",
+                "companies": "empresas / companhias", "economists": "economistas", "government": "governo",
+                "hours": "horas", "hope": "esperança", "chance": "chance / probabilidade", "instructions": "instruções",
+                "steps": "passos / etapas", "connectors": "conectores", "subscribe": "inscrever-se / assinar", "network": "rede"
             };
 
             vocabSessionArray = [];
@@ -478,7 +495,7 @@
             });
 
             if(vocabSessionArray.length === 0) {
-                vocabSessionArray = [{ en: "home", pt: "lar / casa" }, { en: "couch", pt: "sofá" }, { en: "kitchen", pt: "cozinha" }];
+                vocabSessionArray = [{ en: "carton", pt: "caixa de papelão" }, { en: "can", pt: "lata" }, { en: "crisis", pt: "crise" }];
             }
 
             vocabSessionArray.sort(() => Math.random() - 0.5);
