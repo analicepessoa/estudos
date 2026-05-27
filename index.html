@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Idiomas - Prof. Analice</title>
-    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716835720"></script>
+    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716836541"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .perspective { perspective: 1000px; }
@@ -22,7 +22,6 @@
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col pb-24">
 
-    <!-- CABEÇALHO -->
     <header class="bg-white border-b border-slate-100 py-4 px-6 sticky top-0 z-50 shadow-sm flex justify-between items-center">
         <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>ClassStudy</h1>
         <span id="current-badge" class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden">Sala</span>
@@ -30,7 +29,6 @@
 
     <main class="flex-1 max-w-md w-full mx-auto px-4 py-6 flex flex-col justify-center">
         
-        <!-- TELA 1: SELEÇÃO DE SALAS -->
         <section id="view-classrooms" class="w-full space-y-4">
             <div class="mb-4">
                 <h2 class="text-xl font-bold text-slate-800">Seja Bem-vindo(a)!</h2>
@@ -39,7 +37,6 @@
             <div id="classrooms-list" class="space-y-3"></div>
         </section>
 
-        <!-- TELA 2: SELEÇÃO DE SEMANAS (DECKS) E HISTÓRICO -->
         <section id="view-decks" class="w-full space-y-6 hidden">
             <div class="flex items-center justify-between">
                 <div>
@@ -54,7 +51,6 @@
                 <div id="decks-list" class="space-y-3"></div>
             </div>
 
-            <!-- SEÇÃO DE REVISÃO DO QUE JÁ FOI ESTUDADO -->
             <div class="pt-4 border-t border-slate-200 space-y-3">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Seu Progresso</h3>
                 <div onclick="openStudiedHistory()" class="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-xl text-white shadow-sm hover:opacity-95 transition cursor-pointer flex justify-between items-center">
@@ -72,7 +68,6 @@
             </div>
         </section>
 
-        <!-- TELA 3: FLASHCARDS (ESTUDO EXPANDIDO) -->
         <section id="view-study" class="w-full hidden flex-col justify-between space-y-6">
             <div class="w-full space-y-2">
                 <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
@@ -87,7 +82,6 @@
             <div class="w-full h-96 perspective cursor-pointer" onclick="flipCard()">
                 <div id="flashcard" class="w-full h-full flip-card-inner relative shadow-md rounded-2xl bg-white border border-slate-100">
                     
-                    <!-- FRENTE DO CARD (INGLÊS E PRONÚNCIA) -->
                     <div class="flip-card-front absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-white rounded-2xl">
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Como se diz?</span>
@@ -105,7 +99,6 @@
                         <span class="text-center text-xs text-slate-400 w-full animate-pulse"><i class="fa-solid fa-rotate mr-1"></i> Toque para revelar a Tradução</span>
                     </div>
 
-                    <!-- VERSO DO CARD (TRADUÇÃO) -->
                     <div class="flip-card-back absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-emerald-50/40 rounded-2xl border-2 border-emerald-200">
                         <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded w-max">Significado</span>
                         <div class="text-center flex flex-col items-center justify-center flex-1 px-4 space-y-4">
@@ -119,7 +112,6 @@
                 </div>
             </div>
 
-            <!-- Botões de Treino Rápido -->
             <div id="action-buttons" class="grid grid-cols-2 gap-4 pt-2 hidden">
                 <button onclick="handleResponse(false)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 py-3.5 px-4 rounded-xl font-bold text-sm transition flex flex-col items-center justify-center gap-1 shadow-sm">
                     <i class="fa-solid fa-circle-xmark text-lg text-orange-500"></i>Estudar Mais
@@ -131,7 +123,6 @@
             <p id="flip-hint" class="text-center text-xs text-slate-400 font-medium">Toque no cartão para liberar os botões de treino.</p>
         </section>
 
-        <!-- TELA 4: HISTÓRICO DE ESTUDADOS -->
         <section id="view-history-list" class="w-full hidden space-y-4">
             <div class="flex items-center justify-between mb-2">
                 <div>
@@ -143,7 +134,6 @@
             <div id="history-items-container" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
         </section>
 
-        <!-- TELA 5: DECK COMPLETO -->
         <section id="view-success" class="w-full hidden text-center space-y-6 py-8">
             <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-4xl">
                 <i class="fa-solid fa-star animate-bounce"></i>
@@ -157,14 +147,12 @@
             </button>
         </section>
 
-        <!-- TELA 6: PAINEL DO PROFESSOR -->
         <section id="view-teacher" class="w-full hidden space-y-6">
             <div>
                 <h2 class="text-lg font-bold text-slate-700">Painel de Controle do Professor</h2>
                 <p class="text-xs text-slate-500">Gerencie salas, senhas e atualize o cache dos alunos de forma automática.</p>
             </div>
 
-            <!-- GERENCIAR SALAS -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-folder-plus mr-1"></i> Gerenciar Salas de Aula</h3>
                 <div class="space-y-3 pt-2">
@@ -190,7 +178,6 @@
                 </div>
             </div>
 
-            <!-- FABRICAR CARDS -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-file-medical mr-1"></i> Fabricar Flashcards</h3>
                 <div class="grid grid-cols-2 gap-3">
@@ -224,7 +211,6 @@
                 </button>
             </div>
 
-            <!-- RESULTADO PARA COPIAR -->
             <div class="space-y-2">
                 <label class="block text-xs font-bold text-slate-500 uppercase">📋 CÓDIGO FONTE TOTAL DO APP (ANTI-CACHE):</label>
                 <p class="text-[11px] text-slate-400 leading-tight bg-slate-100 p-2 border border-slate-200 rounded-lg">Clique na caixa verde abaixo, use <b>Ctrl + A</b> para selecionar tudo e cole substituindo todo o seu arquivo do GitHub. Os celulares dos alunos vão atualizar sozinhos!</p>
@@ -234,7 +220,6 @@
 
     </main>
 
-    <!-- NAVEGAÇÃO -->
     <nav class="bg-white border-t border-slate-100 fixed bottom-0 left-0 right-0 py-2 shadow-lg z-50">
         <div class="max-w-md mx-auto grid grid-cols-2 text-center">
             <button onclick="changeView('classrooms')" id="nav-btn-decks" class="flex flex-col items-center justify-center text-indigo-600 font-medium text-xs gap-0.5">
@@ -278,6 +263,9 @@
             }
         };
 
+        // ⏱️ MARCAÇÃO DE DATA DA VERSÃO DO CÓDIGO (Gerado dinamicamente para sincronia)
+        const CODE_VERSION = 1716836541;
+
         const TEACHER_PASSWORD = "admin"; 
         let DATABASE = {};
 
@@ -289,8 +277,16 @@
 
         function loadDatabase() {
             const saved = localStorage.getItem('prof_analice_database');
-            if (saved) { DATABASE = JSON.parse(saved); } 
-            else { DATABASE = JSON.parse(JSON.stringify(DEFAULT_DATABASE)); localStorage.setItem('prof_analice_database', JSON.stringify(DATABASE)); }
+            const savedVersion = localStorage.getItem('prof_analice_version');
+            
+            // 🎯 A MÁGICA: Se o código do GitHub for mais novo que a memória local, reseta a memória antiga!
+            if (saved && savedVersion && parseInt(savedVersion) >= CODE_VERSION) { 
+                DATABASE = JSON.parse(saved); 
+            } else { 
+                DATABASE = JSON.parse(JSON.stringify(DEFAULT_DATABASE)); 
+                localStorage.setItem('prof_analice_database', JSON.stringify(DATABASE));
+                localStorage.setItem('prof_analice_version', CODE_VERSION.toString());
+            }
             updateDatabaseOutputArea();
         }
 
@@ -303,7 +299,6 @@
             loadDatabase();
             renderClassrooms();
             updateTeacherSelectorsAndLists();
-            // Garante blindagem de inicialização de telas
             forceInitialViewState();
         }
 
@@ -371,19 +366,19 @@
             });
         }
 
-        /* 🚀 MOTOR REESCRITO PARA BLINDAR E LIMPAR AS CLASSES DE EXECUÇÃO EM TEMPO REAL */
         function updateDatabaseOutputArea() {
             const updatedDatabaseJSON = JSON.stringify(DATABASE, null, 4);
             const cleanScriptHTML = document.getElementById('main-script-tag').innerHTML;
-            const dbRegex = /const DEFAULT_DATABASE = \n?[\s\S]*?};/m;
-            const updatedScriptContent = cleanScriptHTML.replace(dbRegex, "const DEFAULT_DATABASE = " + updatedDatabaseJSON + ";");
+            
+            // Incrementa o Token de Versão do Código
             const uniqueVersionToken = Math.floor(Date.now() / 1000);
+            
+            let updatedScriptContent = cleanScriptHTML.replace(/const DEFAULT_DATABASE = \n?[\s\S]*?};/m, "const DEFAULT_DATABASE = " + updatedDatabaseJSON + ";");
+            updatedScriptContent = updatedScriptContent.replace(/const CODE_VERSION = \d+;/, "const CODE_VERSION = " + uniqueVersionToken + ";");
 
-            // Cria uma cópia virtual limpa do DOM para não herdar estados "hidden" e "text-indigo-600" mutados
             const parser = new DOMParser();
             const cleanDoc = parser.parseFromString(document.documentElement.outerHTML, 'text/html');
 
-            // Reseta cirurgicamente as classes das telas no código de exportação para evitar travamentos
             cleanDoc.getElementById('view-classrooms').className = "w-full space-y-4";
             cleanDoc.getElementById('view-decks').className = "w-full space-y-6 hidden";
             cleanDoc.getElementById('view-study').className = "w-full hidden flex-col justify-between space-y-6";
@@ -398,7 +393,6 @@
             let headHTML = cleanDoc.getElementsByTagName('head')[0].outerHTML;
             headHTML = headHTML.replace(/cdn\.tailwindcss\.com\?v=\d+/, "cdn.tailwindcss.com?v=" + uniqueVersionToken);
 
-            // Injeta os novos scripts montados sem as mutações da sessão ativa
             const bodyElement = cleanDoc.getElementsByTagName('body')[0];
             const oldScriptContent = cleanDoc.getElementById('main-script-tag').innerHTML;
             bodyElement.innerHTML = bodyElement.innerHTML.replace(oldScriptContent, updatedScriptContent);
