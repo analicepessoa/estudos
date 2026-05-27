@@ -22,7 +22,6 @@
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col pb-24">
 
-    <!-- CABEÇALHO -->
     <header class="bg-white border-b border-slate-100 py-4 px-6 sticky top-0 z-50 shadow-sm flex justify-between items-center">
         <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>ClassStudy</h1>
         <span id="current-badge" class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden">Sala</span>
@@ -30,7 +29,6 @@
 
     <main class="flex-1 max-w-md w-full mx-auto px-4 py-6 flex flex-col justify-center">
         
-        <!-- TELA 1: SELEÇÃO DE SALAS -->
         <section id="view-classrooms" class="w-full space-y-4">
             <div class="mb-4">
                 <h2 class="text-xl font-bold text-slate-800">Seja Bem-vindo(a)!</h2>
@@ -39,7 +37,6 @@
             <div id="classrooms-list" class="space-y-3"></div>
         </section>
 
-        <!-- TELA 2: SELEÇÃO DE SEMANAS (DECKS) E HISTÓRICO -->
         <section id="view-decks" class="w-full space-y-6 hidden">
             <div class="flex items-center justify-between">
                 <div>
@@ -54,7 +51,6 @@
                 <div id="decks-list" class="space-y-3"></div>
             </div>
 
-            <!-- SEÇÃO DE REVISÃO DO QUE JÁ FOI ESTUDADO -->
             <div class="pt-4 border-t border-slate-200 space-y-3">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Seu Progresso</h3>
                 <div onclick="openStudiedHistory()" class="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-xl text-white shadow-sm hover:opacity-95 transition cursor-pointer flex justify-between items-center">
@@ -72,7 +68,6 @@
             </div>
         </section>
 
-        <!-- TELA 3: FLASHCARDS (ESTUDO EXPANDIDO) -->
         <section id="view-study" class="w-full hidden flex-col justify-between space-y-6">
             <div class="w-full space-y-2">
                 <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
@@ -87,7 +82,6 @@
             <div class="w-full h-96 perspective cursor-pointer" onclick="flipCard()">
                 <div id="flashcard" class="w-full h-full flip-card-inner relative shadow-md rounded-2xl bg-white border border-slate-100">
                     
-                    <!-- FRENTE DO CARD (INGLÊS E PRONÚNCIA) -->
                     <div class="flip-card-front absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-white rounded-2xl">
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Como se diz?</span>
@@ -104,402 +98,3 @@
                         </div>
                         <span class="text-center text-xs text-slate-400 w-full animate-pulse"><i class="fa-solid fa-rotate mr-1"></i> Toque para revelar a Tradução</span>
                     </div>
-
-                    <!-- VERSO DO CARD (TRADUÇÃO) -->
-                    <div class="flip-card-back absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-emerald-50/40 rounded-2xl border-2 border-emerald-200">
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded w-max">Significado</span>
-                        <div class="text-center flex flex-col items-center justify-center flex-1 px-4 space-y-4">
-                            <p id="card-portuguese-text" class="text-xl font-semibold text-emerald-950">Tradução.</p>
-                            <button onclick="event.stopPropagation(); markAsStudied();" class="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-sm transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-circle-check"></i> Marcar como Estudado ✓
-                            </button>
-                        </div>
-                        <span class="text-center text-xs text-slate-400 w-full"><i class="fa-solid fa-rotate mr-1"></i> Toque para voltar à frase</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Botões de Treino Rápido -->
-            <div id="action-buttons" class="grid grid-cols-2 gap-4 pt-2 hidden">
-                <button onclick="handleResponse(false)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 py-3.5 px-4 rounded-xl font-bold text-sm transition flex flex-col items-center justify-center gap-1 shadow-sm">
-                    <i class="fa-solid fa-circle-xmark text-lg text-orange-500"></i>Estudar Mais
-                </button>
-                <button onclick="handleResponse(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 py-3.5 px-4 rounded-xl font-bold text-sm transition flex flex-col items-center justify-center gap-1 shadow-sm">
-                    <i class="fa-solid fa-forward text-lg text-slate-500"></i>Próxima Frase
-                </button>
-            </div>
-            <p id="flip-hint" class="text-center text-xs text-slate-400 font-medium">Toque no cartão para liberar os botões de treino.</p>
-        </section>
-
-        <!-- TELA 4: HISTÓRICO DE ESTUDADOS -->
-        <section id="view-history-list" class="w-full hidden space-y-4">
-            <div class="flex items-center justify-between mb-2">
-                <div>
-                    <h2 class="text-lg font-bold text-emerald-800">Frases Estudadas</h2>
-                    <p class="text-xs text-slate-500">Abaixo estão as frases marcadas como aprendidas</p>
-                </div>
-                <button onclick="changeView('decks')" class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium">Voltar</button>
-            </div>
-            <div id="history-items-container" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
-        </section>
-
-        <!-- TELA 5: DECK COMPLETO -->
-        <section id="view-success" class="w-full hidden text-center space-y-6 py-8">
-            <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-4xl">
-                <i class="fa-solid fa-star animate-bounce"></i>
-            </div>
-            <div class="space-y-2">
-                <h2 class="text-2xl font-bold text-slate-800">Excelente Trabalho! 🌟</h2>
-                <p class="text-slate-500 text-sm max-w-xs mx-auto">Você passou por todas as frases disponíveis neste deck!</p>
-            </div>
-            <button onclick="changeView('decks')" class="w-full bg-indigo-600 text-white font-bold py-3.5 px-6 rounded-xl shadow">
-                Voltar para o Menu
-            </button>
-        </section>
-
-        <!-- TELA 6: PAINEL DO PROFESSOR -->
-        <section id="view-teacher" class="w-full hidden space-y-6">
-            <div>
-                <h2 class="text-lg font-bold text-slate-700">Painel de Controle do Professor</h2>
-                <p class="text-xs text-slate-500">Gerencie salas, senhas e atualize o cache dos alunos de forma automática.</p>
-            </div>
-
-            <!-- GERENCIAR SALAS -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-folder-plus mr-1"></i> Gerenciar Salas de Aula</h3>
-                <div class="space-y-3 pt-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">ID Único da Sala (Sem espaços)</label>
-                        <input type="text" id="new-room-id" placeholder="Ex: sala_kids, sala_conversacao" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome de Exibição da Sala</label>
-                        <input type="text" id="new-room-name" placeholder="Ex: Inglês Prático - Kids" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Senha dos Alunos</label>
-                        <input type="text" id="new-room-password" placeholder="Ex: kids123" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                    </div>
-                    <button onclick="createNewClassroom()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-xs transition shadow hover:bg-emerald-700">
-                        <i class="fa-solid fa-plus mr-1"></i> Criar Nova Sala
-                    </button>
-                </div>
-                <div class="pt-3 border-t border-slate-100">
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2">Salas Ativas Atualmente:</label>
-                    <div id="teacher-rooms-delete-list" class="space-y-1.5"></div>
-                </div>
-            </div>
-
-            <!-- FABRICAR CARDS -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-file-medical mr-1"></i> Fabricar Flashcards</h3>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Escolher Sala</label>
-                        <select id="form-room-id" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none"></select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Semana</label>
-                        <input type="text" id="form-week" placeholder="Ex: Semana 1" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Data da Aula</label>
-                    <input type="text" id="form-date" placeholder="Ex: 27/05/2026" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Frase em Inglês</label>
-                    <input type="text" id="form-front" placeholder="Ex: What time is it?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Pronúncia Conectada/Unida</label>
-                    <input type="text" id="form-pronunciation" placeholder="Ex: uót táim ízit?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tradução em Português</label>
-                    <input type="text" id="form-back" placeholder="Ex: Que horas são?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                </div>
-                <button onclick="generateCardCode()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg text-sm transition shadow hover:bg-indigo-700">
-                    <i class="fa-solid fa-gears mr-1"></i> Injetar Card na Sala
-                </button>
-            </div>
-
-            <!-- RESULTADO PARA COPIAR -->
-            <div class="space-y-2">
-                <label class="block text-xs font-bold text-slate-500 uppercase">📋 CÓDIGO FONTE TOTAL DO APP (ANTI-CACHE):</label>
-                <p class="text-[11px] text-slate-400 leading-tight bg-slate-100 p-2 border border-slate-200 rounded-lg">Clique na caixa verde abaixo, use <b>Ctrl + A</b> para selecionar tudo e cole substituindo todo o seu arquivo do GitHub. Os celulares dos alunos vão atualizar sozinhos!</p>
-                <textarea id="output-code" rows="8" readonly class="w-full bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-[10px] focus:outline-none"></textarea>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- NAVEGAÇÃO -->
-    <nav class="bg-white border-t border-slate-100 fixed bottom-0 left-0 right-0 py-2 shadow-lg z-50">
-        <div class="max-w-md mx-auto grid grid-cols-2 text-center">
-            <button onclick="changeView('classrooms')" id="nav-btn-decks" class="flex flex-col items-center justify-center text-indigo-600 font-medium text-xs gap-0.5">
-                <i class="fa-solid fa-graduation-cap text-lg"></i>Estudar
-            </button>
-            <button onclick="verifyTeacherAccess()" id="nav-btn-teacher" class="flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5">
-                <i class="fa-solid fa-chalkboard-user text-lg"></i>Professor
-            </button>
-        </div>
-    </nav>
-
-    <script id="main-script-tag">
-        /* ==========================================================================
-           📌 BANCO DE DADOS BASE DINÂMICO (INJETADO)
-           ========================================================================== */
-        const DEFAULT_DATABASE = {
-            "sala_kids": {
-                name: "Inglês Iniciante - Kids",
-                password: "kids",
-                cards: [
-                    { id: "k1", week: "Semana 1", date: "27/05/2026", front: "What time is it?", pronunciation: "uót táim ízit?", back: "Que horas são?" }
-                ]
-            },
-            "sala_seniors": {
-                name: "Inglês Prático - Melhor Idade",
-                password: "123",
-                cards: [
-                    { id: "s1", week: "Semana 1", date: "27/05/2026", front: "How are you doing?", pronunciation: "háu ár iú dúin?", back: "Como vai você?" }
-                ]
-            }
-        };
-
-        const TEACHER_PASSWORD = "admin"; 
-        let DATABASE = {};
-
-        let activeRoomKey = "";
-        let activeWeek = "";
-        let currentDeckCards = [];
-        let currentIndex = 0;
-        let isFlipped = false;
-
-        function loadDatabase() {
-            const saved = localStorage.getItem('prof_analice_database');
-            if (saved) { DATABASE = JSON.parse(saved); } 
-            else { DATABASE = DEFAULT_DATABASE; localStorage.setItem('prof_analice_database', JSON.stringify(DATABASE)); }
-            updateDatabaseOutputArea();
-        }
-
-        function saveDatabaseToStorage() {
-            localStorage.setItem('prof_analice_database', JSON.stringify(DATABASE));
-            updateDatabaseOutputArea();
-        }
-
-        function init() {
-            loadDatabase();
-            renderClassrooms();
-            updateTeacherSelectorsAndLists();
-            changeView('classrooms');
-        }
-
-        function renderClassrooms() {
-            const container = document.getElementById('classrooms-list');
-            container.innerHTML = "";
-            if (Object.keys(DATABASE).length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Nenhuma sala ativa.</p>`; return; }
-            Object.keys(DATABASE).forEach(key => {
-                const room = DATABASE[key];
-                const div = document.createElement('div');
-                div.className = "bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center cursor-pointer border-l-4 border-l-indigo-500";
-                div.onclick = () => accessClassroom(key);
-                div.innerHTML = `<div><h3 class="font-bold text-slate-800 text-base">${room.name}</h3><p class="text-xs text-slate-400"><i class="fa-solid fa-lock mr-1"></i> Requer senha</p></div><i class="fa-solid fa-chevron-right text-slate-300"></i>`;
-                container.appendChild(div);
-            });
-        }
-
-        function createNewClassroom() {
-            const id = document.getElementById('new-room-id').value.trim();
-            const name = document.getElementById('new-room-name').value.trim();
-            const password = document.getElementById('new-room-password').value.trim();
-            if (!id || !name || !password) { alert("Preencha todos os campos!"); return; }
-            if (DATABASE[id]) { alert("ID de sala já existente!"); return; }
-            DATABASE[id] = { name: name, password: password, cards: [] };
-            saveDatabaseToStorage();
-            document.getElementById('new-room-id').value = "";
-            document.getElementById('new-room-name').value = "";
-            document.getElementById('new-room-password').value = "";
-            renderClassrooms();
-            updateTeacherSelectorsAndLists();
-            alert(`Sala criada com sucesso!`);
-        }
-
-        function deleteClassroom(key) {
-            if (!confirm(`Deseja deletar a sala "${DATABASE[key].name}"?`)) return;
-            delete DATABASE[key];
-            saveDatabaseToStorage();
-            renderClassrooms();
-            updateTeacherSelectorsAndLists();
-        }
-
-        function updateTeacherSelectorsAndLists() {
-            const select = document.getElementById('form-room-id');
-            const deleteListContainer = document.getElementById('teacher-rooms-delete-list');
-            select.innerHTML = ""; deleteListContainer.innerHTML = "";
-            Object.keys(DATABASE).forEach(key => {
-                const option = document.createElement('option'); option.value = key; option.innerText = DATABASE[key].name; select.appendChild(option);
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center bg-slate-50 p-2 rounded-lg border border-slate-100 text-xs";
-                div.innerHTML = `<span>${DATABASE[key].name}</span><button onclick="deleteClassroom('${key}')" class="text-rose-500 font-bold px-2"><i class="fa-solid fa-trash-can"></i></button>`;
-                deleteListContainer.appendChild(div);
-            });
-        }
-
-        /* 🚀 ENGENHARIA DE QUEBRA DE CACHE AUTOMÁTICA (CACHE BUSTING) */
-        function updateDatabaseOutputArea() {
-            const currentHTML = document.documentElement.outerHTML;
-            const updatedDatabaseJSON = JSON.stringify(DATABASE, null, 4);
-            const cleanScriptHTML = document.getElementById('main-script-tag').innerHTML;
-            
-            const dbRegex = /const DEFAULT_DATABASE = \n?[\s\S]*?};/m;
-            const updatedScriptContent = cleanScriptHTML.replace(dbRegex, "const DEFAULT_DATABASE = " + updatedDatabaseJSON + ";");
-
-            // Gera uma marcação de tempo única (ID de Versão)
-            const uniqueVersionToken = Math.floor(Date.now() / 1000);
-
-            let headNode = document.getElementsByTagName('head')[0].outerHTML;
-            // Altera cirurgicamente a versão na chamada externa do script do Tailwind
-            headNode = headNode.replace(/cdn\.tailwindcss\.com\?v=\d+/, "cdn.tailwindcss.com?v=" + uniqueVersionToken);
-
-            const fullDocCode = "<!DOCTYPE html>\n<html lang=\"pt-BR\">\n" + 
-                                headNode + 
-                                "\n" + 
-                                document.getElementsByTagName('body')[0].outerHTML.replace(cleanScriptHTML, updatedScriptContent) + 
-                                "\n</html>";
-
-            document.getElementById('output-code').value = fullDocCode;
-        }
-
-        function accessClassroom(key) {
-            const room = DATABASE[key];
-            const inputPassword = prompt(`Senha de acesso:`);
-            if (inputPassword === null) return;
-            if (inputPassword === room.password) { activeRoomKey = key; updateStudiedBadge(); renderDecksView(); changeView('decks'); } 
-            else { alert("Senha incorreta!"); }
-        }
-
-        function verifyTeacherAccess() {
-            const inputPassword = prompt("Acesso do Professor:");
-            if (inputPassword === null) return;
-            if (inputPassword === TEACHER_PASSWORD) { changeView('teacher'); } else { alert("Acesso negado!"); }
-        }
-
-        function getStudiedIds() { const saved = localStorage.getItem(`studied_${activeRoomKey}`); return saved ? JSON.parse(saved) : []; }
-        function updateStudiedBadge() { document.getElementById('studied-count-badge').innerText = getStudiedIds().length; }
-
-        function renderDecksView() {
-            const container = document.getElementById('decks-list');
-            const room = DATABASE[activeRoomKey];
-            const studiedIds = getStudiedIds();
-            const decksMap = {};
-            room.cards.forEach(card => {
-                if (!decksMap[card.week]) { decksMap[card.week] = { date: card.date, total: 0, activeCount: 0 }; }
-                decksMap[card.week].total++;
-                if (!studiedIds.includes(card.id)) { decksMap[card.week].activeCount++; }
-            });
-            container.innerHTML = "";
-            Object.keys(decksMap).forEach(weekName => {
-                const item = decksMap[weekName];
-                const div = document.createElement('div');
-                div.className = "bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center cursor-pointer";
-                div.onclick = () => startStudySession(weekName);
-                const statusTag = item.activeCount === 0 
-                    ? `<span class="text-xs font-semibold bg-emerald-50 text-emerald-600 py-1 px-2.5 rounded-full">Concluído! 🎉</span>`
-                    : `<span class="text-xs font-semibold bg-amber-50 text-amber-600 py-1 px-2.5 rounded-full">${item.activeCount} pendentes</span>`;
-                div.innerHTML = `<div class="space-y-0.5"><h3 class="font-bold text-slate-800">${weekName}</h3><p class="text-xs text-slate-400">Aula: ${item.date}</p></div>${statusTag}`;
-                container.appendChild(div);
-            });
-            updateStudiedBadge();
-        }
-
-        function startStudySession(weekName) {
-            activeWeek = weekName; const room = DATABASE[activeRoomKey]; const studiedIds = getStudiedIds();
-            currentDeckCards = room.cards.filter(card => card.week === weekName && !studiedIds.includes(card.id));
-            if (currentDeckCards.length === 0) { currentDeckCards = room.cards.filter(card => card.week === weekName); }
-            currentDeckCards.sort(() => Math.random() - 0.5); currentIndex = 0;
-            resetCardFlip(); showCurrentCard(); changeView('study');
-        }
-
-        function showCurrentCard() {
-            if (currentIndex >= currentDeckCards.length) { changeView('success'); return; }
-            resetCardFlip();
-            const currentCard = currentDeckCards[currentIndex];
-            document.getElementById('card-english-text').innerText = currentCard.front;
-            document.getElementById('card-pronunciation-text').innerText = currentCard.pronunciation;
-            document.getElementById('card-portuguese-text').innerText = currentCard.back;
-            const total = currentDeckCards.length;
-            document.getElementById('progress-text').innerText = `Frase ${currentIndex + 1} de ${total}`;
-            document.getElementById('progress-bar').style.width = `${((currentIndex) / total) * 100}%`;
-            setTimeout(() => { playAudio('card-english-text'); }, 400);
-        }
-
-        function flipCard() {
-            isFlipped = !isFlipped; const cardEl = document.getElementById('flashcard');
-            if (isFlipped) { cardEl.classList.add('flipped'); document.getElementById('action-buttons').classList.remove('hidden'); document.getElementById('flip-hint').classList.add('hidden'); } 
-            else { cardEl.classList.remove('flipped'); }
-        }
-
-        function resetCardFlip() { isFlipped = false; document.getElementById('flashcard').classList.remove('flipped'); document.getElementById('action-buttons').classList.add('hidden'); document.getElementById('flip-hint').classList.remove('hidden'); }
-        function handleResponse(knew) { if (knew) { currentIndex++; showCurrentCard(); } else { const runningCard = currentDeckCards.splice(currentIndex, 1)[0]; currentDeckCards.push(runningCard); showCurrentCard(); } }
-
-        function markAsStudied() {
-            const currentCard = currentDeckCards[currentIndex]; let studiedIds = getStudiedIds();
-            if (!studiedIds.includes(currentCard.id)) { studiedIds.push(currentCard.id); localStorage.setItem(`studied_${activeRoomKey}`, JSON.stringify(studiedIds)); }
-            alert("✨ Frase arquivada!"); currentDeckCards.splice(currentIndex, 1); showCurrentCard();
-        }
-
-        function openStudiedHistory() {
-            const container = document.getElementById('history-items-container'); const room = DATABASE[activeRoomKey]; const studiedIds = getStudiedIds();
-            const listCards = room.cards.filter(c => studiedIds.includes(c.id));
-            if (listCards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhuma concluída.</p>`; changeView('history-list'); return; }
-            container.innerHTML = "";
-            listCards.forEach((card, idx) => {
-                const div = document.createElement('div'); div.className = "bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center gap-3";
-                div.innerHTML = `<div class="flex-1 min-w-0"><p id="hist-txt-${idx}" class="text-base font-bold text-slate-800 leading-tight">${card.front}</p><p class="text-xs font-medium text-indigo-700 italic">${card.pronunciation}</p><p class="text-xs text-slate-500 mt-1">➔ ${card.back}</p></div><button onclick="playAudio('hist-txt-${idx}')" class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><i class="fa-solid fa-volume-high text-xs"></i></button>`;
-                container.appendChild(div);
-            });
-            changeView('history-list');
-        }
-
-        function playAudio(elementId) {
-            const text = document.getElementById(elementId).innerText;
-            if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'en-US'; utterance.rate = 0.70; window.speechSynthesis.speak(utterance); }
-        }
-
-        function exitStudySession() { renderDecksView(); changeView('decks'); }
-
-        function generateCardCode() {
-            const targetRoom = document.getElementById('form-room-id').value;
-            const week = document.getElementById('form-week').value.trim();
-            const date = document.getElementById('form-date').value.trim();
-            const front = document.getElementById('form-front').value.trim();
-            const pronunciation = document.getElementById('form-pronunciation').value.trim();
-            const back = document.getElementById('form-back').value.trim();
-
-            if(!targetRoom || !week || !date || !front || !pronunciation || !back) { alert("Preencha todos os campos!"); return; }
-
-            const randomId = "id_" + Math.random().toString(36).substr(2, 4);
-            DATABASE[targetRoom].cards.push({ id: randomId, week, date, front, pronunciation, back });
-            saveDatabaseToStorage();
-
-            document.getElementById('form-front').value = ""; document.getElementById('form-pronunciation').value = ""; document.getElementById('form-back').value = "";
-            renderClassrooms(); alert(`Card adicionado!`);
-        }
-
-        function changeView(view) {
-            document.getElementById('view-classrooms').classList.add('hidden'); document.getElementById('view-decks').classList.add('hidden'); document.getElementById('view-study').classList.add('hidden'); document.getElementById('view-success').classList.add('hidden'); document.getElementById('view-history-list').classList.add('hidden'); document.getElementById('view-teacher').classList.add('hidden'); document.getElementById('current-badge').classList.add('hidden');
-            document.getElementById('nav-btn-decks').className = "flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5"; document.getElementById('nav-btn-teacher').className = "flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5";
-
-            if (view === 'classrooms') { document.getElementById('view-classrooms').classList.remove('hidden'); document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); } 
-            else if (view === 'decks') { document.getElementById('view-decks').classList.remove('hidden'); document.getElementById('current-badge').classList.remove('hidden'); document.getElementById('current-badge').innerText = DATABASE[activeRoomKey].name; document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); } 
-            else if (view === 'study') { document.getElementById('view-study').classList.remove('hidden'); document.getElementById('current-badge').classList.remove('hidden'); document.getElementById('current-badge').innerText = activeWeek; document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); } 
-            else if (view === 'success') { document.getElementById('view-success').classList.remove('hidden'); document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); } 
-            else if (view === 'history-list') { document.getElementById('view-history-list').classList.remove('hidden'); document.getElementById('current-badge').classList.remove('hidden'); document.getElementById('current-badge').innerText = "Estudados ✓"; document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); } 
-            else if (view === 'teacher') { document.getElementById('view-teacher').classList.remove('hidden'); document.getElementById('nav-btn-teacher').classList.add('text-indigo-600'); updateDatabaseOutputArea(); }
-        }
-
-        window.onload = init;
-    </script>
-</body>
-</html>
