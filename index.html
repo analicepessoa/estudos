@@ -4,17 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Idiomas - Prof. Analice</title>
-    
-    <!-- Meta tags para transformar a página em um Web App com Ícone no Celular -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ClassStudy">
-    
-    <!-- Ícone oficial de alta resolução para a Tela de Início do Celular -->
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluent/180/000000/diploma.png">
     <link rel="icon" type="image/png" href="https://img.icons8.com/fluent/48/000000/diploma.png">
-
-    <!-- Script do Tailwind com quebra de cache automática gerenciada pelo painel -->
     <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716856005"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -33,7 +27,6 @@
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col pb-24">
 
-    <!-- CABEÇALHO -->
     <header class="bg-white border-b border-slate-100 py-4 px-6 sticky top-0 z-50 shadow-sm flex justify-between items-center">
         <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>ClassStudy</h1>
         <span id="current-badge" class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden">Sala</span>
@@ -41,7 +34,6 @@
 
     <main class="flex-1 max-w-md w-full mx-auto px-4 py-6 flex flex-col justify-center">
         
-        <!-- TELA 1: SELEÇÃO DE SALAS -->
         <section id="view-classrooms" class="w-full space-y-4">
             <div class="mb-4">
                 <h2 class="text-xl font-bold text-slate-800">Seja Bem-vindo(a)!</h2>
@@ -50,7 +42,6 @@
             <div id="classrooms-list" class="space-y-3"></div>
         </section>
 
-        <!-- TELA 2: SELEÇÃO DE SEMANAS (DECKS) COM GAMES POR SEMANA -->
         <section id="view-decks" class="w-full space-y-6 hidden">
             <div class="flex items-center justify-between">
                 <div>
@@ -59,10 +50,7 @@
                 </div>
                 <button onclick="changeView('classrooms')" class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium"><i class="fa-solid fa-arrow-left-long mr-1"></i>Sair</button>
             </div>
-            
             <div id="decks-list" class="space-y-4"></div>
-
-            <!-- SEÇÃO DE REVISÃO DO QUE JÁ FOI ESTUDADO -->
             <div class="pt-4 border-t border-slate-200 space-y-3">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Seu Progresso Geral</h3>
                 <div onclick="openStudiedHistory()" class="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-xl text-white shadow-sm hover:opacity-95 transition cursor-pointer flex justify-between items-center">
@@ -80,7 +68,6 @@
             </div>
         </section>
 
-        <!-- TELA 3: FLASHCARDS -->
         <section id="view-study" class="w-full hidden flex-col justify-between space-y-6">
             <div class="w-full space-y-2">
                 <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
@@ -135,14 +122,11 @@
             <p id="flip-hint" class="text-center text-xs text-slate-400 font-medium">Toque no cartão para liberar os botões de treino.</p>
         </section>
 
-        <!-- TELA DE TUTORIAL: COMO SALVAR NO CELULAR -->
         <section id="view-save-tutorial" class="w-full hidden space-y-5">
             <div class="mb-2">
                 <h2 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-mobile-screen-button mr-2 text-indigo-600"></i>Como Salvar na Tela do Celular</h2>
                 <p class="text-xs text-slate-500">Tenha o Portal da Prof. Analice como um aplicativo real:</p>
             </div>
-
-            <!-- CARD IPHONE -->
             <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-2">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5"><i class="fa-brands fa-apple text-sm"></i> Se você usa iPhone (Safari):</h3>
                 <ol class="text-xs text-slate-600 space-y-1 list-decimal pl-4">
@@ -151,8 +135,6 @@
                     <li>Confirme clicando em <b>Adicionar</b> no canto superior direito. Pronto!</li>
                 </ol>
             </div>
-
-            <!-- CARD ANDROID -->
             <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-2">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5"><i class="fa-brands fa-android text-sm"></i> Se você usa Android (Chrome):</h3>
                 <ol class="text-xs text-slate-600 space-y-1 list-decimal pl-4">
@@ -161,13 +143,11 @@
                     <li>Confirme a instalação na mensagem que aparecer. Pronto!</li>
                 </ol>
             </div>
-
             <button onclick="changeView('classrooms')" class="w-full bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-xs shadow">
                 Voltar para o Início
             </button>
         </section>
 
-        <!-- JOGOS -->
         <section id="view-game-quiz" class="w-full hidden space-y-6">
             <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
                 <button onclick="changeView('decks')" class="text-indigo-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
@@ -241,7 +221,6 @@
             </button>
         </section>
 
-        <!-- PAINEL PROFESSOR -->
         <section id="view-teacher" class="w-full hidden space-y-6">
             <div>
                 <h2 class="text-lg font-bold text-slate-700">Painel de Controle do Professor</h2>
@@ -315,7 +294,6 @@
 
     </main>
 
-    <!-- NAVEGAÇÃO EXPANDIDA COM LINK DE ATALHO DE SALVAMENTO -->
     <nav class="bg-white border-t border-slate-100 fixed bottom-0 left-0 right-0 py-2 shadow-lg z-50">
         <div class="max-w-md mx-auto grid grid-cols-3 text-center">
             <button onclick="changeView('classrooms')" id="nav-btn-decks" class="flex flex-col items-center justify-center text-indigo-600 font-medium text-xs gap-0.5">
@@ -331,9 +309,6 @@
     </nav>
 
     <script id="main-script-tag">
-        /* ==========================================================================
-           📌 BANCO DE DADOS BASE DINÂMICO CONSOLIDADO COM TODAS AS TURMAS REAIS
-           ========================================================================== */
         const DEFAULT_DATABASE = {
             "IQ15/0003": { "name": "Turma IQ15/0003", "password": "iq15", "cards": [] },
             "Turma_IQ19/00013": {
@@ -360,7 +335,7 @@
                     { "id": "id_n101", "week": "Semana 01", "date": "26/05/2026", "front": "Make yourself at home.", "pronunciation": "Mêik ior-sélf ét rôm.", "back": "Sinta-se em casa." },
                     { "id": "id_n102", "week": "Semana 01", "date": "26/05/2026", "front": "My house is a bit messy today.", "pronunciation": "Mai ráus is a bít mé-ssi tu-dêi.", "back": "Minha casa está um pouco bagunçada hoje." },
                     { "id": "id_n103", "week": "Semana 01", "date": "26/05/2026", "front": "I need to clean up my room.", "pronunciation": "Ai níd tu clín áp mai rúm.", "back": "Eu preciso organizar o quarto de hóspedes." },
-                    { "id": "id_n104", "week": "Semana 01", "date": "26/05/2026", "front": "There’s no place like home.", "pronunciation": "Dérs nôu plêis láik rôm.", "back": "Não há lugar como o nosso lar." },
+                    { "id": "id_n104", "week": "Semana 01", "date": "26/05/2026", "front": "There's no place like home.", "pronunciation": "Dérs nôu plêis láik rôm.", "back": "Não há lugar como o nosso lar." },
                     { "id": "id_n105", "week": "Semana 01", "date": "26/05/2026", "front": "I live in a very quiet neighborhood.", "pronunciation": "Ai lív in a vé-ri cuá-iet nêi-bor-rud.", "back": "Eu moro em um bairro muito silencioso/tranquilo." },
                     { "id": "id_n106", "week": "Semana 01", "date": "26/05/2026", "front": "We are looking for a place to rent.", "pronunciation": "Ui ár lú-kin fór a plêis tu rént.", "back": "Nós estamos procurando um lugar para alugar." },
                     { "id": "id_n107", "week": "Semana 01", "date": "26/05/2026", "front": "My kitchen is the heart of the house.", "pronunciation": "Mai kít-chin is dá rárt óv dá ráus.", "back": "Minha cozinha é o coração da casa." },
@@ -415,11 +390,37 @@
                     { "id": "id_c20", "week": "Semana 01", "date": "27/05/2026", "front": "Just add a pinch of salt to the recipe.", "pronunciation": "Djhâst éd â píntch óv sôlt tu đâ RÉ-si-pi.", "back": "Só adicione uma pitada de sal na receita." },
                     { "id": "id_c21", "week": "Semana 01", "date": "27/05/2026", "front": "Let's take a quick break and we'll be right back.", "pronunciation": "Léts têik â kuík brêik ænd uíl bí ráit bæk.", "back": "Vamos fazer um intervalo rápido e já voltamos." }
                 ]
+            },
+            "IS08/0008": {
+                "name": "Turma IS08/0008",
+                "password": "is08",
+                "cards": [
+                    { "id": "id_p001", "week": "Semana 01", "date": "30/05/2026", "front": "I studied English last night.", "pronunciation": "Ái STÁ-did ÍNG-glish lést náit.", "back": "Eu estudei inglês ontem à noite. (Simple Past)" },
+                    { "id": "id_p002", "week": "Semana 01", "date": "30/05/2026", "front": "She called me yesterday.", "pronunciation": "Xi KÓLD mí IÉS-têr-dêi.", "back": "Ela me ligou ontem. (Simple Past)" },
+                    { "id": "id_p003", "week": "Semana 01", "date": "30/05/2026", "front": "We went to the beach last weekend.", "pronunciation": "Uí UÉNT tu đâ BÍTCH lést UÍK-end.", "back": "Nós fomos à praia no fim de semana passado. (Simple Past - went = went/foi)" },
+                    { "id": "id_p004", "week": "Semana 01", "date": "30/05/2026", "front": "They didn't watch the game.", "pronunciation": "Đêi DÍ-dent UÁTCH đâ GUÊIM.", "back": "Eles não assistiram ao jogo. (Simple Past - negativa)" },
+                    { "id": "id_p005", "week": "Semana 01", "date": "30/05/2026", "front": "Did you sleep well last night?", "pronunciation": "Díd iú SLÍP uél lést náit?", "back": "Você dormiu bem ontem à noite? (Simple Past - pergunta)" },
+                    { "id": "id_p006", "week": "Semana 01", "date": "30/05/2026", "front": "He worked a lot last month.", "pronunciation": "Hi UÓRKT â lót lést mânth.", "back": "Ele trabalhou muito no mês passado. (Simple Past)" },
+                    { "id": "id_p007", "week": "Semana 01", "date": "30/05/2026", "front": "I was watching TV when you called.", "pronunciation": "Ái uâz UÁ-tching TÍ-VI uén iú KÓLD.", "back": "Eu estava assistindo TV quando você ligou. (Past Continuous + Simple Past)" },
+                    { "id": "id_p008", "week": "Semana 01", "date": "30/05/2026", "front": "She was cooking dinner at 7 PM.", "pronunciation": "Xi uâz CÚ-king DÍ-nêr ét SÉ-vên pí-ém.", "back": "Ela estava cozinhando o jantar às 19h. (Past Continuous)" },
+                    { "id": "id_p009", "week": "Semana 01", "date": "30/05/2026", "front": "They were playing football all afternoon.", "pronunciation": "Đêi uêr PLÊI-ing FÚT-bol ól ÆF-têr-nun.", "back": "Eles estavam jogando futebol a tarde toda. (Past Continuous)" },
+                    { "id": "id_p010", "week": "Semana 01", "date": "30/05/2026", "front": "What were you doing when it started to rain?", "pronunciation": "Uát uêr iú DÚ-ing uén ít STÁR-têd tu RÊIN?", "back": "O que você estava fazendo quando começou a chover? (Past Continuous - pergunta)" },
+                    { "id": "id_p011", "week": "Semana 01", "date": "30/05/2026", "front": "He was reading a book while she was sleeping.", "pronunciation": "Hi uâz RÍ-ding â BÚK uáil xi uâz SLÍP-ing.", "back": "Ele estava lendo um livro enquanto ela estava dormindo. (Past Continuous - dois eventos)" },
+                    { "id": "id_p012", "week": "Semana 01", "date": "30/05/2026", "front": "I wasn't paying attention in class.", "pronunciation": "Ái UÁ-zent PÊI-ing â-TÉN-chon in KLÆS.", "back": "Eu não estava prestando atenção na aula. (Past Continuous - negativa)" },
+                    { "id": "id_p013", "week": "Semana 01", "date": "30/05/2026", "front": "We were talking on the phone for hours.", "pronunciation": "Uí uêr TÓ-king on đâ FÔUN fór ÁUÊRZ.", "back": "Nós estávamos falando no telefone por horas. (Past Continuous)" },
+                    { "id": "id_p014", "week": "Semana 01", "date": "30/05/2026", "front": "The baby was crying when I arrived.", "pronunciation": "Đâ BÊI-bi uâz KRÁI-ing uén ái â-RÁIVD.", "back": "O bebê estava chorando quando eu cheguei. (Past Continuous + Simple Past)" },
+                    { "id": "id_p015", "week": "Semana 01", "date": "30/05/2026", "front": "Did she finish the project?", "pronunciation": "Díd xi FÍ-nish đâ PRÓD-jekt?", "back": "Ela terminou o projeto? (Simple Past - pergunta)" },
+                    { "id": "id_p016", "week": "Semana 01", "date": "30/05/2026", "front": "I dropped my phone and the screen broke.", "pronunciation": "Ái DRÓPT mái FÔUN ænd đâ SKRÍN BRÔUK.", "back": "Eu derrubei meu celular e a tela quebrou. (Simple Past - sequência de eventos)" },
+                    { "id": "id_p017", "week": "Semana 01", "date": "30/05/2026", "front": "She was driving when the accident happened.", "pronunciation": "Xi uâz DRÁI-ving uén đí ÁK-si-dent HÆ-pend.", "back": "Ela estava dirigindo quando o acidente aconteceu. (Past Continuous + Simple Past)" },
+                    { "id": "id_p018", "week": "Semana 01", "date": "30/05/2026", "front": "We didn't go out because it was raining.", "pronunciation": "Uí DÍ-dent GÔU áut bi-KÓZ ít uâz RÊI-ning.", "back": "Nós não saímos porque estava chovendo. (Simple Past + Past Continuous)" },
+                    { "id": "id_p019", "week": "Semana 01", "date": "30/05/2026", "front": "They were laughing the whole time.", "pronunciation": "Đêi uêr LÆ-fing đâ RÔUL táim.", "back": "Eles estavam rindo o tempo todo. (Past Continuous)" },
+                    { "id": "id_p020", "week": "Semana 01", "date": "30/05/2026", "front": "I met my best friend when I was living in São Paulo.", "pronunciation": "Ái MÉT mái bést FRÉND uén ái uâz LÍ-ving in SÃO PÁU-lo.", "back": "Eu conheci meu melhor amigo quando eu morava em São Paulo. (Simple Past + Past Continuous)" }
+                ]
             }
         };
 
         const SHEET_WEB_API = "https://script.google.com/macros/s/AKfycbyixLasg-0TGX8vaeVPtiuW04cEmhSuW40fIa4qqXt6iHASAeMq_278SkaGF7LjsYk/exec";
-        const CODE_VERSION = 1716856005;
+        const CODE_VERSION = 1748563200;
         const TEACHER_PASSWORD = "admin"; 
         let DATABASE = {};
 
@@ -465,14 +466,12 @@
         function dispatchStudentReport(activityName, scoreResult) {
             const currentStudentName = localStorage.getItem('classstudy_student_name') || "Aluno Anônimo";
             const currentRoomName = DATABASE[activeRoomKey] ? DATABASE[activeRoomKey].name : "Sala Desconhecida";
-            
             const payload = {
                 aluno: currentStudentName,
                 turma: currentRoomName,
                 atividade: activeWeek + " - " + activityName,
                 resultado: scoreResult
             };
-
             fetch(SHEET_WEB_API, {
                 method: "POST",
                 mode: "no-cors",
@@ -549,12 +548,18 @@
             updateStudiedBadge();
         }
 
+        function exitStudySession() { changeView('decks'); }
         function startStudySession(weekName) { const room = DATABASE[activeRoomKey]; currentDeckCards = room.cards.filter(card => card.week === weekName); currentDeckCards.sort(() => Math.random() - 0.5); currentIndex = 0; showCurrentCard(); changeView('study'); }
         function showCurrentCard() { if (currentIndex >= currentDeckCards.length) { document.getElementById('success-custom-text').innerText = "Parabéns! Você completou os cartões de estudo da semana!"; changeView('success'); return; } resetCardFlip(); const currentCard = currentDeckCards[currentIndex]; document.getElementById('card-english-text').innerText = currentCard.front; document.getElementById('card-pronunciation-text').innerText = currentCard.pronunciation; document.getElementById('card-portuguese-text').innerText = currentCard.back; const total = currentDeckCards.length; document.getElementById('progress-text').innerText = `Frase ${currentIndex + 1} de ${total}`; document.getElementById('progress-bar').style.width = `${((currentIndex) / total) * 100}%`; setTimeout(() => { playAudioWithTracking('card-english-text'); }, 400); }
         function flipCard() { isFlipped = !isFlipped; const cardEl = document.getElementById('flashcard'); if (isFlipped) { cardEl.classList.add('flipped'); document.getElementById('action-buttons').classList.remove('hidden'); document.getElementById('flip-hint').classList.add('hidden'); } else { cardEl.classList.remove('flipped'); } }
         function resetCardFlip() { isFlipped = false; document.getElementById('flashcard').classList.remove('flipped'); document.getElementById('action-buttons').classList.add('hidden'); document.getElementById('flip-hint').classList.remove('hidden'); }
         function handleResponse(knew) { if (knew) { currentIndex++; showCurrentCard(); } else { const runningCard = currentDeckCards.splice(currentIndex, 1)[0]; currentDeckCards.push(runningCard); showCurrentCard(); } }
         function markAsStudied() { const currentCard = currentDeckCards[currentIndex]; let studiedIds = getStudiedIds(); if (!studiedIds.includes(currentCard.id)) { studiedIds.push(currentCard.id); localStorage.setItem(`studied_${activeRoomKey}`, JSON.stringify(studiedIds)); } alert("✨ Frase arquivada!"); currentIndex++; showCurrentCard(); }
+
+        function playAudio(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'en-US'; utterance.rate = 0.70; window.speechSynthesis.speak(utterance); }
+        }
 
         function playAudioWithTracking(elementId) {
             const text = document.getElementById(elementId).innerText;
@@ -580,34 +585,26 @@
             if(cards.length === 0) { alert("Sem conteúdo cadastrado!"); return; }
 
             const vocabMap = {
-                "neighborhood": "bairro / vizinhança", "perfect": "perfeito / perfeita", "raising": "criar / educando", "family": "família",
+                "studied": "estudei / estudou", "called": "ligou / chamou", "went": "foi / foram", "watched": "assistiu / assistiram",
+                "slept": "dormiu / dormiu", "worked": "trabalhou / trabalhou", "watching": "assistindo", "cooking": "cozinhando",
+                "playing": "jogando / brincando", "doing": "fazendo", "reading": "lendo", "sleeping": "dormindo",
+                "talking": "conversando / falando", "crying": "chorando", "driving": "dirigindo", "laughing": "rindo",
+                "finished": "terminou", "dropped": "derrubou / largou", "broke": "quebrou", "happened": "aconteceu",
+                "started": "começou", "arrived": "chegou", "met": "conheceu / encontrou", "living": "morando / vivendo",
+                "raining": "chovendo", "paying": "pagando / prestando", "attention": "atenção", "accident": "acidente",
+                "project": "projeto", "screen": "tela", "phone": "celular / telefone", "beach": "praia",
+                "football": "futebol", "afternoon": "tarde", "bedroom": "quarto", "kitchen": "cozinha",
+                "neighborhood": "bairro", "perfect": "perfeito", "family": "família", "yesterday": "ontem",
+                "weekend": "fim de semana", "tonight": "esta noite", "last": "último / passado", "whole": "inteiro / todo",
+                "while": "enquanto", "because": "porque", "when": "quando", "friend": "amigo / amiga",
+                "neighborhood": "bairro / vizinhança", "perfect": "perfeito / perfeita", "raising": "criar / educando",
                 "kitchen": "cozinha", "equipped": "equipada / equipado", "modern": "moderno / moderna", "stove": "fogão",
-                "living": "estar / morando", "room": "sala / quarto", "cozy": "aconchegante", "apartment": "apartamento",
-                "balcony": "varanda / sacada", "master": "principal / mestre", "bedroom": "quarto", "bathroom": "banheiro",
-                "mess": "bagunça", "remodeled": "reformaram / remodelaram", "year": "ano", "spacious": "espaçoso / ampla",
-                "small": "pequeno / pequena", "organize": "organizar", "guest": "hóspedes / convidado", "dining": "jantar",
-                "lovely": "adorável / lindo", "property": "propriedade / imóvel", "fully": "totalmente / completamente",
-                "furnished": "mobiliada / mobiliado", "ready": "pronta / pronto", "move": "mudar / mover", "view": "vista",
-                "breathtaking": "de tirar o fôlego", "ocean": "oceano / mar", "features": "conta com / apresenta",
-                "king-size": "tamanho gigante (king)", "bed": "cama", "fireplace": "lareira", "windows": "janelas",
-                "stainless": "inoxidável", "steel": "aço", "appliances": "eletrodomésticos", "looking": "procurando / olhando",
-                "buy": "comprar", "rent": "alugar", "yourself": "você mesmo / a si mesmo", "home": "lar / casa", 
-                "house": "casa", "messy": "bagunçada / desorganizada", "today": "hoje", "clean": "limpar / arrumar", 
-                "place": "lugar", "quiet": "silencioso / tranquilo", "heart": "coração", "love": "amar / amo", 
-                "chilling": "relaxando / de boa", "couch": "sofá",
-                "carton": "caixa de papelão", "bottle": "garrafa", "champagne": "champanhe / espumante", "can": "lata",
-                "beer": "cerveja", "bag": "saco / sacola", "cookies": "biscoitos / bolachas", "tube": "tubo / bisnaga",
-                "cream": "creme / pomada", "jar": "pote de vidro", "honey": "mel", "bowl": "tigela / pote fundo",
-                "cereal": "cereal", "jug": "jarra (com alça)", "water": "água", "crisis": "crise",
-                "companies": "empresas / companhias", "economists": "economistas", "government": "governo",
-                "hours": "horas", "hope": "esperança", "chance": "chance / probabilidade", "instructions": "instruções",
-                "steps": "passos / etapas", "connectors": "conectores", "subscribe": "inscrever-se / assinar", "network": "rede",
-                "baguette": "baguete", "bakery": "padaria", "bread": "pão", "breakfast": "café da manhã",
-                "croissant": "croissant", "bun": "pão de hambúrguer / pão redondo", "burger": "hambúrguer",
-                "dinner": "jantar", "roll": "pãozinho / pão de forma", "soup": "sopa", "glass": "copo",
                 "sugar": "açúcar", "recipe": "receita", "ingredients": "ingredientes", "host": "apresentador / anfitrião",
-                "break": "intervalo / comercial", "grams": "gramas", "milliliters": "mililitros", "liter": "litro",
-                "tablespoons": "colheres de sopa", "notes": "notas / anotações", "salt": "sal", "pinch": "pitada"
+                "carton": "caixa de papelão", "bottle": "garrafa", "can": "lata", "beer": "cerveja",
+                "bag": "saco / sacola", "cookies": "biscoitos / bolachas", "jar": "pote de vidro", "honey": "mel",
+                "water": "água", "hours": "horas", "hope": "esperança", "chance": "chance / probabilidade",
+                "baguette": "baguete", "bakery": "padaria", "bread": "pão", "breakfast": "café da manhã",
+                "dinner": "jantar", "soup": "sopa", "glass": "copo", "salt": "sal", "pinch": "pitada"
             };
 
             vocabSessionArray = [];
@@ -621,7 +618,7 @@
             });
 
             if(vocabSessionArray.length === 0) {
-                vocabSessionArray = [{ en: "sugar", pt: "açúcar" }, { en: "recipe", pt: "receita" }, { en: "milk", pt: "leite" }];
+                vocabSessionArray = [{ en: "studied", pt: "estudei / estudou" }, { en: "went", pt: "foi / foram" }, { en: "watching", pt: "assistindo" }];
             }
 
             vocabSessionArray.sort(() => Math.random() - 0.5);
@@ -675,7 +672,7 @@
             setTimeout(() => { playAudio('vocab-target-text'); }, 200);
         }
 
-        /* 📌 ADICIONAIS CORE */
+        /* ADICIONAIS CORE */
         function openStudiedHistory() { const container = document.getElementById('history-items-container'); const room = DATABASE[activeRoomKey]; const studiedIds = getStudiedIds(); const listCards = room.cards.filter(c => studiedIds.includes(c.id)); if (listCards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhuma frase guardada.</p>`; changeView('history-list'); return; } container.innerHTML = ""; listCards.forEach((card, idx) => { const div = document.createElement('div'); div.className = "bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center gap-3"; div.innerHTML = `<div class="flex-1 min-w-0"><p id="hist-txt-${idx}" class="text-base font-bold text-slate-800 leading-tight">${card.front}</p><p class="text-xs font-medium text-indigo-700 italic">${card.pronunciation}</p><p class="text-xs text-slate-500 mt-1">➔ ${card.back}</p></div><button onclick="playAudio('hist-txt-${idx}')" class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><i class="fa-solid fa-volume-high text-xs"></i></button>`; container.appendChild(div); }); changeView('history-list'); }
         function createNewClassroom() { const id = document.getElementById('new-room-id').value.trim(); const name = document.getElementById('new-room-name').value.trim(); const password = document.getElementById('new-room-password').value.trim(); if (!id || !name || !password) { alert("Campos incompletos!"); return; } DATABASE[id] = { name: name, password: password, cards: [] }; saveDatabaseToStorage(); document.getElementById('new-room-id').value = ""; document.getElementById('new-room-name').value = ""; document.getElementById('new-room-password').value = ""; renderClassrooms(); updateTeacherSelectorsAndLists(); alert(`Sala criada!`); }
         function deleteClassroom(key) { if (!confirm(`Deletar sala?`)) return; delete DATABASE[key]; saveDatabaseToStorage(); renderClassrooms(); updateTeacherSelectorsAndLists(); }
