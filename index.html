@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Idiomas - Prof. Analice</title>
-    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716859999"></script>
+    <!-- Script do Tailwind com quebra de cache automática gerenciada pelo painel -->
+    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716860002"></script>
+    <!-- Tag corrigida: rel="stylesheet" para o FontAwesome rodar perfeitamente -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .perspective { perspective: 1000px; }
@@ -22,6 +24,7 @@
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col pb-24">
 
+    <!-- CABEÇALHO -->
     <header class="bg-white border-b border-slate-100 py-4 px-6 sticky top-0 z-50 shadow-sm flex justify-between items-center">
         <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>ClassStudy</h1>
         <span id="current-badge" class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden">Sala</span>
@@ -29,6 +32,7 @@
 
     <main class="flex-1 max-w-md w-full mx-auto px-4 py-6 flex flex-col justify-center">
         
+        <!-- TELA 1: SELEÇÃO DE SALAS -->
         <section id="view-classrooms" class="w-full space-y-4">
             <div class="mb-4">
                 <h2 class="text-xl font-bold text-slate-800">Seja Bem-vindo(a)!</h2>
@@ -37,6 +41,7 @@
             <div id="classrooms-list" class="space-y-3"></div>
         </section>
 
+        <!-- TELA 2: SELEÇÃO DE SEMANAS (DECKS) COM GAMES POR SEMANA -->
         <section id="view-decks" class="w-full space-y-6 hidden">
             <div class="flex items-center justify-between">
                 <div>
@@ -48,6 +53,7 @@
             
             <div id="decks-list" class="space-y-4"></div>
 
+            <!-- SEÇÃO DE REVISÃO DO QUE JÁ FOI ESTUDADO -->
             <div class="pt-4 border-t border-slate-200 space-y-3">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Seu Progresso Geral</h3>
                 <div onclick="openStudiedHistory()" class="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-xl text-white shadow-sm hover:opacity-95 transition cursor-pointer flex justify-between items-center">
@@ -65,6 +71,7 @@
             </div>
         </section>
 
+        <!-- TELA 3: FLASHCARDS -->
         <section id="view-study" class="w-full hidden flex-col justify-between space-y-6">
             <div class="w-full space-y-2">
                 <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
@@ -109,16 +116,17 @@
             </div>
 
             <div id="action-buttons" class="grid grid-cols-2 gap-4 pt-2 hidden">
-                <button onclick="handleResponse(false)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1">
+                <button onclick="handleResponse(false)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1 shadow-sm">
                     <i class="fa-solid fa-circle-xmark text-lg text-orange-500"></i>Estudar Mais
                 </button>
-                <button onclick="handleResponse(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1">
+                <button onclick="handleResponse(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1 shadow-sm">
                     <i class="fa-solid fa-forward text-lg text-slate-500"></i>Próxima Frase
                 </button>
             </div>
             <p id="flip-hint" class="text-center text-xs text-slate-400 font-medium">Toque no cartão para liberar os botões de treino.</p>
         </section>
 
+        <!-- JOGO 1: QUIZ -->
         <section id="view-game-quiz" class="w-full hidden space-y-6">
             <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
                 <button onclick="changeView('decks')" class="text-indigo-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
@@ -138,6 +146,7 @@
             </div>
         </section>
 
+        <!-- JOGO 2: JOGO DA MEMÓRIA -->
         <section id="view-game-memory" class="w-full hidden space-y-4">
             <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
                 <button onclick="changeView('decks')" class="text-purple-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
@@ -149,6 +158,7 @@
             <div id="memory-grid" class="grid grid-cols-2 gap-3 pt-2"></div>
         </section>
 
+        <!-- JOGO 3: DESAFIO DE VOCABULÁRIO -->
         <section id="view-game-vocab" class="w-full hidden space-y-6">
             <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
                 <button onclick="changeView('decks')" class="text-amber-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
@@ -168,6 +178,7 @@
             </div>
         </section>
 
+        <!-- TELA HISTÓRICO -->
         <section id="view-history-list" class="w-full hidden space-y-4">
             <div class="flex items-center justify-between mb-2">
                 <div>
@@ -179,6 +190,7 @@
             <div id="history-items-container" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
         </section>
 
+        <!-- TELA SUCESSO -->
         <section id="view-success" class="w-full hidden text-center space-y-6 py-8">
             <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-4xl">
                 <i class="fa-solid fa-star animate-bounce"></i>
@@ -192,12 +204,14 @@
             </button>
         </section>
 
+        <!-- TELA 6: PAINEL DO PROFESSOR -->
         <section id="view-teacher" class="w-full hidden space-y-6">
             <div>
                 <h2 class="text-lg font-bold text-slate-700">Painel de Controle do Professor</h2>
                 <p class="text-xs text-slate-500">Gerencie salas, senhas e atualize o cache dos alunos de forma automática.</p>
             </div>
 
+            <!-- GERENCIAR SALAS -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-folder-plus mr-1"></i> Gerenciar Salas de Aula</h3>
                 <div class="space-y-3 pt-2">
@@ -218,10 +232,12 @@
                     </button>
                 </div>
                 <div class="pt-3 border-t border-slate-100">
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2">Salas Ativas Atualmente:</label>
                     <div id="teacher-rooms-delete-list" class="space-y-1.5"></div>
                 </div>
             </div>
 
+            <!-- FABRICAR CARDS -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-file-medical mr-1"></i> Fabricar Flashcards</h3>
                 <div class="grid grid-cols-2 gap-3">
@@ -255,14 +271,17 @@
                 </button>
             </div>
 
+            <!-- RESULTADO PARA COPIAR -->
             <div class="space-y-2">
                 <label class="block text-xs font-bold text-slate-500 uppercase">📋 CÓDIGO FONTE TOTAL DO APP (ANTI-CACHE):</label>
+                <p class="text-[11px] text-slate-400 leading-tight bg-slate-100 p-2 border border-slate-200 rounded-lg">Clique na caixa verde abaixo, use <b>Ctrl + A</b> para selecionar tudo e cole substituindo todo o seu arquivo do GitHub.</p>
                 <textarea id="output-code" rows="8" readonly class="w-full bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-[10px] focus:outline-none"></textarea>
             </div>
         </section>
 
     </main>
 
+    <!-- NAVEGAÇÃO -->
     <nav class="bg-white border-t border-slate-100 fixed bottom-0 left-0 right-0 py-2 shadow-lg z-50">
         <div class="max-w-md mx-auto grid grid-cols-2 text-center">
             <button onclick="changeView('classrooms')" id="nav-btn-decks" class="flex flex-col items-center justify-center text-indigo-600 font-medium text-xs gap-0.5">
@@ -364,7 +383,7 @@
 
         // URL Conectora Oficial da Planilha Secreta do Google Sheets
         const SHEET_WEB_API = "https://script.google.com/macros/s/AKfycbyixLasg-0TGX8vaeVPtiuW04cEmhSuW40fIa4qqXt6iHASAeMq_278SkaGF7LjsYk/exec";
-        const CODE_VERSION = 1716855601;
+        const CODE_VERSION = 1716856002;
         const TEACHER_PASSWORD = "admin"; 
         let DATABASE = {};
 
@@ -407,7 +426,6 @@
             ['view-decks','view-study','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => document.getElementById(id).classList.add('hidden'));
         }
 
-        // 🧠 MOTOR DE DISPARO DE RELATÓRIO DO PROGRESSO PARA O GOOGLE SHEETS
         function dispatchStudentReport(activityName, scoreResult) {
             const currentStudentName = localStorage.getItem('classstudy_student_name') || "Aluno Anônimo";
             const currentRoomName = DATABASE[activeRoomKey] ? DATABASE[activeRoomKey].name : "Sala Desconhecida";
@@ -442,8 +460,6 @@
             const room = DATABASE[key]; const inputPassword = prompt(`Senha de acesso para ${room.name}:`); if (inputPassword === null) return;
             if (inputPassword === room.password) { 
                 activeRoomKey = key; 
-                
-                // Gatilho de identificação simples do aluno se ainda não existir
                 if(!localStorage.getItem('classstudy_student_name')) {
                     let sName = "";
                     while(!sName || sName.trim().length < 2) {
@@ -452,7 +468,6 @@
                     }
                     localStorage.setItem('classstudy_student_name', sName.trim());
                 }
-                
                 changeView('decks'); 
             } else { alert("Senha incorreta!"); }
         }
@@ -505,7 +520,6 @@
         function handleResponse(knew) { if (knew) { currentIndex++; showCurrentCard(); } else { const runningCard = currentDeckCards.splice(currentIndex, 1)[0]; currentDeckCards.push(runningCard); showCurrentCard(); } }
         function markAsStudied() { const currentCard = currentDeckCards[currentIndex]; let studiedIds = getStudiedIds(); if (!studiedIds.includes(currentCard.id)) { studiedIds.push(currentCard.id); localStorage.setItem(`studied_${activeRoomKey}`, JSON.stringify(studiedIds)); } alert("✨ Frase arquivada!"); currentIndex++; showCurrentCard(); }
 
-        // 🔊 ESCUTA COM GATILHO DE RASTREAMENTO AUTOMÁTICO (CHECK)
         function playAudioWithTracking(elementId) {
             const text = document.getElementById(elementId).innerText;
             if ('speechSynthesis' in window) { 
@@ -513,20 +527,18 @@
                 const utterance = new SpeechSynthesisUtterance(text); 
                 utterance.lang = 'en-US'; utterance.rate = 0.70; 
                 window.speechSynthesis.speak(utterance); 
-                
-                // Dispara o check automático para a planilha do Sheets
                 dispatchStudentReport("Cards (Escuta Ativa)", "Ouviu o áudio da frase: [" + text + "]");
             }
         }
 
-        /* JOGO 1: QUIZ WITH SCORE TRACKING */
+        /* JOGO 1: QUIZ */
         function startQuizGame() { quizSessionCards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(quizSessionCards.length === 0) { alert("Sem conteúdo!"); return; } quizSessionCards.sort(() => Math.random() - 0.5); quizCurrentIdx = 0; quizMistakesInTurn = 0; changeView('game-quiz'); loadQuizQuestion(); }
         function loadQuizQuestion() { if(quizCurrentIdx >= quizSessionCards.length) { let rawScore = 10 - ((quizMistakesInTurn / quizSessionCards.length) * 5); let finalScore = Math.max(5, rawScore).toFixed(1); dispatchStudentReport("Quiz de Frases", "Nota Final: " + finalScore); document.getElementById('success-custom-text').innerText = `Você dominou o Quiz de Frases da ${activeWeek}! Nota enviada: ${finalScore}`; changeView('success'); return; } const card = quizSessionCards[quizCurrentIdx]; document.getElementById('quiz-progress-text').innerText = `Desafio ${quizCurrentIdx + 1} de ${quizSessionCards.length}`; document.getElementById('quiz-target-text').innerText = card.front; quizCorrectAnswer = card.back; let allBacks = DATABASE[activeRoomKey].cards.map(c => c.back); let wrongOptions = allBacks.filter(b => b !== quizCorrectAnswer).sort(() => Math.random() - 0.5); let options = [quizCorrectAnswer]; if(wrongOptions[0]) options.push(wrongOptions[0]); if(wrongOptions[1]) options.push(wrongOptions[1]); while(options.length < 3) { options.push("Frase estrutural complementar"); } options.sort(() => Math.random() - 0.5); const container = document.getElementById('quiz-options-container'); container.innerHTML = ""; options.forEach(opt => { const btn = document.createElement('button'); btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm transition active:scale-95"; btn.innerText = opt; btn.onclick = () => { if(opt === quizCorrectAnswer) { btn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl text-left font-bold text-sm shadow-sm"; setTimeout(() => { quizCurrentIdx++; loadQuizQuestion(); }, 700); } else { quizMistakesInTurn++; btn.className = "w-full bg-rose-50 text-rose-700 border border-rose-300 p-4 rounded-xl text-left font-medium text-sm shadow-sm animate-bounce"; setTimeout(() => { btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm"; }, 1000); } }; container.appendChild(btn); }); setTimeout(() => { playAudio('quiz-target-text'); }, 300); }
 
-        /* JOGO 2: MEMÓRIA WITH TIME TRACKING */
+        /* JOGO 2: MEMÓRIA */
         function startMemoryGame() { let cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(cards.length === 0) { alert("Sem conteúdo!"); return; } cards.sort(() => Math.random() - 0.5); let selectedCards = cards.slice(0, 4); memoryCardsArray = []; selectedCards.forEach(c => { memoryCardsArray.push({ id: c.id, type: 'en', text: c.front }); memoryCardsArray.push({ id: c.id, type: 'pt', text: c.back }); }); memoryCardsArray.sort(() => Math.random() - 0.5); memoryPairsFound = 0; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; memoryStartTime = Date.now(); document.getElementById('memory-score-text').innerText = `Pares: 0 / ${selectedCards.length}`; changeView('game-memory'); const grid = document.getElementById('memory-grid'); grid.innerHTML = ""; memoryCardsArray.forEach((item, index) => { const block = document.createElement('div'); block.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer shadow-sm select-none transition-all"; block.innerText = "?"; block.dataset.index = index; block.onclick = () => { if(lockMemoryBoard) return; if(block.classList.contains('bg-white') || block.classList.contains('bg-emerald-50')) return; block.className = "h-24 bg-white border-2 border-purple-500 rounded-xl flex items-center justify-center p-2 text-center text-[10px] font-extrabold text-purple-950 shadow-md"; block.innerText = item.text; if(item.type === 'en') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const ut = new SpeechSynthesisUtterance(item.text); ut.lang = 'en-US'; ut.rate = 0.75; window.speechSynthesis.speak(ut); } } if(!firstSelectedCard) { firstSelectedCard = { element: block, item }; } else { if(firstSelectedCard.element.dataset.index === block.dataset.index) return; secondSelectedCard = { element: block, item }; lockMemoryBoard = true; if(firstSelectedCard.item.id === secondSelectedCard.item.id) { setTimeout(() => { firstSelectedCard.element.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; secondSelectedCard.element.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; memoryPairsFound++; document.getElementById('memory-score-text').innerText = `Pares: ${memoryPairsFound} / ${selectedCards.length}`; if(memoryPairsFound === selectedCards.length) { let secondsElapsed = Math.floor((Date.now() - memoryStartTime) / 1000); dispatchStudentReport("Jogo da Memória", "Venceu em " + secondsElapsed + " segundos ⏱️"); setTimeout(() => { document.getElementById('success-custom-text').innerText = `Excelente! Você completou a Memória da ${activeWeek} em ${secondsElapsed} segundos!`; changeView('success'); }, 500); } firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 600); } else { setTimeout(() => { firstSelectedCard.element.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; firstSelectedCard.element.innerText = "?"; secondSelectedCard.element.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; secondSelectedCard.element.innerText = "?"; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 1100); } } }; grid.appendChild(block); }); }
 
-        /* JOGO 3: VOCABULÁRIO WITH SCORE TRACKING */
+        /* JOGO 3: VOCABULÁRIO */
         function startVocabGame() {
             const cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek);
             if(cards.length === 0) { alert("Sem conteúdo cadastrado!"); return; }
