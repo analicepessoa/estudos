@@ -3,618 +3,502 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Idiomas - Prof. Analice</title>
-    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716856001"></script>
+    <title>MindHub - Nuvem Avançada</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Script Oficial do Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .perspective { perspective: 1000px; }
-        .flip-card-inner {
-            transition: transform 0.4s;
-            transform-style: preserve-3d;
+        #mindmap-canvas {
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
         }
-        .flipped { transform: rotateY(180deg); }
-        .flip-card-front, .flip-card-back {
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
+        .mindmap-node {
+            cursor: move;
+            user-select: none;
+            position: absolute;
+            touch-action: none;
         }
-        .flip-card-back { transform: rotateY(180deg); }
     </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col pb-24">
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
 
-    <header class="bg-white border-b border-slate-100 py-4 px-6 sticky top-0 z-50 shadow-sm flex justify-between items-center">
-        <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>ClassStudy</h1>
-        <span id="current-badge" class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden">Sala</span>
-    </header>
-
-    <main class="flex-1 max-w-md w-full mx-auto px-4 py-6 flex flex-col justify-center">
-        
-        <section id="view-classrooms" class="w-full space-y-4">
-            <div class="mb-4">
-                <h2 class="text-xl font-bold text-slate-800">Seja Bem-vindo(a)!</h2>
-                <p class="text-sm text-slate-500">Selecione a sua sala para acessar os conteúdos:</p>
-            </div>
-            <div id="classrooms-list" class="space-y-3"></div>
-        </section>
-
-        <section id="view-decks" class="w-full space-y-6 hidden">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-700">Cronograma de Estudos</h2>
-                    <p class="text-xs text-slate-500">Escolha como deseja praticar esta semana</p>
-                </div>
-                <button onclick="changeView('classrooms')" class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium"><i class="fa-solid fa-arrow-left-long mr-1"></i>Sair</button>
-            </div>
-            
-            <div id="decks-list" class="space-y-4"></div>
-
-            <div class="pt-4 border-t border-slate-200 space-y-3">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Seu Progresso Geral</h3>
-                <div onclick="openStudiedHistory()" class="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-xl text-white shadow-sm hover:opacity-95 transition cursor-pointer flex justify-between items-center">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-lg">
-                            <i class="fa-solid fa-box-archive"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-sm">Frases Concluídas / Arquivadas</h4>
-                            <p class="text-xs text-emerald-100">Rever conteúdos salvos deste dispositivo</p>
-                        </div>
-                    </div>
-                    <span id="studied-count-badge" class="bg-white text-emerald-700 font-bold text-xs px-2.5 py-1 rounded-full">0</span>
-                </div>
-            </div>
-        </section>
-
-        <section id="view-study" class="w-full hidden flex-col justify-between space-y-6">
-            <div class="w-full space-y-2">
-                <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-                    <button onclick="exitStudySession()" class="text-indigo-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Voltar</button>
-                    <span id="progress-text">Frase 0 de 0</span>
-                </div>
-                <div class="w-full bg-slate-200 rounded-full h-2">
-                    <div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <div class="w-full h-96 perspective cursor-pointer" onclick="flipCard()">
-                <div id="flashcard" class="w-full h-full flip-card-inner relative shadow-md rounded-2xl bg-white border border-slate-100">
-                    
-                    <div class="flip-card-front absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-white rounded-2xl">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Como se diz?</span>
-                            <button onclick="event.stopPropagation(); playAudio('card-english-text');" class="w-12 h-12 rounded-full bg-indigo-600 text-white shadow-md flex items-center justify-center">
-                                <i class="fa-solid fa-volume-high text-lg"></i>
-                            </button>
-                        </div>
-                        <div class="text-center flex flex-col items-center justify-center flex-1 px-2 space-y-4">
-                            <p id="card-english-text" class="text-2xl font-bold text-slate-900 leading-snug">English</p>
-                            <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 w-full">
-                                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Pronúncia Prática Facilitada:</span>
-                                <p id="card-pronunciation-text" class="text-sm font-medium text-indigo-900 italic">pronunciation</p>
-                            </div>
-                        </div>
-                        <span class="text-center text-xs text-slate-400 w-full animate-pulse"><i class="fa-solid fa-rotate mr-1"></i> Toque para revelar a Tradução</span>
-                    </div>
-
-                    <div class="flip-card-back absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-emerald-50/40 rounded-2xl border-2 border-emerald-200">
-                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded w-max">Significado</span>
-                        <div class="text-center flex flex-col items-center justify-center flex-1 px-4 space-y-4">
-                            <p id="card-portuguese-text" class="text-xl font-semibold text-emerald-950">Tradução.</p>
-                            <button onclick="event.stopPropagation(); markAsStudied();" class="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-sm flex items-center gap-1.5">
-                                <i class="fa-solid fa-circle-check"></i> Marcar como Estudado ✓
-                            </button>
-                        </div>
-                        <span class="text-center text-xs text-slate-400 w-full"><i class="fa-solid fa-rotate mr-1"></i> Toque para voltar à frase</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="action-buttons" class="grid grid-cols-2 gap-4 pt-2 hidden">
-                <button onclick="handleResponse(false)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1">
-                    <i class="fa-solid fa-circle-xmark text-lg text-orange-500"></i>Estudar Mais
-                </button>
-                <button onclick="handleResponse(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1">
-                    <i class="fa-solid fa-forward text-lg text-slate-500"></i>Próxima Frase
+    <!-- Navbar -->
+    <nav class="bg-indigo-600 text-white shadow-md p-4 sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 onclick="goHome()" class="text-xl font-bold tracking-wide cursor-pointer flex items-center gap-2">
+                <i class="fa-solid fa-brain"></i> MindHub <span class="text-xs bg-indigo-500 px-2 py-0.5 rounded-sm font-normal text-indigo-100">Nuvem</span>
+            </h1>
+            <div class="flex items-center gap-3">
+                <span id="sync-status" class="text-xs text-indigo-200"><i class="fa-solid fa-cloud-arrow-up"></i> Conectando...</span>
+                <button onclick="toggleAdminView()" class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded-lg text-sm font-semibold transition">
+                    <i class="fa-solid fa-gear mr-1"></i> Configurações Geral
                 </button>
             </div>
-            <p id="flip-hint" class="text-center text-xs text-slate-400 font-medium">Toque no cartão para liberar os botões de treino.</p>
-        </section>
-
-        <section id="view-game-quiz" class="w-full hidden space-y-6">
-            <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-                <button onclick="changeView('decks')" class="text-indigo-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
-                <span id="quiz-progress-text">Pergunta 0 de 0</span>
-            </div>
-            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm text-center space-y-4">
-                <div class="flex justify-center">
-                    <button onclick="playAudio('quiz-target-text')" class="w-12 h-12 rounded-full bg-indigo-600 text-white shadow flex items-center justify-center animate-pulse">
-                        <i class="fa-solid fa-volume-high text-lg"></i>
-                    </button>
-                </div>
-                <h3 id="quiz-target-text" class="text-xl font-bold text-slate-900 leading-tight">...</h3>
-            </div>
-            <div class="space-y-3">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Selecione a Tradução da Frase:</p>
-                <div id="quiz-options-container" class="space-y-2.5"></div>
-            </div>
-        </section>
-
-        <section id="view-game-memory" class="w-full hidden space-y-4">
-            <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-                <button onclick="changeView('decks')" class="text-purple-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
-                <span id="memory-score-text">Pares Encontrados: 0</span>
-            </div>
-            <div class="bg-purple-900/5 p-3 rounded-xl border border-purple-100 text-center">
-                <p class="text-[11px] text-purple-900 font-medium">Encontre os pares corretos de significado!</p>
-            </div>
-            <div id="memory-grid" class="grid grid-cols-2 gap-3 pt-2"></div>
-        </section>
-
-        <section id="view-game-vocab" class="w-full hidden space-y-6">
-            <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-                <button onclick="changeView('decks')" class="text-amber-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
-                <span id="vocab-progress-text">Palavra 0 de 0</span>
-            </div>
-            <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl text-white text-center space-y-4 shadow-md">
-                <div class="flex justify-center">
-                    <button onclick="playAudio('vocab-target-text')" class="w-11 h-11 rounded-full bg-white/20 text-white shadow flex items-center justify-center">
-                        <i class="fa-solid fa-volume-high text-sm"></i>
-                    </button>
-                </div>
-                <h3 id="vocab-target-text" class="text-2xl font-extrabold tracking-wide uppercase">...</h3>
-                <p class="text-[10px] text-amber-100 uppercase tracking-wider font-bold">Como se traduz essa palavra?</p>
-            </div>
-            <div class="space-y-3">
-                <div id="vocab-options-container" class="space-y-2.5"></div>
-            </div>
-        </section>
-
-        <section id="view-history-list" class="w-full hidden space-y-4">
-            <div class="flex items-center justify-between mb-2">
-                <div>
-                    <h2 class="text-lg font-bold text-emerald-800">Frases Estudadas</h2>
-                    <p class="text-xs text-slate-500">Conteúdos marcados como concluídos</p>
-                </div>
-                <button onclick="changeView('decks')" class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium">Voltar</button>
-            </div>
-            <div id="history-items-container" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
-        </section>
-
-        <section id="view-success" class="w-full hidden text-center space-y-6 py-8">
-            <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-4xl">
-                <i class="fa-solid fa-star animate-bounce"></i>
-            </div>
-            <div class="space-y-2">
-                <h2 class="text-2xl font-bold text-slate-800">Excelente Trabalho! 🌟</h2>
-                <p id="success-custom-text" class="text-slate-500 text-sm max-w-xs mx-auto">Você passou por todas as etapas!</p>
-            </div>
-            <button onclick="changeView('decks')" class="w-full bg-indigo-600 text-white font-bold py-3.5 px-6 rounded-xl shadow">
-                Voltar para o Menu
-            </button>
-        </section>
-
-        <section id="view-teacher" class="w-full hidden space-y-6">
-            <div>
-                <h2 class="text-lg font-bold text-slate-700">Painel de Controle do Professor</h2>
-                <p class="text-xs text-slate-500">Gerencie salas, senhas e atualize o cache dos alunos de forma automática.</p>
-            </div>
-
-            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-folder-plus mr-1"></i> Gerenciar Salas de Aula</h3>
-                <div class="space-y-3 pt-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">ID Único da Sala (Sem espaços)</label>
-                        <input type="text" id="new-room-id" placeholder="Ex: sala_kids" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome de Exibição da Sala</label>
-                        <input type="text" id="new-room-name" placeholder="Ex: Inglês Prático - Kids" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Senha dos Alunos</label>
-                        <input type="text" id="new-room-password" placeholder="Ex: kids123" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                    </div>
-                    <button onclick="createNewClassroom()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-xs transition shadow hover:bg-emerald-700">
-                        <i class="fa-solid fa-plus mr-1"></i> Criar Nova Sala
-                    </button>
-                </div>
-                <div class="pt-3 border-t border-slate-100">
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2">Salas Ativas Atualmente:</label>
-                    <div id="teacher-rooms-delete-list" class="space-y-1.5"></div>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-file-medical mr-1"></i> Fabricar Flashcards</h3>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Escolher Sala</label>
-                        <select id="form-room-id" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none"></select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Semana</label>
-                        <input type="text" id="form-week" placeholder="Ex: Semana 01" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Data da Aula</label>
-                    <input type="text" id="form-date" placeholder="Ex: 26/05/2026" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Frase em Inglês</label>
-                    <input type="text" id="form-front" placeholder="Ex: What time is it?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Pronúncia Conectada/Unida</label>
-                    <input type="text" id="form-front-pronunciation" placeholder="Ex: uót táim ízit?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tradução em Português</label>
-                    <input type="text" id="form-back" placeholder="Ex: Que horas são?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none">
-                </div>
-                <button onclick="generateCardCode()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg text-sm transition shadow hover:bg-indigo-700">
-                    <i class="fa-solid fa-gears mr-1"></i> Injetar Card na Sala
-                </button>
-            </div>
-
-            <div class="space-y-2">
-                <label class="block text-xs font-bold text-slate-500 uppercase">📋 CÓDIGO FONTE TOTAL DO APP (ANTI-CACHE):</label>
-                <p class="text-[11px] text-slate-400 leading-tight bg-slate-100 p-2 border border-slate-200 rounded-lg">Clique na caixa verde abaixo, use <b>Ctrl + A</b> para selecionar tudo e cole substituindo todo o seu arquivo do GitHub.</p>
-                <textarea id="output-code" rows="8" readonly class="w-full bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-[10px] focus:outline-none"></textarea>
-            </div>
-        </section>
-
-    </main>
-
-    <nav class="bg-white border-t border-slate-100 fixed bottom-0 left-0 right-0 py-2 shadow-lg z-50">
-        <div class="max-w-md mx-auto grid grid-cols-2 text-center">
-            <button onclick="changeView('classrooms')" id="nav-btn-decks" class="flex flex-col items-center justify-center text-indigo-600 font-medium text-xs gap-0.5">
-                <i class="fa-solid fa-graduation-cap text-lg"></i>Estudar
-            </button>
-            <button onclick="verifyTeacherAccess()" id="nav-btn-teacher" class="flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5">
-                <i class="fa-solid fa-chalkboard-user text-lg"></i>Professor
-            </button>
         </div>
     </nav>
 
-    <script id="main-script-tag">
-        /* ==========================================================================
-           📌 BANCO DE DADOS BASE DINÂMICO CONSOLIDADO COM TODAS AS TURMAS REAIS
-           ========================================================================== */
-        const DEFAULT_DATABASE = {
-            "IQ15/0003": { "name": "Turma IQ15/0003", "password": "iq15", "cards": [] },
-            "Turma_IQ19/00013": {
-                "name": "Turma IQ19/0013 Noite",
-                "password": "iq1913",
-                "cards": [
-                    { "id": "id_10v8", "week": "Semana 01", "date": "26/05/2026", "front": "The kitchen is equipped with a modern stove", "pronunciation": "thâ KEE-tchâ-ne e-ze e-KWEEPD wi-thâ MAH-dârn STOHV", "back": "A cozinha é equipada com um fogão moderno." },
-                    { "id": "id_koog", "week": "Semana 01", "date": "26/05/2026", "front": "My living room is so cozy.", "pronunciation": "mâi lívin rum íz sôu côuzi", "back": "Minha sala de estar é tão aconchegante." },
-                    { "id": "id_yg4t", "week": "Semana 01", "date": "26/05/2026", "front": "Does your apartment have a balcony?", "pronunciation": "dâz iór a-párt-ment hév a bálconi?", "back": "Seu apartamento tem varanda?" },
-                    { "id": "id_9xvt", "week": "Semana 01", "date": "26/05/2026", "front": "The master bedroom has an en-suite bathroom.", "pronunciation": "dâ máster bédrum hév an éns-uit báth-rum", "back": "O quarto principal tem um banheiro privativo." },
-                    { "id": "id_wc03", "week": "Semana 01", "date": "26/05/2026", "front": "Our kitchen is a mess right now.", "pronunciation": "áur kítchen íz a més ráit náu", "back": "Nossa cozinha está uma bagunça agora." },
-                    { "id": "id_cpjd", "week": "Semana 01", "date": "26/05/2026", "front": "They remodeled their kitchen last year.", "pronunciation": "dâi ri-mó-deld déir kítchen lést íer", "back": "Eles reformaram a cozinha deles no ano passado." },
-                    { "id": "id_gb3m", "week": "Semana 01", "date": "26/05/2026", "front": "Is your bedroom spacious or small?", "pronunciation": "íz iór béd-rum spêichas ór smól?", "back": "Seu quarto é espaçoso ou pequeno?" },
-                    { "id": "id_bk9o", "week": "Semana 01", "date": "26/05/2026", "front": "I need to organize the guest room.", "pronunciation": "âi níd tu ór-ga-náiz dâ gést rum", "back": "Eu preciso organizar o quarto de hóspedes." },
-                    { "id": "id_y1la", "week": "Semana 01", "date": "26/05/2026", "front": "What a lovely dining area!", "pronunciation": "uát a lóv-li dâi-nin é-ria!", "back": "Que área de jantar adorável!" },
-                    { "id": "id_xghv", "week": "Semana 01", "date": "26/05/2026", "front": "This property is fully furnished and ready to move in.", "pronunciation": "Dís pró-per-ti ís fú-li fér-nisht énd ré-di tu múv ín", "back": "Esta propriedade está totalmente mobiliada e pronta para morar." },
-                    { "id": "id_q62c", "week": "Semana 01", "date": "26/05/2026", "front": "The living room is very spacious and gets lots of light.", "pronunciation": "Dá lí-vin rúm ís vé-ri spêi-shos énd guéts lóts óv láit.", "back": "A sala de estar é muito espaçosa e recebe muita luz" },
-                    { "id": "id_1a3g", "week": "Semana 01", "date": "26/05/2026", "front": "It has a breathtaking view of the ocean.", "pronunciation": "It hév a bréf-têi-kin víu óv dí ôu-shon", "back": "Tem uma vista de tirar o fôlego para o oceano." },
-                    { "id": "id_w1dn", "week": "Semana 01", "date": "26/05/2026", "front": "The master bedroom features a king-size bed.", "pronunciation": "Dá més-ter béd-rum fí-tchurs a quín-sáiz béd.", "back": "O quarto principal conta com/apresenta uma cama tamanho king." },
-                    { "id": "id_g022", "week": "Semana 01", "date": "26/05/2026", "front": "There is a cozy fireplace between the two windows.", "pronunciation": "Dér ís a côu-zi fáier-plêis bi-tuín dá tu uín-dôus.", "back": "Tem uma lareira aconchegante entre as duas janelas." },
-                    { "id": "id_tfbv", "week": "Semana 01", "date": "26/05/2026", "front": "The kitchen is equipped with stainless steel appliances.", "pronunciation": "Dá kít-chin ís i-cuípt uíf stêin-les stíl a-plái-an-siz.", "back": "A cozinha é equipada com eletrodomésticos de aço inoxidável." },
-                    { "id": "id_frsm", "week": "Semana 01", "date": "26/05/2026", "front": "This neighborhood is perfect for raising a family.", "pronunciation": "Dís nêi-bor-rud ís pér-fict fór rêi-zin a fá-mi-li.", "back": "Este bairro é perfeito para criar uma família." },
-                    { "id": "id_xr6b", "week": "Semana 01", "date": "26/05/2026", "front": "Are you looking to buy or to rent?", "pronunciation": "Ár iú lú-kin tu bái ór tu rént?", "back": "Você está procurando para comprar ou para alugar?" },
-                    { "id": "id_n101", "week": "Semana 01", "date": "26/05/2026", "front": "Make yourself at home.", "pronunciation": "Mêik ior-sélf ét rôm.", "back": "Sinta-se em casa." },
-                    { "id": "id_n102", "week": "Semana 01", "date": "26/05/2026", "front": "My house is a bit messy today.", "pronunciation": "Mai ráus is a bít mé-ssi tu-dêi.", "back": "Minha casa está um pouco bagunçada hoje." },
-                    { "id": "id_n103", "week": "Semana 01", "date": "26/05/2026", "front": "I need to clean up my room.", "pronunciation": "Ai níd tu clín áp mai rúm.", "back": "Eu preciso organizar o quarto de hóspedes." },
-                    { "id": "id_n104", "week": "Semana 01", "date": "26/05/2026", "front": "There’s no place like home.", "pronunciation": "Dérs nôu plêis láik rôm.", "back": "Não há lugar como o nosso lar." },
-                    { "id": "id_n105", "week": "Semana 01", "date": "26/05/2026", "front": "I live in a very quiet neighborhood.", "pronunciation": "Ai lív in a vé-ri cuá-iet nêi-bor-rud.", "back": "Eu moro em um bairro muito silencioso/tranquilo." },
-                    { "id": "id_n106", "week": "Semana 01", "date": "26/05/2026", "front": "We are looking for a place to rent.", "pronunciation": "Ui ár lú-kin fór a plêis tu rént.", "back": "Nós estamos procurando um lugar para alugar." },
-                    { "id": "id_n107", "week": "Semana 01", "date": "26/05/2026", "front": "My kitchen is the heart of the house.", "pronunciation": "Mai kít-chin is dá rárt óv dá ráus.", "back": "Minha cozinha é o coração da casa." },
-                    { "id": "id_n108", "week": "Semana 01", "date": "26/05/2026", "front": "I love just chilling on the couch.", "pronunciation": "Ai láv djâst tchí-lin on dá cáutch.", "back": "Eu amo ficar apenas relaxando no sofá." }
-                ]
-            },
-            "Turma_iq19/0004": { "name": "Turma IQ19/0004 Quinta", "password": "iq194", "cards": [] },
-            "Turma_IQ19/0007": {
-                "name": "Turma IQ19/0007",
-                "password": "iq1907",
-                "cards": [
-                    { "id": "id_v01", "week": "Semana 01", "date": "27/05/2026", "front": "Can you grab a carton of milk from the fridge?", "pronunciation": "Kén iú græb â KÁR-ton óv mɪlk frâm-đâ frídj?", "back": "Você pode pegar uma caixinha de leite da geladeira?" },
-                    { "id": "id_v02", "week": "Semana 01", "date": "27/05/2026", "front": "I'd like a glass of water, please.", "pronunciation": "Áid láik â glæs óv UÁ-têr, plíz.", "back": "Eu gostaria de um copo de água, por favor. (Diferenciando o copo da jarra)" },
-                    { "id": "id_v03", "week": "Semana 01", "date": "27/05/2026", "front": "Open a can of beer for me!", "pronunciation": "Óu-pên â kæn óv bí-êr fór mí!", "back": "Abre uma lata de cerveja para mim!" },
-                    { "id": "id_v04", "week": "Semana 01", "date": "27/05/2026", "front": "The jar of honey is sticky.", "pronunciation": "Đâ djár óv HÁ-ni íz STÍ-ki.", "back": "O pote de mel está grudento." },
-                    { "id": "id_v05", "week": "Semana 01", "date": "27/05/2026", "front": "I ate a whole bag of cookies yesterday.", "pronunciation": "Ái éit â hohl bæg óv CÚ-kiz iés-têr-dêi.", "back": "Eu comi um pacote inteiro de biscoitos ontem." },
-                    { "id": "id_v06", "week": "Semana 01", "date": "27/05/2026", "front": "How much is it?", "pronunciation": "Háu mâtch íz ít?", "back": "Quanto custa isto? (Usado para preços/incontáveis)" },
-                    { "id": "id_v07", "week": "Semana 01", "date": "27/05/2026", "front": "Thanks a lot!", "pronunciation": "Tænks â lót!", "back": "Muito obrigado! / Um monte de obrigado!" },
-                    { "id": "id_v08", "week": "Semana 01", "date": "27/05/2026", "front": "I have too many things to do today.", "pronunciation": "Ái hæv tú MÉ-ni tíngz tú dú tú-dêi.", "back": "Eu tenho coisas demais para fazer hoje. (Contável)" },
-                    { "id": "id_v09", "week": "Semana 01", "date": "27/05/2026", "front": "Can I have a little water, please?", "pronunciation": "Kén ái hæv â LÍT-tol UÁ-têr, plíz?", "back": "Você pode me dar um pouco de água, por favor?" },
-                    { "id": "id_v10", "week": "Semana 01", "date": "27/05/2026", "front": "I have a few questions.", "pronunciation": "Ái hæv â fiú QUÉS-tchônz.", "back": "Eu tenho algumas perguntas. (Contável)" },
-                    { "id": "id_v11", "week": "Semana 01", "date": "27/05/2026", "front": "I have a few hours before my flight.", "pronunciation": "Ái hæv â fiú ÁU-êrz bi-fór mái fláit.", "back": "Eu tenho algumas horas antes do meu voo." },
-                    { "id": "id_v12", "week": "Semana 01", "date": "27/05/2026", "front": "Don't lose hope!", "pronunciation": "Dóunt lúz hohp!", "back": "Não perca a esperança! (Hope não aceita plural)" },
-                    { "id": "id_v13", "week": "Semana 01", "date": "27/05/2026", "front": "There is little chance of rain today.", "pronunciation": "Đér íz LÍT-tol tchæns óv rêin tú-dêi.", "back": "Há pouca chance de chuva hoje." },
-                    { "id": "id_v14", "week": "Semana 01", "date": "27/05/2026", "front": "Many companies are working from home now.", "pronunciation": "MÉ-ni KÓM-pâ-niz ár UÓR-kín frâm hohm náu.", "back": "Muitas empresas estão trabalhando de home office agora." },
-                    { "id": "id_v15", "week": "Semana 01", "date": "27/05/2026", "front": "Give me a little time to think.", "pronunciation": "Gív mí â LÍT-tol táim tú tí-nk.", "back": "Me dê um tempinho para pensar." },
-                    { "id": "id_v16", "week": "Semana 01", "date": "27/05/2026", "front": "We bought a fresh baguette from the bakery.", "pronunciation": "Ui baht â frech bâ-GÉT frâm-đâ BÊI-kâ-ri.", "back": "Nós compramos uma baguete fresquinha na padaria." },
-                    { "id": "id_v17", "week": "Semana 01", "date": "27/05/2026", "front": "Whole wheat bread is healthier for breakfast.", "pronunciation": "Hohl uíit brêd íz HÉL-fi-êr fár BRÉK-fâst.", "back": "Pão integral é mais saudável para o café da manhã." },
-                    { "id": "id_v18", "week": "Semana 01", "date": "27/05/2026", "front": "She ordered a warm croissant and coffee.", "pronunciation": "Xi ÓR-dârd â uárm krwâ-SÁN ân KÁ-fi.", "back": "Ela pediu um croissant quentinho e café." },
-                    { "id": "id_v19", "week": "Semana 01", "date": "27/05/2026", "front": "Toast the bun before making the burger.", "pronunciation": "Tohst đâ BAN bi-fór MÊI-kin đâ BÛR-gûr.", "back": "Torre o pão antes de fazer o hambúrguer." },
-                    { "id": "id_v20", "week": "Semana 01", "date": "27/05/2026", "front": "Would you like a dinner roll with your soup?", "pronunciation": "Uuh-djú láik â DÍ-nêr rohl uíđ iór suup?", "back": "Você gostaria de um pãozinho para acompanhar a sua sopa?" },
-                    { "id": "id_v21", "week": "Semana 01", "date": "27/05/2026", "front": "I always buy French bread in the morning.", "pronunciation": "Ái ÁL-uêiz bái frentch brêd ín-đâ MÓR-níng.", "back": "Eu sempre compro pão francês de manhã." },
-                    { "id": "id_c01", "week": "Semana 01", "date": "27/05/2026", "front": "Five hundred grams", "pronunciation": "Fáiv RÁN-drêd grémz", "back": "500 gramas" },
-                    { "id": "id_c02", "week": "Semana 01", "date": "27/05/2026", "front": "Canjica (white corn)", "pronunciation": "Can-jí-ca (uáit córn)", "back": "Canjica (milho branco)" },
-                    { "id": "id_c03", "week": "Semana 01", "date": "27/05/2026", "front": "A can of condensed milk", "pronunciation": "Â kæn óv con-DÉNST mɪlk", "back": "Uma lata de leite condensado" },
-                    { "id": "id_c04", "week": "Semana 01", "date": "27/05/2026", "front": "Two hundred milliliters", "pronunciation": "Tú RÁN-drêd MÍ-li-li-têrz", "back": "200 mililitros" },
-                    { "id": "id_c05", "week": "Semana 01", "date": "27/05/2026", "front": "Coconut milk", "pronunciation": "CÓU-có-nat mɪlk", "back": "Leite de coco" },
-                    { "id": "id_c06", "week": "Semana 01", "date": "27/05/2026", "front": "Fifty grams", "pronunciation": "FÍF-ti grémz", "back": "50 gramas" },
-                    { "id": "id_c07", "week": "Semana 01", "date": "27/05/2026", "front": "Grated coconut", "pronunciation": "GRÊI-têd CÓU-có-nat", "back": "Coco ralado" },
-                    { "id": "id_c08", "week": "Semana 01", "date": "27/05/2026", "front": "One liter of milk", "pronunciation": "Uán LÍ-têr óv mɪlk", "back": "Um litro de leite" },
-                    { "id": "id_c09", "week": "Semana 01", "date": "27/05/2026", "front": "Eight tablespoons", "pronunciation": "Êit TÊI-bol-spunz", "back": "Oito colheres de sopa" },
-                    { "id": "id_c10", "week": "Semana 01", "date": "27/05/2026", "front": "Sugar", "pronunciation": "CHÚ-gâr", "back": "Açúcar" },
-                    { "id": "id_c11", "week": "Semana 01", "date": "27/05/2026", "front": "Dessert", "pronunciation": "di-ZÊRT", "back": "Sobremesa" },
-                    { "id": "id_c12", "week": "Semana 01", "date": "27/05/2026", "front": "After the break", "pronunciation": "ÁF-têr đâ brêik", "back": "Depois do intervalo / comercial" },
-                    { "id": "id_c13", "week": "Semana 01", "date": "27/05/2026", "front": "Host", "pronunciation": "RÔUST", "back": "Apresentador / Anfitrião" },
-                    { "id": "id_c14", "week": "Semana 01", "date": "27/05/2026", "front": "Recipe", "pronunciation": "RÉ-si-pi", "back": "Receita (Enfatize o som final 'pi')" },
-                    { "id": "id_c15", "week": "Semana 01", "date": "27/05/2026", "front": "Ingredients", "pronunciation": "in-GRÍ-di-ents", "back": "Ingredientes" },
-                    { "id": "id_c16", "week": "Semana 01", "date": "27/05/2026", "front": "Can you pass me a tablespoon of sugar, please?", "pronunciation": "Kén iú pæs mí â TÊI-bol-spun óv CHÚ-gâr, plíz?", "back": "Você pode me passar uma colher de sopa de açúcar, por favor?" },
-                    { "id": "id_c17", "week": "Semana 01", "date": "27/05/2026", "front": "Hold on, I need to take notes of this.", "pronunciation": "RÔULD ÓN, ái níd tu têik nôuts óv đís.", "back": "Espera aí, eu preciso anotar isso." },
-                    { "id": "id_c18", "week": "Semana 01", "date": "27/05/2026", "front": "I didn't get what you said. Can you repeat?", "pronunciation": "Ái DÍ-dent guét uát iú séd. Kén iú ri-PÍT?", "back": "Eu não entendi o que você disse. Pode repetir?" },
-                    { "id": "id_c19", "week": "Semana 01", "date": "27/05/2026", "front": "We are out of milk. We need to buy a liter.", "pronunciation": "Uí ár ÁUT óv mɪlk. Uí níd tu bái â LÍ-têr.", "back": "Estamos sem leite. Precisamos comprar um litro." },
-                    { "id": "id_c20", "week": "Semana 01", "date": "27/05/2026", "front": "Just add a pinch of salt to the recipe.", "pronunciation": "Djhâst éd â píntch óv sôlt tu đâ RÉ-si-pi.", "back": "Só adicione uma pitada de sal na receita." },
-                    { "id": "id_c21", "week": "Semana 01", "date": "27/05/2026", "front": "Let's take a quick break and we'll be right back.", "pronunciation": "Léts têik â kuík brêik ænd uíl bí ráit bæk.", "back": "Vamos fazer um intervalo rápido e já voltamos." }
-                ]
-            }
+    <div class="container mx-auto p-4 md:p-6 max-w-6xl">
+        
+        <!-- SEÇÃO: ADMINISTRAÇÃO GERAL -->
+        <section id="admin-section" class="hidden bg-white p-6 rounded-xl shadow-sm mb-6 border border-gray-200">
+            <h2 class="text-lg font-bold mb-4 text-indigo-900"><i class="fa-solid fa-sliders mr-2"></i>Painel de Controle Estrutural</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Temas Principais -->
+                <div class="border-r pr-0 md:pr-4 border-gray-100">
+                    <h3 class="text-xs font-bold text-gray-600 uppercase mb-3">1. Grandes Temas</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="new-theme-name" placeholder="Novo Tema..." class="border border-gray-300 rounded-lg p-2 text-sm flex-1 outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button onclick="createTheme()" class="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium">Add</button>
+                    </div>
+                    <ul id="theme-list-admin" class="divide-y divide-gray-100 max-h-40 overflow-y-auto space-y-1"></ul>
+                </div>
+                <!-- Semestres -->
+                <div class="border-r pr-0 md:pr-4 border-gray-100">
+                    <h3 class="text-xs font-bold text-gray-600 uppercase mb-3">2. Semestres</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="new-semester-name" placeholder="Ex: 1º Semestre" class="border border-gray-300 rounded-lg p-2 text-sm flex-1 outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button onclick="addSemester()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm font-medium">Criar</button>
+                    </div>
+                    <ul id="semester-list-admin" class="divide-y divide-gray-100 max-h-40 overflow-y-auto space-y-1"></ul>
+                </div>
+                <!-- Matérias -->
+                <div>
+                    <h3 class="text-xs font-bold text-gray-600 uppercase mb-3">3. Matérias</h3>
+                    <div class="space-y-3 mb-4">
+                        <select id="select-semester" class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500"></select>
+                        <div class="flex gap-2">
+                            <input type="text" id="new-subject-name" placeholder="Nova Matéria..." class="border border-gray-300 rounded-lg p-2 text-sm flex-1 outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button onclick="addSubject()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm font-medium">Add</button>
+                        </div>
+                    </div>
+                    <ul id="subject-list-admin" class="divide-y divide-gray-100 max-h-36 overflow-y-auto space-y-1"></ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TELA 1: DASHBOARD DE TEMAS -->
+        <section id="view-dashboard">
+            <h2 class="text-2xl font-black text-gray-900 mb-6">Seus Espaços de Conhecimento</h2>
+            <div id="themes-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </section>
+
+        <!-- TELA 2: GRADE ACADÊMICA -->
+        <section id="view-faculty" class="hidden">
+            <button onclick="goHome()" class="text-indigo-600 hover:text-indigo-800 font-medium mb-6 inline-flex items-center gap-2 text-sm">
+                <i class="fa-solid fa-arrow-left"></i> Voltar ao Dashboard
+            </button>
+            <div class="mb-8">
+                <h2 class="text-3xl font-extrabold text-gray-900 flex items-center gap-2">
+                    <span id="faculty-title">🎓 Faculdade</span>
+                </h2>
+                <p class="text-gray-500 text-sm mt-1">Selecione uma disciplina para gerenciar notas, revisões e seu mapa mental.</p>
+            </div>
+            <div id="semester-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </section>
+
+        <!-- TELA 3: O PORTAL INTERNO DA MATÉRIA -->
+        <section id="view-portal" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <button id="btn-back-portal" onclick="" class="text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar
+                </button>
+                <div id="portal-breadcrumbs" class="text-xs font-semibold uppercase tracking-wider text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+                    Semestre / Disciplina
+                </div>
+            </div>
+            
+            <h2 id="portal-title" class="text-3xl font-black text-gray-900 mb-6">Nome do Portal</h2>
+
+            <!-- Sistema de Abas -->
+            <div class="flex border-b border-gray-200 mb-6 overflow-x-auto gap-2">
+                <button onclick="switchTab('notes')" id="tab-btn-notes" class="py-2 px-4 font-bold text-sm border-b-2 border-indigo-600 text-indigo-600 whitespace-nowrap"><i class="fa-solid fa-book-open mr-2"></i>Anotações & Posts</button>
+                <button onclick="switchTab('mindmap')" id="tab-btn-mindmap" class="py-2 px-4 font-bold text-sm border-b-2 border-transparent text-gray-500 hover:text-indigo-600 whitespace-nowrap"><i class="fa-solid fa-diagram-project mr-2"></i>Mapa Mental Dinâmico</button>
+                <button onclick="switchTab('reviews')" id="tab-btn-reviews" class="py-2 px-4 font-bold text-sm border-b-2 border-transparent text-gray-500 hover:text-indigo-600 whitespace-nowrap"><i class="fa-solid fa-arrows-rotate mr-2"></i>Conteúdos & Revisão Ativa</button>
+            </div>
+
+            <!-- CONTEÚDO DA ABA 1: ANOTAÇÕES E ROADMAP -->
+            <div id="tab-content-notes" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100">
+                        <h3 class="text-sm font-bold mb-3 text-gray-800">Nova Anotação / Bloco de Notas</h3>
+                        <textarea id="note-content" rows="4" placeholder="Escreva os conceitos cruciais explicados em aula..." class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none mb-3"></textarea>
+                        <button onclick="addNote()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition">Fixar Nota</button>
+                    </div>
+                    <div id="notes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-xs border border-gray-100 h-fit">
+                    <h3 class="text-sm font-bold mb-1 text-gray-800">Linha de Aprendizagem / Metas</h3>
+                    <p class="text-xs text-gray-400 mb-4">Cronograma de entregas ou passos gerais.</p>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="roadmap-step" placeholder="Ex: Entregar Tópico 1" class="border border-gray-300 rounded-lg p-2 text-sm flex-1 outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button onclick="addRoadmapStep()" class="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div id="roadmap-container" class="relative border-l-2 border-indigo-100 ml-3 space-y-4 text-xs"></div>
+                </div>
+            </div>
+
+            <!-- CONTEÚDO DA ABA 2: MAPA MENTAL -->
+            <div id="tab-content-mindmap" class="hidden space-y-4">
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <input type="text" id="mindmap-input" placeholder="Nome do conceito..." class="border border-gray-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 min-w-[200px]">
+                        <select id="mindmap-node-type" class="border border-gray-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="central">⭐ Nó Central (Tema Principal)</option>
+                            <option value="subtopico">📘 Subtópico (Conceito)</option>
+                            <option value="insight">💡 Insight / Nota Rápida</option>
+                        </select>
+                        <button onclick="addMindmapNode()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"><i class="fa-solid fa-plus mr-1"></i> Criar</button>
+                    </div>
+                </div>
+                <div id="mindmap-canvas" class="w-full h-[550px] bg-white border border-gray-200 rounded-2xl relative overflow-hidden shadow-inner"></div>
+            </div>
+
+            <!-- CONTEÚDO DA ABA 3: REVISÃO ATIVA -->
+            <div id="tab-content-reviews" class="hidden bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">Mapeamento de Conteúdo Técnico</h3>
+                    <p class="text-xs text-gray-400">Insira a ementa ou tópicos da disciplina, adicione o resumo do conteúdo e atualize o progresso do seu aprendizado real.</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <input type="text" id="review-topic-input" placeholder="Título da Matéria / Tópico" class="border border-gray-300 rounded-lg p-2.5 text-sm flex-1 bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+                        <select id="review-initial-status" class="border border-gray-300 rounded-lg p-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500 md:w-56">
+                            <option value="nao-aprendi">❌ Não aprendi ainda</option>
+                            <option value="aprendendo">⏳ Aprendendo</option>
+                            <option value="estudado">📘 Estudado</option>
+                            <option value="revisado">✅ Revisado</option>
+                        </select>
+                    </div>
+                    <textarea id="review-body-input" rows="3" placeholder="Escreva aqui o conteúdo da matéria..." class="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    <button onclick="addReviewTopic()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition">Salvar Conteúdo na Grade de Revisão</button>
+                </div>
+                <div id="reviews-extended-list" class="space-y-4"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- LOGIC SCRIPT -->
+    <script>
+        // Chaves injetadas e prontas do Supabase
+        const SUPABASE_URL = "https://ioosqezhiuvmqxpuhncx.supabase.co"; 
+        const SUPABASE_ANON_KEY = "sb_publishable_80T1oUALjj3KHw3Xgir8Xg_DNMHlJJj";
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const USUARIO_ID = "meu_cerebro_digital"; // Identificador exclusivo dos seus dados na nuvem
+
+        // Estrutura base de inicialização
+        let data = {
+            temas: [
+                { id: 1, nome: "🎓 Faculdade de Letras / TI", eAcademico: true },
+                { id: 2, nome: "💼 Trabalho", eAcademico: false }
+            ],
+            semestres: [{ id: 101, nome: "1º Semestre" }],
+            materias: [{ id: 201, semestreId: 101, nome: "Minha Primeira Matéria" }],
+            notes: [], linhaTempo: [], mapasMentais: [], revisoes: []
         };
 
-        const CODE_VERSION = 1716855600;
-        const TEACHER_PASSWORD = "admin"; 
-        let DATABASE = {};
+        let currentThemeId = null, currentSemesterId = null, currentMateriaId = null;
+        let activeTab = 'notes';
 
-        let activeRoomKey = "";
-        let activeWeek = "";
-        let currentDeckCards = [];
-        let currentIndex = 0;
-        let isFlipped = false;
+        // Carrega dados da Nuvem
+        async function loadDataFromCloud() {
+            setStatus("Iniciando conexão...", "amber");
+            try {
+                let { data: rows, error } = await _supabase
+                    .from('dados_usuarios')
+                    .select('payload')
+                    .eq('id', USUARIO_ID);
 
-        let quizSessionCards = [];
-        let quizCurrentIdx = 0;
-        let quizCorrectAnswer = "";
-        
-        let memoryCardsArray = [];
-        let firstSelectedCard = null;
-        let secondSelectedCard = null;
-        let lockMemoryBoard = false;
-        let memoryPairsFound = 0;
+                if (error) throw error;
 
-        let vocabSessionArray = [];
-        let vocabCurrentIdx = 0;
-        let vocabCorrectAnswer = "";
-
-        function loadDatabase() {
-            const saved = localStorage.getItem('prof_analice_database');
-            const savedVersion = localStorage.getItem('prof_analice_version');
-            if (saved && savedVersion && parseInt(savedVersion) === CODE_VERSION) { DATABASE = JSON.parse(saved); } 
-            else { DATABASE = JSON.parse(JSON.stringify(DEFAULT_DATABASE)); localStorage.setItem('prof_analice_database', JSON.stringify(DATABASE)); localStorage.setItem('prof_analice_version', CODE_VERSION.toString()); }
-            updateDatabaseOutputArea();
-        }
-
-        function saveDatabaseToStorage() { localStorage.setItem('prof_analice_database', JSON.stringify(DATABASE)); updateDatabaseOutputArea(); }
-        function init() { loadDatabase(); renderClassrooms(); updateTeacherSelectorsAndLists(); forceInitialViewState(); }
-
-        function forceInitialViewState() {
-            document.getElementById('view-classrooms').classList.remove('hidden');
-            ['view-decks','view-study','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => document.getElementById(id).classList.add('hidden'));
-        }
-
-        function renderClassrooms() {
-            const container = document.getElementById('classrooms-list'); container.innerHTML = "";
-            Object.keys(DATABASE).forEach(key => {
-                const room = DATABASE[key]; const div = document.createElement('div');
-                div.className = "bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center cursor-pointer border-l-4 border-l-indigo-500";
-                div.onclick = () => accessClassroom(key);
-                div.innerHTML = `<div><h3 class="font-bold text-slate-800 text-base">${room.name}</h3><p class="text-xs text-slate-400"><i class="fa-solid fa-lock mr-1"></i> Digite a senha dos alunos</p></div><i class="fa-solid fa-chevron-right text-slate-300"></i>`;
-                container.appendChild(div);
-            });
-        }
-
-        function accessClassroom(key) {
-            const room = DATABASE[key]; const inputPassword = prompt(`Senha de acesso para ${room.name}:`); if (inputPassword === null) return;
-            if (inputPassword === room.password) { activeRoomKey = key; changeView('decks'); } else { alert("Senha incorreta!"); }
-        }
-
-        function verifyTeacherAccess() {
-            const inputPassword = prompt("Senha Administrativa:"); if (inputPassword === null) return;
-            if (inputPassword === TEACHER_PASSWORD) { changeView('teacher'); } else { alert("Acesso negado!"); }
-        }
-
-        function getStudiedIds() { const saved = localStorage.getItem(`studied_${activeRoomKey}`); return saved ? JSON.parse(saved) : []; }
-        function updateStudiedBadge() { document.getElementById('studied-count-badge').innerText = getStudiedIds().length; }
-
-        function renderDecksView() {
-            const container = document.getElementById('decks-list'); const room = DATABASE[activeRoomKey]; const studiedIds = getStudiedIds(); const decksMap = {};
-            if(room.cards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhum conteúdo cadastrado nesta sala.</p>`; return; }
-            room.cards.forEach(card => { if (!decksMap[card.week]) { decksMap[card.week] = { date: card.date, cardsList: [] }; } decksMap[card.week].cardsList.push(card); });
-            container.innerHTML = "";
-            Object.keys(decksMap).forEach(weekName => {
-                const item = decksMap[weekName]; const activeCount = item.cardsList.filter(c => !studiedIds.includes(c.id)).length;
-                const cardBlock = document.createElement('div'); cardBlock.className = "bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4";
-                const statusTag = activeCount === 0 ? `<span class="text-[11px] font-bold bg-emerald-50 text-emerald-600 py-1 px-2.5 rounded-full">Concluída! 🎉</span>` : `<span class="text-[11px] font-bold bg-amber-50 text-amber-600 py-1 px-2.5 rounded-full">${activeCount} pendentes</span>`;
-                cardBlock.innerHTML = `
-                    <div class="flex justify-between items-start border-b border-slate-50 pb-3">
-                        <div><h3 class="font-extrabold text-slate-800 text-base">${weekName}</h3><p class="text-xs text-slate-400 mt-0.5">Aula de: ${item.date}</p></div>
-                        ${statusTag}
-                    </div>
-                    <div class="grid grid-cols-4 gap-1.5 pt-1 text-center">
-                        <button onclick="activeWeek='${weekName}'; startStudySession('${weekName}');" class="bg-indigo-600 text-white p-2 rounded-xl text-center flex flex-col items-center justify-center gap-1">
-                            <i class="fa-solid fa-layer-group text-xs"></i><span class="text-[9px] font-bold uppercase">Cards</span>
-                        </button>
-                        <button onclick="activeWeek='${weekName}'; startQuizGame();" class="bg-indigo-50 border border-indigo-100 text-indigo-700 p-2 rounded-xl flex flex-col items-center justify-center gap-1">
-                            <i class="fa-solid fa-list-check text-xs"></i><span class="text-[9px] font-bold uppercase">Quiz</span>
-                        </button>
-                        <button onclick="activeWeek='${weekName}'; startMemoryGame();" class="bg-purple-50 border border-purple-100 text-purple-700 p-2 rounded-xl flex flex-col items-center justify-center gap-1">
-                            <i class="fa-solid fa-border-all text-xs"></i><span class="text-[9px] font-bold uppercase">Memória</span>
-                        </button>
-                        <button onclick="activeWeek='${weekName}'; startVocabGame();" class="bg-amber-50 border border-amber-100 text-amber-800 p-2 rounded-xl flex flex-col items-center justify-center gap-1">
-                            <i class="fa-solid fa-font text-xs"></i><span class="text-[9px] font-bold uppercase">Vocab</span>
-                        </button>
-                    </div>`;
-                container.appendChild(cardBlock);
-            });
-            updateStudiedBadge();
-        }
-
-        function startStudySession(weekName) { const room = DATABASE[activeRoomKey]; currentDeckCards = room.cards.filter(card => card.week === weekName); currentDeckCards.sort(() => Math.random() - 0.5); currentIndex = 0; showCurrentCard(); changeView('study'); }
-        function showCurrentCard() { if (currentIndex >= currentDeckCards.length) { document.getElementById('success-custom-text').innerText = "Parabéns! Você completou os cartões de estudo da semana!"; changeView('success'); return; } resetCardFlip(); const currentCard = currentDeckCards[currentIndex]; document.getElementById('card-english-text').innerText = currentCard.front; document.getElementById('card-pronunciation-text').innerText = currentCard.pronunciation; document.getElementById('card-portuguese-text').innerText = currentCard.back; const total = currentDeckCards.length; document.getElementById('progress-text').innerText = `Frase ${currentIndex + 1} de ${total}`; document.getElementById('progress-bar').style.width = `${((currentIndex) / total) * 100}%`; setTimeout(() => { playAudio('card-english-text'); }, 400); }
-        function flipCard() { isFlipped = !isFlipped; const cardEl = document.getElementById('flashcard'); if (isFlipped) { cardEl.classList.add('flipped'); document.getElementById('action-buttons').classList.remove('hidden'); document.getElementById('flip-hint').classList.add('hidden'); } else { cardEl.classList.remove('flipped'); } }
-        function resetCardFlip() { isFlipped = false; document.getElementById('flashcard').classList.remove('flipped'); document.getElementById('action-buttons').classList.add('hidden'); document.getElementById('flip-hint').classList.remove('hidden'); }
-        function handleResponse(knew) { if (knew) { currentIndex++; showCurrentCard(); } else { const runningCard = currentDeckCards.splice(currentIndex, 1)[0]; currentDeckCards.push(runningCard); showCurrentCard(); } }
-        function markAsStudied() { const currentCard = currentDeckCards[currentIndex]; let studiedIds = getStudiedIds(); if (!studiedIds.includes(currentCard.id)) { studiedIds.push(currentCard.id); localStorage.setItem(`studied_${activeRoomKey}`, JSON.stringify(studiedIds)); } alert("✨ Frase arquivada!"); currentIndex++; showCurrentCard(); }
-
-        /* JOGO 1: QUIZ */
-        function startQuizGame() { quizSessionCards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(quizSessionCards.length === 0) { alert("Sem conteúdo!"); return; } quizSessionCards.sort(() => Math.random() - 0.5); quizCurrentIdx = 0; changeView('game-quiz'); loadQuizQuestion(); }
-        function loadQuizQuestion() { if(quizCurrentIdx >= quizSessionCards.length) { document.getElementById('success-custom-text').innerText = `Você dominou o Quiz de Frases da ${activeWeek}!`; changeView('success'); return; } const card = quizSessionCards[quizCurrentIdx]; document.getElementById('quiz-progress-text').innerText = `Desafio ${quizCurrentIdx + 1} de ${quizSessionCards.length}`; document.getElementById('quiz-target-text').innerText = card.front; quizCorrectAnswer = card.back; let allBacks = DATABASE[activeRoomKey].cards.map(c => c.back); let wrongOptions = allBacks.filter(b => b !== quizCorrectAnswer).sort(() => Math.random() - 0.5); let options = [quizCorrectAnswer]; if(wrongOptions[0]) options.push(wrongOptions[0]); if(wrongOptions[1]) options.push(wrongOptions[1]); while(options.length < 3) { options.push("Frase estrutural complementar"); } options.sort(() => Math.random() - 0.5); const container = document.getElementById('quiz-options-container'); container.innerHTML = ""; options.forEach(opt => { const btn = document.createElement('button'); btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm transition active:scale-95"; btn.innerText = opt; btn.onclick = () => { if(opt === quizCorrectAnswer) { btn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl text-left font-bold text-sm shadow-sm"; setTimeout(() => { quizCurrentIdx++; loadQuizQuestion(); }, 700); } else { btn.className = "w-full bg-rose-50 text-rose-700 border border-rose-300 p-4 rounded-xl text-left font-medium text-sm shadow-sm animate-bounce"; setTimeout(() => { btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm"; }, 1000); } }; container.appendChild(btn); }); setTimeout(() => { playAudio('quiz-target-text'); }, 300); }
-
-        /* JOGO 2: MEMÓRIA */
-        function startMemoryGame() { let cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(cards.length === 0) { alert("Sem conteúdo!"); return; } cards.sort(() => Math.random() - 0.5); let selectedCards = cards.slice(0, 4); memoryCardsArray = []; selectedCards.forEach(c => { memoryCardsArray.push({ id: c.id, type: 'en', text: c.front }); memoryCardsArray.push({ id: c.id, type: 'pt', text: c.back }); }); memoryCardsArray.sort(() => Math.random() - 0.5); memoryPairsFound = 0; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; document.getElementById('memory-score-text').innerText = `Pares: 0 / ${selectedCards.length}`; changeView('game-memory'); const grid = document.getElementById('memory-grid'); grid.innerHTML = ""; memoryCardsArray.forEach((item, index) => { const block = document.createElement('div'); block.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer shadow-sm select-none transition-all"; block.innerText = "?"; block.dataset.index = index; block.onclick = () => { if(lockMemoryBoard) return; if(block.classList.contains('bg-white') || block.classList.contains('bg-emerald-50')) return; block.className = "h-24 bg-white border-2 border-purple-500 rounded-xl flex items-center justify-center p-2 text-center text-[10px] font-extrabold text-purple-950 shadow-md"; block.innerText = item.text; if(item.type === 'en') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const ut = new SpeechSynthesisUtterance(item.text); ut.lang = 'en-US'; ut.rate = 0.75; window.speechSynthesis.speak(ut); } } if(!firstSelectedCard) { firstSelectedCard = { element: block, item }; } else { if(firstSelectedCard.element.dataset.index === block.dataset.index) return; secondSelectedCard = { element: block, item }; lockMemoryBoard = true; if(firstSelectedCard.item.id === secondSelectedCard.item.id) { setTimeout(() => { firstSelectedCard.element.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; secondSelectedCard.element.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; memoryPairsFound++; document.getElementById('memory-score-text').innerText = `Pares: ${memoryPairsFound} / ${selectedCards.length}`; if(memoryPairsFound === selectedCards.length) { setTimeout(() => { document.getElementById('success-custom-text').innerText = `Excelente! Você completou a Memória da ${activeWeek}!`; changeView('success'); }, 500); } firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 600); } else { setTimeout(() => { firstSelectedCard.element.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; firstSelectedCard.element.innerText = "?"; secondSelectedCard.element.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; secondSelectedCard.element.innerText = "?"; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 1100); } } }; grid.appendChild(block); }); }
-
-        /* JOGO 3: VOCABULÁRIO */
-        function startVocabGame() {
-            const cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek);
-            if(cards.length === 0) { alert("Sem conteúdo cadastrado!"); return; }
-
-            const vocabMap = {
-                "neighborhood": "bairro / vizinhança", "perfect": "perfeito / perfeita", "raising": "criar / educando", "family": "família",
-                "kitchen": "cozinha", "equipped": "equipada / equipado", "modern": "moderno / moderna", "stove": "fogão",
-                "living": "estar / morando", "room": "sala / quarto", "cozy": "aconchegante", "apartment": "apartamento",
-                "balcony": "varanda / sacada", "master": "principal / mestre", "bedroom": "quarto", "bathroom": "banheiro",
-                "mess": "bagunça", "remodeled": "reformaram / remodelaram", "year": "ano", "spacious": "espaçoso / ampla",
-                "small": "pequeno / pequena", "organize": "organizar", "guest": "hóspedes / convidado", "dining": "jantar",
-                "lovely": "adorável / lindo", "property": "propriedade / imóvel", "fully": "totalmente / completamente",
-                "furnished": "mobiliada / mobiliado", "ready": "pronta / pronto", "move": "mudar / mover", "view": "vista",
-                "breathtaking": "de tirar o fôlego", "ocean": "oceano / mar", "features": "conta com / apresenta",
-                "king-size": "tamanho gigante (king)", "bed": "cama", "fireplace": "lareira", "windows": "janelas",
-                "stainless": "inoxidável", "steel": "aço", "appliances": "eletrodomésticos", "looking": "procurando / olhando",
-                "buy": "comprar", "rent": "alugar", "yourself": "você mesmo / a si mesmo", "home": "lar / casa", 
-                "house": "casa", "messy": "bagunçada / desorganizada", "today": "hoje", "clean": "limpar / arrumar", 
-                "place": "lugar", "quiet": "silencioso / tranquilo", "heart": "coração", "love": "amar / amo", 
-                "chilling": "relaxando / de boa", "couch": "sofá",
-                "carton": "caixa de papelão", "bottle": "garrafa", "champagne": "champanhe / espumante", "can": "lata",
-                "beer": "cerveja", "bag": "saco / sacola", "cookies": "biscoitos / bolachas", "tube": "tubo / bisnaga",
-                "cream": "creme / pomada", "jar": "pote de vidro", "honey": "mel", "bowl": "tigela / pote fundo",
-                "cereal": "cereal", "jug": "jarra (com alça)", "water": "água", "crisis": "crise",
-                "companies": "empresas / companhias", "economists": "economistas", "government": "governo",
-                "hours": "horas", "hope": "esperança", "chance": "chance / probabilidade", "instructions": "instruções",
-                "steps": "passos / etapas", "connectors": "conectores", "subscribe": "inscrever-se / assinar", "network": "rede",
-                "baguette": "baguete", "bakery": "padaria", "bread": "pão", "breakfast": "café da manhã",
-                "croissant": "croissant", "bun": "pão de hambúrguer / pão redondo", "burger": "hambúrguer",
-                "dinner": "jantar", "roll": "pãozinho / pão de forma", "soup": "sopa", "glass": "copo",
-                "sugar": "açúcar", "recipe": "receita", "ingredients": "ingredientes", "host": "apresentador / anfitrião",
-                "break": "intervalo / comercial", "grams": "gramas", "milliliters": "mililitros", "liter": "litro",
-                "tablespoons": "colheres de sopa", "notes": "notas / anotações", "salt": "sal", "pinch": "pitada"
-            };
-
-            vocabSessionArray = [];
-            cards.forEach(c => {
-                const words = c.front.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?']/g,"").split(" ");
-                words.forEach(w => {
-                    if(vocabMap[w] && !vocabSessionArray.some(item => item.en === w)) {
-                        vocabSessionArray.push({ en: w, pt: vocabMap[w] });
-                    }
-                });
-            });
-
-            if(vocabSessionArray.length === 0) {
-                vocabSessionArray = [{ en: "sugar", pt: "açúcar" }, { en: "recipe", pt: "receita" }, { en: "milk", pt: "leite" }];
+                if (rows && rows.length > 0) {
+                    data = rows[0].payload;
+                    setStatus("Nuvem Sincronizada", "emerald");
+                } else {
+                    await pushDataToCloud();
+                    setStatus("Primeiro Acesso Criado", "indigo");
+                }
+            } catch (err) {
+                console.error(err);
+                setStatus("Modo Offline (Erro Nuvem)", "red");
             }
-
-            vocabSessionArray.sort(() => Math.random() - 0.5);
-            vocabCurrentIdx = 0;
-            changeView('game-vocab');
-            loadVocabQuestion();
-        }
-
-        function loadVocabQuestion() {
-            if(vocabCurrentIdx >= vocabSessionArray.length) {
-                document.getElementById('success-custom-text').innerText = `Excelente! Você dominou o Vocabulário da ${activeWeek}!`;
-                changeView('success');
-                return;
-            }
-
-            const item = vocabSessionArray[vocabCurrentIdx];
-            document.getElementById('vocab-progress-text').innerText = `Palavra ${vocabCurrentIdx + 1} de ${vocabSessionArray.length}`;
-            document.getElementById('vocab-target-text').innerText = item.en;
-            vocabCorrectAnswer = item.pt;
-
-            const wrongPool = ["carro", "janela", "livro", "mesa", "cadeira", "porta", "professor", "aluno", "computador", "chave", "gato", "cachorro", "rua", "cidade", "escola"];
-            wrongPool.sort(() => Math.random() - 0.5);
-
-            let options = [vocabCorrectAnswer, wrongPool[0], wrongPool[1]].slice(0, 3);
-            options.sort(() => Math.random() - 0.5);
-
-            const container = document.getElementById('vocab-options-container');
-            container.innerHTML = "";
             
-            options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-center font-bold text-sm text-slate-700 shadow-sm transition active:scale-95";
-                btn.innerText = opt;
-                btn.onclick = () => {
-                    if(opt === vocabCorrectAnswer) {
-                        btn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl text-center font-bold text-sm shadow-sm";
-                        setTimeout(() => { vocabCurrentIdx++; loadVocabQuestion(); }, 600);
-                    } else {
-                        btn.className = "w-full bg-rose-50 text-rose-700 border border-rose-300 p-4 rounded-xl text-center font-medium text-sm shadow-sm animate-bounce";
-                        setTimeout(() => { btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-center font-bold text-sm text-slate-700 shadow-sm"; }, 800);
+            render();
+            setupSemesterSelect();
+            renderAdminLists();
+        }
+
+        // Faz o upload das alterações
+        async function pushDataToCloud() {
+            setStatus("Salvando na Nuvem...", "amber");
+            try {
+                const { error } = await _supabase
+                    .from('dados_usuarios')
+                    .upsert({ id: USUARIO_ID, payload: data, updated_at: new Date() });
+
+                if (error) throw error;
+                setStatus("Salvo com sucesso", "emerald");
+            } catch (err) {
+                console.error(err);
+                setStatus("Erro ao salvar dados!", "red");
+            }
+        }
+
+        function setStatus(text, color) {
+            const el = document.getElementById('sync-status');
+            if(!el) return;
+            el.className = `text-xs font-semibold px-2.5 py-1 rounded-md bg-${color}-50 text-${color}-700 border border-${color}-200`;
+            el.innerHTML = `<i class="fa-solid fa-cloud"></i> ${text}`;
+        }
+
+        function saveData() {
+            pushDataToCloud();
+            render();
+            renderAdminLists();
+            if (currentMateriaId || (currentThemeId && !currentSemesterId)) renderPortalView();
+            if (currentThemeId && currentSemesterId === null) renderFacultyView();
+        }
+
+        // --- SISTEMA DE FLUXO DE TELAS ---
+        function toggleAdminView() { document.getElementById('admin-section').classList.toggle('hidden'); }
+
+        function goHome() {
+            currentThemeId = null; currentSemesterId = null; currentMateriaId = null;
+            document.getElementById('view-dashboard').classList.remove('hidden');
+            document.getElementById('view-faculty').classList.add('hidden');
+            document.getElementById('view-portal').classList.add('hidden');
+            render();
+        }
+
+        function enterTheme(id) {
+            const tema = data.temas.find(t => t.id === id);
+            currentThemeId = id;
+            document.getElementById('admin-section').classList.add('hidden');
+            if (tema.eAcademico) {
+                currentSemesterId = null; currentMateriaId = null;
+                document.getElementById('view-dashboard').classList.add('hidden');
+                document.getElementById('view-faculty').classList.remove('hidden');
+                document.getElementById('view-portal').classList.add('hidden');
+                renderFacultyView();
+            } else {
+                currentSemesterId = null; currentMateriaId = null;
+                document.getElementById('view-dashboard').classList.add('hidden');
+                document.getElementById('view-faculty').classList.add('hidden');
+                document.getElementById('view-portal').classList.remove('hidden');
+                document.getElementById('btn-back-portal').setAttribute('onclick', 'goHome()');
+                document.getElementById('portal-breadcrumbs').innerText = "Espaço Corporativo";
+                switchTab('notes');
+                renderPortalView();
+            }
+        }
+
+        function enterMateriaPortal(semId, matId) {
+            currentSemesterId = semId; currentMateriaId = matId;
+            document.getElementById('view-faculty').classList.add('hidden');
+            document.getElementById('view-portal').classList.remove('hidden');
+            document.getElementById('btn-back-portal').setAttribute('onclick', `enterTheme(${currentThemeId})`);
+            const semNome = data.semestres.find(s => s.id === semId)?.nome;
+            const matNome = data.materias.find(m => m.id === matId)?.nome;
+            document.getElementById('portal-breadcrumbs').innerText = `${semNome} ➔ ${matNome}`;
+            switchTab('notes');
+            renderPortalView();
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            const tabs = ['notes', 'mindmap', 'reviews'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-content-${t}`).classList.add('hidden');
+                document.getElementById(`tab-btn-${t}`).className = "py-2 px-4 font-bold text-sm border-b-2 border-transparent text-gray-500 hover:text-indigo-600 whitespace-nowrap";
+            });
+            document.getElementById(`tab-content-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-btn-${tab}`).className = "py-2 px-4 font-bold text-sm border-b-2 border-indigo-600 text-indigo-600 whitespace-nowrap";
+            if(tab === 'mindmap') renderMindmap();
+            if(tab === 'reviews') renderReviews();
+        }
+
+        // --- MANIPULAÇÃO DE DADOS INTERNOS ---
+        function addNote() {
+            const txt = document.getElementById('note-content').value.trim();
+            if (!txt) return;
+            data.notes.push({ id: Date.now(), temaId: currentThemeId, semestreId: currentSemesterId, materiaId: currentMateriaId, texto: txt });
+            document.getElementById('note-content').value = ''; saveData();
+        }
+        function deleteNote(id) { data.notes = data.notes.filter(n => n.id !== id); saveData(); }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' && e.ctrlKey && document.activeElement.id === 'note-content') {
+                addNote();
+            }
+        });
+
+        function addRoadmapStep() {
+            const txt = document.getElementById('roadmap-step').value.trim();
+            if (!txt) return;
+            data.linhaTempo.push({ id: Date.now(), temaId: currentThemeId, semestreId: currentSemesterId, materiaId: currentMateriaId, texto: txt, check: false });
+            document.getElementById('roadmap-step').value = ''; saveData();
+        }
+        function toggleStep(id) { const s = data.linhaTempo.find(x => x.id === id); if(s) s.check = !s.check; saveData(); }
+        function deleteStep(id) { data.linhaTempo = data.linhaTempo.filter(l => l.id !== id); saveData(); }
+
+        function addMindmapNode() {
+            const txt = document.getElementById('mindmap-input').value.trim();
+            const type = document.getElementById('mindmap-node-type').value;
+            if (!txt) return;
+            data.mapasMentais.push({ id: Date.now(), temaId: currentThemeId, semestreId: currentSemesterId, materiaId: currentMateriaId, texto: txt, tipo: type, x: 180, y: 180 });
+            document.getElementById('mindmap-input').value = ''; saveData();
+        }
+        function deleteMindmapNode(id) { data.mapasMentais = data.mapasMentais.filter(n => n.id !== id); saveData(); }
+
+        function renderMindmap() {
+            const canvas = document.getElementById('mindmap-canvas');
+            canvas.innerHTML = '';
+            let nosFiltrados = data.mapasMentais.filter(n => n.temaId === currentThemeId && n.semestreId === currentSemesterId && n.materiaId === currentMateriaId);
+            nosFiltrados.forEach(node => {
+                const nodeDiv = document.createElement('div');
+                let styleClasses = "mindmap-node font-bold text-xs p-3.5 rounded-xl shadow-xs flex items-center gap-2 border-2 ";
+                if (node.tipo === 'central') styleClasses += "bg-indigo-600 text-white border-indigo-700 text-sm shadow-md ring-4 ring-indigo-100";
+                else if (node.tipo === 'subtopico') styleClasses += "bg-sky-50 text-sky-900 border-sky-400";
+                else if (node.tipo === 'insight') styleClasses += "bg-amber-50 text-amber-900 border-amber-400 border-dashed rounded-full px-4";
+                nodeDiv.className = styleClasses; nodeDiv.style.left = `${node.x}px`; nodeDiv.style.top = `${node.y}px`;
+                let icon = node.tipo === 'central' ? '⭐ ' : node.tipo === 'insight' ? '💡 ' : '📘 ';
+                nodeDiv.innerHTML = `<span>${icon}${node.texto}</span><button onclick="deleteMindmapNode(${node.id})" class="opacity-60 hover:opacity-100 text-[11px] ml-1"><i class="fa-solid fa-xmark"></i></button>`;
+                nodeDiv.addEventListener('mousedown', (e) => {
+                    if(e.target.closest('button')) return;
+                    let shiftX = e.clientX - nodeDiv.getBoundingClientRect().left;
+                    let shiftY = e.clientY - nodeDiv.getBoundingClientRect().top;
+                    function moveAt(clientX, clientY) {
+                        let rectCanvas = canvas.getBoundingClientRect();
+                        let newX = clientX - rectCanvas.left - shiftX;
+                        let newY = clientY - rectCanvas.top - shiftY;
+                        newX = Math.max(0, Math.min(newX, rectCanvas.width - nodeDiv.offsetWidth));
+                        newY = Math.max(0, Math.min(newY, rectCanvas.height - nodeDiv.offsetHeight));
+                        nodeDiv.style.left = `${newX}px`; nodeDiv.style.top = `${newY}px`;
+                        node.x = newX; node.y = newY;
                     }
-                };
-                container.appendChild(btn);
+                    function onMouseMove(event) { moveAt(event.clientX, event.clientY); }
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', () => {
+                        document.removeEventListener('mousemove', onMouseMove);
+                        pushDataToCloud();
+                    }, { once: true });
+                });
+                canvas.appendChild(nodeDiv);
             });
-
-            setTimeout(() => { playAudio('vocab-target-text'); }, 200);
         }
 
-        /* 📌 SISTEMA CORE ADMIN/PROFESSOR */
-        function openStudiedHistory() { const container = document.getElementById('history-items-container'); const room = DATABASE[activeRoomKey]; const studiedIds = getStudiedIds(); const listCards = room.cards.filter(c => studiedIds.includes(c.id)); if (listCards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhuma frase guardada.</p>`; changeView('history-list'); return; } container.innerHTML = ""; listCards.forEach((card, idx) => { const div = document.createElement('div'); div.className = "bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center gap-3"; div.innerHTML = `<div class="flex-1 min-w-0"><p id="hist-txt-${idx}" class="text-base font-bold text-slate-800 leading-tight">${card.front}</p><p class="text-xs font-medium text-indigo-700 italic">${card.pronunciation}</p><p class="text-xs text-slate-500 mt-1">➔ ${card.back}</p></div><button onclick="playAudio('hist-txt-${idx}')" class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><i class="fa-solid fa-volume-high text-xs"></i></button>`; container.appendChild(div); }); changeView('history-list'); }
-        function playAudio(elementId) { const text = document.getElementById(elementId).innerText; if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'en-US'; utterance.rate = 0.70; window.speechSynthesis.speak(utterance); } }
-        function exitStudySession() { changeView('decks'); }
-        function createNewClassroom() { const id = document.getElementById('new-room-id').value.trim(); const name = document.getElementById('new-room-name').value.trim(); const password = document.getElementById('new-room-password').value.trim(); if (!id || !name || !password) { alert("Campos incompletos!"); return; } DATABASE[id] = { name: name, password: password, cards: [] }; saveDatabaseToStorage(); document.getElementById('new-room-id').value = ""; document.getElementById('new-room-name').value = ""; document.getElementById('new-room-password').value = ""; renderClassrooms(); updateTeacherSelectorsAndLists(); alert(`Sala criada!`); }
-        function deleteClassroom(key) { if (!confirm(`Deletar sala?`)) return; delete DATABASE[key]; saveDatabaseToStorage(); renderClassrooms(); updateTeacherSelectorsAndLists(); }
-        function updateTeacherSelectorsAndLists() { const select = document.getElementById('form-room-id'); const deleteListContainer = document.getElementById('teacher-rooms-delete-list'); if(!select || !deleteListContainer) return; select.innerHTML = ""; deleteListContainer.innerHTML = ""; Object.keys(DATABASE).forEach(key => { const option = document.createElement('option'); option.value = key; option.innerText = DATABASE[key].name; select.appendChild(option); const div = document.createElement('div'); div.className = "flex justify-between items-center bg-slate-50 p-2 rounded-lg text-xs"; div.innerHTML = `<span>${DATABASE[key].name}</span><button onclick="deleteClassroom('${key}')" class="text-rose-500 font-bold px-2"><i class="fa-solid fa-trash-can"></i></button>`; deleteListContainer.appendChild(div); }); }
-        function generateCardCode() { const targetRoom = document.getElementById('form-room-id').value; const week = document.getElementById('form-week').value.trim(); const date = document.getElementById('form-date').value.trim(); const front = document.getElementById('form-front').value.trim(); const pronunciation = document.getElementById('form-front-pronunciation').value.trim(); const back = document.getElementById('form-back').value.trim(); if(!targetRoom || !week || !date || !front || !pronunciation || !back) { alert("Campos incompletos!"); return; } const randomId = "id_" + Math.random().toString(36).substr(2, 4); DATABASE[targetRoom].cards.push({ id: randomId, week, date, front, pronunciation, back }); saveDatabaseToStorage(); document.getElementById('form-front').value = ""; document.getElementById('form-front-pronunciation').value = ""; document.getElementById('form-back').value = ""; renderClassrooms(); alert(`Card Injetado!`); }
+        function addReviewTopic() {
+            const title = document.getElementById('review-topic-input').value.trim();
+            const body = document.getElementById('review-body-input').value.trim();
+            const status = document.getElementById('review-initial-status').value;
+            if (!title) return;
+            data.revisoes.push({ id: Date.now(), temaId: currentThemeId, semestreId: currentSemesterId, materiaId: currentMateriaId, titulo: title, corpo: body, status: status });
+            document.getElementById('review-topic-input').value = ''; document.getElementById('review-body-input').value = ''; saveData();
+        }
+        function changeReviewStatus(id, newStatus) { const rev = data.revisoes.find(r => r.id === id); if(rev) { rev.status = newStatus; saveData(); } }
+        function deleteReviewTopic(id) { if(confirm("Deletar este conteúdo de revisão?")) { data.revisoes = data.revisoes.filter(r => r.id !== id); saveData(); } }
 
-        function updateDatabaseOutputArea() {
-            const updatedDatabaseJSON = JSON.stringify(DATABASE, null, 4);
-            const cleanScriptHTML = document.getElementById('main-script-tag').innerHTML;
-            const uniqueVersionToken = Math.floor(Date.now() / 1000);
-            let updatedScriptContent = cleanScriptHTML.replace(/const DEFAULT_DATABASE = \n?[\s\S]*?};/m, "const DEFAULT_DATABASE = " + updatedDatabaseJSON + ";");
-            updatedScriptContent = updatedScriptContent.replace(/const CODE_VERSION = \d+;/, "const CODE_VERSION = " + uniqueVersionToken + ";");
-            const parser = new DOMParser(); const cleanDoc = parser.parseFromString(document.documentElement.outerHTML, 'text/html');
-            ['view-classrooms','view-decks','view-study','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => {
-                if(id === 'view-classrooms') cleanDoc.getElementById(id).className = "w-full space-y-4"; else cleanDoc.getElementById(id).className = "w-full hidden space-y-6";
+        function renderReviews() {
+            const container = document.getElementById('reviews-extended-list'); container.innerHTML = '';
+            let revsFiltradas = data.revisoes.filter(r => r.temaId === currentThemeId && r.semestreId === currentSemesterId && r.materiaId === currentMateriaId);
+            if(revsFiltradas.length === 0) { container.innerHTML = `<p class="text-sm text-gray-400 italic py-4">Nenhum bloco de conteúdo adicionado para revisão.</p>`; return; }
+            revsFiltradas.forEach(rev => {
+                let borderCol = 'border-l-red-500'; let selectStyle = 'bg-red-50 text-red-700 font-semibold';
+                if (rev.status === 'aprendendo') { borderCol = 'border-l-amber-500'; selectStyle = 'bg-amber-50 text-amber-700 font-semibold'; }
+                if (rev.status === 'estudado') { borderCol = 'border-l-blue-500'; selectStyle = 'bg-blue-50 text-blue-700 font-semibold'; }
+                if (rev.status === 'revisado') { borderCol = 'border-l-emerald-500'; selectStyle = 'bg-emerald-50 text-emerald-700 font-semibold'; }
+                container.innerHTML += `<div class="bg-white rounded-xl border border-gray-200 border-l-4 ${borderCol} p-4 shadow-2xs space-y-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                        <h4 class="font-extrabold text-sm text-gray-900">${rev.titulo}</h4>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                            <select onchange="changeReviewStatus(${rev.id}, this.value)" class="p-1.5 rounded-lg text-xs border border-gray-200 outline-none ${selectStyle}">
+                                <option value="nao-aprendi" ${rev.status==='nao-aprendi'?'selected':''}>❌ Não aprendi ainda</option>
+                                <option value="aprendendo" ${rev.status==='aprendendo'?'selected':''}>⏳ Aprendendo</option>
+                                <option value="estudado" ${rev.status==='estudado'?'selected':''}>📘 Estudado</option>
+                                <option value="revisado" ${rev.status==='revisado'?'selected':''}>✅ Revisado</option>
+                            </select>
+                            <button onclick="deleteReviewTopic(${rev.id})" class="text-gray-300 hover:text-red-500 transition text-sm p-1"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                    ${rev.corpo ? `<p class="text-gray-600 text-xs bg-gray-50 p-3 rounded-lg leading-relaxed whitespace-pre-wrap border border-gray-100">${rev.corpo}</p>` : '<p class="text-xs text-gray-300 italic">Nenhum detalhe adicionado.</p>'}
+                </div>`;
             });
-            cleanDoc.getElementById('current-badge').className = "text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden";
-            let headHTML = cleanDoc.getElementsByTagName('head')[0].outerHTML; headHTML = headHTML.replace(/cdn\.tailwindcss\.com\?v=\d+/, "cdn.tailwindcss.com?v=" + uniqueVersionToken);
-            const bodyElement = cleanDoc.getElementsByTagName('body')[0]; bodyElement.innerHTML = bodyElement.innerHTML.replace(cleanDoc.getElementById('main-script-tag').innerHTML, updatedScriptContent);
-            document.getElementById('output-code').value = "<!DOCTYPE html>\n<html lang=\"pt-BR\">\n" + headHTML + "\n" + bodyElement.outerHTML + "\n</html>";
         }
 
-        function changeView(view) {
-            ['view-classrooms','view-decks','view-study','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => document.getElementById(id).classList.add('hidden'));
-            document.getElementById('current-badge').classList.add('hidden');
-            document.getElementById('nav-btn-decks').className = "flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5";
-            document.getElementById('nav-btn-teacher').className = "flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5";
+        // --- SISTEMAS ADMINISTRATIVOS E RENDERS DE SUPORTE ---
+        function createTheme() { const input = document.getElementById('new-theme-name'); if (!input.value.trim()) return; data.temas.push({ id: Date.now(), nome: input.value.trim(), eAcademico: false }); input.value = ''; saveData(); }
+        function editTheme(id) { const t = data.temas.find(x => x.id === id); const n = prompt("Editar Tema:", t.nome); if (n?.trim()) { t.nome = n.trim(); saveData(); } }
+        function deleteTheme(id) { if(confirm("Deletar tema?")) { data.temas = data.temas.filter(x => x.id !== id); if(currentThemeId === id) goHome(); saveData(); } }
+        function addSemester() { const input = document.getElementById('new-semester-name'); if (!input.value.trim()) return; data.semestres.push({ id: Date.now(), nome: input.value.trim() }); input.value = ''; saveData(); setupSemesterSelect(); }
+        function editSemester(id) { const s = data.semestres.find(x => x.id === id); const n = prompt("Editar Semestre:", s.nome); if (n?.trim()) { s.nome = n.trim(); saveData(); setupSemesterSelect(); } }
+        function deleteSemester(id) { if(confirm("Remover semestre?")) { data.semestres = data.semestres.filter(x => x.id !== id); saveData(); setupSemesterSelect(); } }
+        function addSubject() { const select = document.getElementById('select-semester'); const input = document.getElementById('new-subject-name'); if (!input.value.trim() || !select.value) return; data.materias.push({ id: Date.now(), semestreId: parseInt(select.value), nome: input.value.trim() }); input.value = ''; saveData(); }
+        function editSubject(id) { const m = data.materias.find(x => x.id === id); const n = prompt("Editar Matéria:", m.nome); if (n?.trim()) { m.nome = n.trim(); saveData(); } }
+        function deleteSubject(id) { if(confirm("Deletar matéria?")) { data.materias = data.materias.filter(x => x.id !== id); if(currentMateriaId === id) enterTheme(currentThemeId); saveData(); } }
+        function setupSemesterSelect() { const select = document.getElementById('select-semester'); if(select) select.innerHTML = data.semestres.map(s => `<option value="${s.id}">${s.nome}</option>`).join(''); }
 
-            if (view === 'classrooms') { document.getElementById('view-classrooms').classList.remove('hidden'); document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); } 
-            else if (view === 'decks') { document.getElementById('view-decks').classList.remove('hidden'); document.getElementById('current-badge').classList.remove('hidden'); document.getElementById('current-badge').innerText = (DATABASE[activeRoomKey] ? DATABASE[activeRoomKey].name : "Menu"); document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); renderDecksView(); } 
-            else if (view === 'study') { document.getElementById('view-study').classList.remove('hidden'); document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); } 
-            else if (view === 'game-quiz') { document.getElementById('view-game-quiz').classList.remove('hidden'); }
-            else if (view === 'game-memory') { document.getElementById('view-game-memory').classList.remove('hidden'); }
-            else if (view === 'game-vocab') { document.getElementById('view-game-vocab').classList.remove('hidden'); }
-            else if (view === 'success') { document.getElementById('view-success').classList.remove('hidden'); } 
-            else if (view === 'history-list') { document.getElementById('view-history-list').classList.remove('hidden'); } 
-            else if (view === 'teacher') { document.getElementById('view-teacher').classList.remove('hidden'); document.getElementById('nav-btn-teacher').classList.add('text-indigo-600'); updateDatabaseOutputArea(); }
+        function render() {
+            const grid = document.getElementById('themes-grid');
+            grid.innerHTML = data.temas.map(tema => `
+                <div onclick="enterTheme(${tema.id})" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-200 cursor-pointer transition flex flex-col justify-between group">
+                    <div><div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition">${tema.nome}</h3>
+                        ${tema.eAcademico ? '<span class="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-semibold">Grade</span>' : '<span class="bg-amber-50 text-amber-700 text-xs px-2.5 py-1 rounded-full font-semibold">Geral</span>'}
+                    </div><p class="text-sm text-gray-400">Clique para expandir.</p></div>
+                    <span class="text-indigo-500 text-sm font-semibold mt-4 inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform"> Entrar <i class="fa-solid fa-chevron-right text-xs"></i></span>
+                </div>`).join('');
         }
 
-        window.onload = init;
+        function renderFacultyView() {
+            const tema = data.temas.find(t => t.id === currentThemeId);
+            document.getElementById('faculty-title').innerText = tema.nome;
+            const container = document.getElementById('semester-cards-container');
+            container.innerHTML = data.semestres.map(sem => {
+                const disciplinas = data.materias.filter(m => m.semestreId === sem.id);
+                const disciplinasHtml = disciplinas.map(m => {
+                    const count = data.notes.filter(n => n.materiaId === m.id).length;
+                    return `<button onclick="enterMateriaPortal(${sem.id}, ${m.id})" class="w-full text-left bg-gray-50 hover:bg-indigo-50 p-3 rounded-xl text-sm font-medium text-gray-700 border border-gray-200 transition flex justify-between items-center group/btn">
+                        <span class="truncate pr-2">📘 ${m.nome}</span>
+                        <span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-md font-bold group-hover/btn:bg-indigo-600 group-hover/btn:text-white transition">${count} notas</span>
+                    </button>`;
+                }).join('') || '<p class="text-xs text-gray-400 italic">Sem disciplinas.</p>';
+                return `<div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs">
+                    <h3 class="font-extrabold text-base text-indigo-900 mb-4 flex items-center gap-2 border-b pb-2"><i class="fa-regular fa-calendar-check text-indigo-500"></i> ${sem.nome}</h3>
+                    <div class="space-y-2.5">${disciplinasHtml}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderPortalView() {
+            if (currentMateriaId) { const mat = data.materias.find(m => m.id === currentMateriaId); document.getElementById('portal-title').innerText = `Portal de ${mat.nome}`; }
+            else { const tema = data.temas.find(t => t.id === currentThemeId); document.getElementById('portal-title').innerText = tema.nome; }
+            let nFiltradas = data.notes.filter(n => n.temaId === currentThemeId && n.semestreId === currentSemesterId && n.materiaId === currentMateriaId);
+            let lFiltrada = data.linhaTempo.filter(l => l.temaId === currentThemeId && l.semestreId === currentSemesterId && l.materiaId === currentMateriaId);
+            document.getElementById('notes-container').innerHTML = nFiltradas.map(n => `
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 flex flex-col justify-between shadow-2xs">
+                    <p class="text-gray-800 whitespace-pre-wrap text-xs leading-relaxed">${n.texto}</p>
+                    <div class="flex justify-end mt-3 border-t border-amber-200/40 pt-2"><button onclick="deleteNote(${n.id})" class="text-gray-400 hover:text-red-500 text-xs transition"><i class="fa-solid fa-trash"></i></button></div>
+                </div>`).join('') || `<p class="text-xs text-gray-400 italic col-span-2 py-2">Sem anotações.</p>`;
+            document.getElementById('roadmap-container').innerHTML = lFiltrada.map(step => `
+                <div class="mb-2 ml-6 flex items-start justify-between group/step text-xs">
+                    <div class="flex items-start gap-2"><span onclick="toggleStep(${step.id})" class="absolute -left-[11px] flex items-center justify-center w-5 h-5 rounded-full cursor-pointer bg-white border-2 border-indigo-300">${step.check ? '<i class="fa-solid fa-check text-[10px] text-indigo-600"></i>' : ''}</span><span class="${step.check ? 'line-through text-gray-400' : 'text-gray-700 font-medium'}">${step.texto}</span></div>
+                    <button onclick="deleteStep(${step.id})" class="text-gray-300 hover:text-red-500 text-[11px] opacity-0 group-hover/step:opacity-100"><i class="fa-solid fa-xmark"></i></button>
+                </div>`).join('') || `<p class="text-gray-400 italic ml-4">Nenhuma meta.</p>`;
+            if(activeTab === 'mindmap') renderMindmap();
+            if(activeTab === 'reviews') renderReviews();
+        }
+
+        function renderAdminLists() {
+            const tList = document.getElementById('theme-list-admin'); const sList = document.getElementById('semester-list-admin'); const mList = document.getElementById('subject-list-admin');
+            tList.innerHTML = data.temas.map(t => `<li class="flex justify-between items-center py-1 bg-gray-50 px-2 rounded text-xs mb-1"><span>${t.nome}</span><div class="flex gap-2"><button onclick="editTheme(${t.id})" class="text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="deleteTheme(${t.id})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div></li>`).join('');
+            sList.innerHTML = data.semestres.map(s => `<li class="flex justify-between items-center py-1 bg-gray-50 px-2 rounded text-xs mb-1"><span>${s.nome}</span><div class="flex gap-2"><button onclick="editSemester(${s.id})" class="text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="deleteSemester(${s.id})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div></li>`).join('');
+            mList.innerHTML = data.materias.map(m => `<li class="flex justify-between items-center py-1 bg-gray-50 px-2 rounded text-xs mb-1"><span class="truncate max-w-[120px]">${m.nome}</span><div class="flex gap-2"><button onclick="editSubject(${m.id})" class="text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="deleteSubject(${m.id})" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div></li>`).join('');
+        }
+
+        // Inicialização
+        loadDataFromCloud();
     </script>
 </body>
 </html>
