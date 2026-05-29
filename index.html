@@ -4,9 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Idiomas - Prof. Analice</title>
+    
+    <!-- Meta tags para transformar a página em um Web App com Ícone no Celular -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ClassStudy">
+    
+    <!-- Ícone oficial de alta resolução para a Tela de Início do Celular -->
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluent/180/000000/diploma.png">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/fluent/48/000000/diploma.png">
+
     <!-- Script do Tailwind com quebra de cache automática gerenciada pelo painel -->
-    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716860002"></script>
-    <!-- Tag corrigida: rel="stylesheet" para o FontAwesome rodar perfeitamente -->
+    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716856005"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .perspective { perspective: 1000px; }
@@ -126,7 +135,39 @@
             <p id="flip-hint" class="text-center text-xs text-slate-400 font-medium">Toque no cartão para liberar os botões de treino.</p>
         </section>
 
-        <!-- JOGO 1: QUIZ -->
+        <!-- TELA DE TUTORIAL: COMO SALVAR NO CELULAR -->
+        <section id="view-save-tutorial" class="w-full hidden space-y-5">
+            <div class="mb-2">
+                <h2 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-mobile-screen-button mr-2 text-indigo-600"></i>Como Salvar na Tela do Celular</h2>
+                <p class="text-xs text-slate-500">Tenha o Portal da Prof. Analice como um aplicativo real:</p>
+            </div>
+
+            <!-- CARD IPHONE -->
+            <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5"><i class="fa-brands fa-apple text-sm"></i> Se você usa iPhone (Safari):</h3>
+                <ol class="text-xs text-slate-600 space-y-1 list-decimal pl-4">
+                    <li>Toque no botão de <b>Compartilhar</b> <i class="fa-solid fa-share-nodes text-slate-400"></i> (ícone de quadrado com uma seta para cima na barra inferior).</li>
+                    <li>Role as opções para baixo e toque em <b>Adicionar à Tela de Início</b> <i class="fa-regular fa-square-plus text-slate-400"></i>.</li>
+                    <li>Confirme clicando em <b>Adicionar</b> no canto superior direito. Pronto!</li>
+                </ol>
+            </div>
+
+            <!-- CARD ANDROID -->
+            <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5"><i class="fa-brands fa-android text-sm"></i> Se você usa Android (Chrome):</h3>
+                <ol class="text-xs text-slate-600 space-y-1 list-decimal pl-4">
+                    <li>Toque nos <b>três pontinhos</b> <i class="fa-solid fa-ellipsis-vertical text-slate-400"></i> localizados no canto superior direito.</li>
+                    <li>Selecione a opção <b>Instalar aplicativo</b> ou <b>Adicionar à tela de início</b>.</li>
+                    <li>Confirme a instalação na mensagem que aparecer. Pronto!</li>
+                </ol>
+            </div>
+
+            <button onclick="changeView('classrooms')" class="w-full bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-xs shadow">
+                Voltar para o Início
+            </button>
+        </section>
+
+        <!-- JOGOS -->
         <section id="view-game-quiz" class="w-full hidden space-y-6">
             <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
                 <button onclick="changeView('decks')" class="text-indigo-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
@@ -146,7 +187,6 @@
             </div>
         </section>
 
-        <!-- JOGO 2: JOGO DA MEMÓRIA -->
         <section id="view-game-memory" class="w-full hidden space-y-4">
             <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
                 <button onclick="changeView('decks')" class="text-purple-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
@@ -158,7 +198,6 @@
             <div id="memory-grid" class="grid grid-cols-2 gap-3 pt-2"></div>
         </section>
 
-        <!-- JOGO 3: DESAFIO DE VOCABULÁRIO -->
         <section id="view-game-vocab" class="w-full hidden space-y-6">
             <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
                 <button onclick="changeView('decks')" class="text-amber-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair do Jogo</button>
@@ -178,7 +217,6 @@
             </div>
         </section>
 
-        <!-- TELA HISTÓRICO -->
         <section id="view-history-list" class="w-full hidden space-y-4">
             <div class="flex items-center justify-between mb-2">
                 <div>
@@ -190,7 +228,6 @@
             <div id="history-items-container" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
         </section>
 
-        <!-- TELA SUCESSO -->
         <section id="view-success" class="w-full hidden text-center space-y-6 py-8">
             <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-4xl">
                 <i class="fa-solid fa-star animate-bounce"></i>
@@ -204,14 +241,13 @@
             </button>
         </section>
 
-        <!-- TELA 6: PAINEL DO PROFESSOR -->
+        <!-- PAINEL PROFESSOR -->
         <section id="view-teacher" class="w-full hidden space-y-6">
             <div>
                 <h2 class="text-lg font-bold text-slate-700">Painel de Controle do Professor</h2>
                 <p class="text-xs text-slate-500">Gerencie salas, senhas e atualize o cache dos alunos de forma automática.</p>
             </div>
 
-            <!-- GERENCIAR SALAS -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-folder-plus mr-1"></i> Gerenciar Salas de Aula</h3>
                 <div class="space-y-3 pt-2">
@@ -237,7 +273,6 @@
                 </div>
             </div>
 
-            <!-- FABRICAR CARDS -->
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-file-medical mr-1"></i> Fabricar Flashcards</h3>
                 <div class="grid grid-cols-2 gap-3">
@@ -271,7 +306,6 @@
                 </button>
             </div>
 
-            <!-- RESULTADO PARA COPIAR -->
             <div class="space-y-2">
                 <label class="block text-xs font-bold text-slate-500 uppercase">📋 CÓDIGO FONTE TOTAL DO APP (ANTI-CACHE):</label>
                 <p class="text-[11px] text-slate-400 leading-tight bg-slate-100 p-2 border border-slate-200 rounded-lg">Clique na caixa verde abaixo, use <b>Ctrl + A</b> para selecionar tudo e cole substituindo todo o seu arquivo do GitHub.</p>
@@ -281,11 +315,14 @@
 
     </main>
 
-    <!-- NAVEGAÇÃO -->
+    <!-- NAVEGAÇÃO EXPANDIDA COM LINK DE ATALHO DE SALVAMENTO -->
     <nav class="bg-white border-t border-slate-100 fixed bottom-0 left-0 right-0 py-2 shadow-lg z-50">
-        <div class="max-w-md mx-auto grid grid-cols-2 text-center">
+        <div class="max-w-md mx-auto grid grid-cols-3 text-center">
             <button onclick="changeView('classrooms')" id="nav-btn-decks" class="flex flex-col items-center justify-center text-indigo-600 font-medium text-xs gap-0.5">
                 <i class="fa-solid fa-graduation-cap text-lg"></i>Estudar
+            </button>
+            <button onclick="changeView('save-tutorial')" id="nav-btn-save" class="flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5">
+                <i class="fa-solid fa-mobile-screen-button text-lg"></i>Salvar App
             </button>
             <button onclick="verifyTeacherAccess()" id="nav-btn-teacher" class="flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5">
                 <i class="fa-solid fa-chalkboard-user text-lg"></i>Professor
@@ -381,9 +418,8 @@
             }
         };
 
-        // URL Conectora Oficial da Planilha Secreta do Google Sheets
         const SHEET_WEB_API = "https://script.google.com/macros/s/AKfycbyixLasg-0TGX8vaeVPtiuW04cEmhSuW40fIa4qqXt6iHASAeMq_278SkaGF7LjsYk/exec";
-        const CODE_VERSION = 1716856002;
+        const CODE_VERSION = 1716856005;
         const TEACHER_PASSWORD = "admin"; 
         let DATABASE = {};
 
@@ -423,7 +459,7 @@
 
         function forceInitialViewState() {
             document.getElementById('view-classrooms').classList.remove('hidden');
-            ['view-decks','view-study','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            ['view-decks','view-study','view-save-tutorial','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => document.getElementById(id).classList.add('hidden'));
         }
 
         function dispatchStudentReport(activityName, scoreResult) {
@@ -536,7 +572,7 @@
         function loadQuizQuestion() { if(quizCurrentIdx >= quizSessionCards.length) { let rawScore = 10 - ((quizMistakesInTurn / quizSessionCards.length) * 5); let finalScore = Math.max(5, rawScore).toFixed(1); dispatchStudentReport("Quiz de Frases", "Nota Final: " + finalScore); document.getElementById('success-custom-text').innerText = `Você dominou o Quiz de Frases da ${activeWeek}! Nota enviada: ${finalScore}`; changeView('success'); return; } const card = quizSessionCards[quizCurrentIdx]; document.getElementById('quiz-progress-text').innerText = `Desafio ${quizCurrentIdx + 1} de ${quizSessionCards.length}`; document.getElementById('quiz-target-text').innerText = card.front; quizCorrectAnswer = card.back; let allBacks = DATABASE[activeRoomKey].cards.map(c => c.back); let wrongOptions = allBacks.filter(b => b !== quizCorrectAnswer).sort(() => Math.random() - 0.5); let options = [quizCorrectAnswer]; if(wrongOptions[0]) options.push(wrongOptions[0]); if(wrongOptions[1]) options.push(wrongOptions[1]); while(options.length < 3) { options.push("Frase estrutural complementar"); } options.sort(() => Math.random() - 0.5); const container = document.getElementById('quiz-options-container'); container.innerHTML = ""; options.forEach(opt => { const btn = document.createElement('button'); btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm transition active:scale-95"; btn.innerText = opt; btn.onclick = () => { if(opt === quizCorrectAnswer) { btn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl text-left font-bold text-sm shadow-sm"; setTimeout(() => { quizCurrentIdx++; loadQuizQuestion(); }, 700); } else { quizMistakesInTurn++; btn.className = "w-full bg-rose-50 text-rose-700 border border-rose-300 p-4 rounded-xl text-left font-medium text-sm shadow-sm animate-bounce"; setTimeout(() => { btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm"; }, 1000); } }; container.appendChild(btn); }); setTimeout(() => { playAudio('quiz-target-text'); }, 300); }
 
         /* JOGO 2: MEMÓRIA */
-        function startMemoryGame() { let cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(cards.length === 0) { alert("Sem conteúdo!"); return; } cards.sort(() => Math.random() - 0.5); let selectedCards = cards.slice(0, 4); memoryCardsArray = []; selectedCards.forEach(c => { memoryCardsArray.push({ id: c.id, type: 'en', text: c.front }); memoryCardsArray.push({ id: c.id, type: 'pt', text: c.back }); }); memoryCardsArray.sort(() => Math.random() - 0.5); memoryPairsFound = 0; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; memoryStartTime = Date.now(); document.getElementById('memory-score-text').innerText = `Pares: 0 / ${selectedCards.length}`; changeView('game-memory'); const grid = document.getElementById('memory-grid'); grid.innerHTML = ""; memoryCardsArray.forEach((item, index) => { const block = document.createElement('div'); block.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer shadow-sm select-none transition-all"; block.innerText = "?"; block.dataset.index = index; block.onclick = () => { if(lockMemoryBoard) return; if(block.classList.contains('bg-white') || block.classList.contains('bg-emerald-50')) return; block.className = "h-24 bg-white border-2 border-purple-500 rounded-xl flex items-center justify-center p-2 text-center text-[10px] font-extrabold text-purple-950 shadow-md"; block.innerText = item.text; if(item.type === 'en') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const ut = new SpeechSynthesisUtterance(item.text); ut.lang = 'en-US'; ut.rate = 0.75; window.speechSynthesis.speak(ut); } } if(!firstSelectedCard) { firstSelectedCard = { element: block, item }; } else { if(firstSelectedCard.element.dataset.index === block.dataset.index) return; secondSelectedCard = { element: block, item }; lockMemoryBoard = true; if(firstSelectedCard.item.id === secondSelectedCard.item.id) { setTimeout(() => { firstSelectedCard.element.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; secondSelectedCard.element.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; memoryPairsFound++; document.getElementById('memory-score-text').innerText = `Pares: ${memoryPairsFound} / ${selectedCards.length}`; if(memoryPairsFound === selectedCards.length) { let secondsElapsed = Math.floor((Date.now() - memoryStartTime) / 1000); dispatchStudentReport("Jogo da Memória", "Venceu em " + secondsElapsed + " segundos ⏱️"); setTimeout(() => { document.getElementById('success-custom-text').innerText = `Excelente! Você completou a Memória da ${activeWeek} em ${secondsElapsed} segundos!`; changeView('success'); }, 500); } firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 600); } else { setTimeout(() => { firstSelectedCard.element.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; firstSelectedCard.element.innerText = "?"; secondSelectedCard.element.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; secondSelectedCard.element.innerText = "?"; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 1100); } } }; grid.appendChild(block); }); }
+        function startMemoryGame() { let cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(cards.length === 0) { alert("Sem conteúdo!"); return; } cards.sort(() => Math.random() - 0.5); let selectedCards = cards.slice(0, 4); memoryCardsArray = []; selectedCards.forEach(c => { memoryCardsArray.push({ id: c.id, type: 'en', text: c.front }); memoryCardsArray.push({ id: c.id, type: 'pt', text: c.back }); }); memoryCardsArray.sort(() => Math.random() - 0.5); memoryPairsFound = 0; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; memoryStartTime = Date.now(); document.getElementById('memory-score-text').innerText = `Pares: 0 / ${selectedCards.length}`; changeView('game-memory'); const grid = document.getElementById('memory-grid'); grid.innerHTML = ""; memoryCardsArray.forEach((item, index) => { const block = document.createElement('div'); block.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer shadow-sm select-none transition-all"; block.innerText = "?"; block.dataset.index = index; block.onclick = () => { if(lockMemoryBoard) return; if(block.classList.contains('bg-white') || block.classList.contains('bg-emerald-50')) return; block.className = "h-24 bg-white border-2 border-purple-500 rounded-xl flex items-center justify-center p-2 text-center text-[10px] font-extrabold text-purple-950 shadow-md"; block.innerText = item.text; if(item.type === 'en') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const ut = new SpeechSynthesisUtterance(item.text); ut.lang = 'en-US'; ut.rate = 0.75; window.speechSynthesis.speak(ut); } } if(!firstSelectedCard) { firstSelectedCard = { element: block, item }; } else { if(firstSelectedCard.element.dataset.index === block.dataset.index) return; secondSelectedCard = { element: block, item }; lockMemoryBoard = true; if(firstSelectedCard.item.id === secondSelectedCard.item.id) { setTimeout(() => { Array.from([firstSelectedCard.element, secondSelectedCard.element]).forEach(el => { el.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; }); memoryPairsFound++; document.getElementById('memory-score-text').innerText = `Pares: ${memoryPairsFound} / ${selectedCards.length}`; if(memoryPairsFound === selectedCards.length) { let secondsElapsed = Math.floor((Date.now() - memoryStartTime) / 1000); dispatchStudentReport("Jogo da Memória", "Venceu em " + secondsElapsed + " segundos ⏱️"); setTimeout(() => { document.getElementById('success-custom-text').innerText = `Excelente! Você completou a Memória da ${activeWeek} em ${secondsElapsed} segundos!`; changeView('success'); }, 500); } firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 600); } else { setTimeout(() => { Array.from([firstSelectedCard.element, secondSelectedCard.element]).forEach(el => { el.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; el.innerText = "?"; }); firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 1100); } } }; grid.appendChild(block); }); }
 
         /* JOGO 3: VOCABULÁRIO */
         function startVocabGame() {
@@ -639,9 +675,8 @@
             setTimeout(() => { playAudio('vocab-target-text'); }, 200);
         }
 
-        function playAudio(elementId) { const text = document.getElementById(elementId).innerText; if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'en-US'; utterance.rate = 0.70; window.speechSynthesis.speak(utterance); } }
+        /* 📌 ADICIONAIS CORE */
         function openStudiedHistory() { const container = document.getElementById('history-items-container'); const room = DATABASE[activeRoomKey]; const studiedIds = getStudiedIds(); const listCards = room.cards.filter(c => studiedIds.includes(c.id)); if (listCards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhuma frase guardada.</p>`; changeView('history-list'); return; } container.innerHTML = ""; listCards.forEach((card, idx) => { const div = document.createElement('div'); div.className = "bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center gap-3"; div.innerHTML = `<div class="flex-1 min-w-0"><p id="hist-txt-${idx}" class="text-base font-bold text-slate-800 leading-tight">${card.front}</p><p class="text-xs font-medium text-indigo-700 italic">${card.pronunciation}</p><p class="text-xs text-slate-500 mt-1">➔ ${card.back}</p></div><button onclick="playAudio('hist-txt-${idx}')" class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><i class="fa-solid fa-volume-high text-xs"></i></button>`; container.appendChild(div); }); changeView('history-list'); }
-        function exitStudySession() { changeView('decks'); }
         function createNewClassroom() { const id = document.getElementById('new-room-id').value.trim(); const name = document.getElementById('new-room-name').value.trim(); const password = document.getElementById('new-room-password').value.trim(); if (!id || !name || !password) { alert("Campos incompletos!"); return; } DATABASE[id] = { name: name, password: password, cards: [] }; saveDatabaseToStorage(); document.getElementById('new-room-id').value = ""; document.getElementById('new-room-name').value = ""; document.getElementById('new-room-password').value = ""; renderClassrooms(); updateTeacherSelectorsAndLists(); alert(`Sala criada!`); }
         function deleteClassroom(key) { if (!confirm(`Deletar sala?`)) return; delete DATABASE[key]; saveDatabaseToStorage(); renderClassrooms(); updateTeacherSelectorsAndLists(); }
         function updateTeacherSelectorsAndLists() { const select = document.getElementById('form-room-id'); const deleteListContainer = document.getElementById('teacher-rooms-delete-list'); if(!select || !deleteListContainer) return; select.innerHTML = ""; deleteListContainer.innerHTML = ""; Object.keys(DATABASE).forEach(key => { const option = document.createElement('option'); option.value = key; option.innerText = DATABASE[key].name; select.appendChild(option); const div = document.createElement('div'); div.className = "flex justify-between items-center bg-slate-50 p-2 rounded-lg text-xs"; div.innerHTML = `<span>${DATABASE[key].name}</span><button onclick="deleteClassroom('${key}')" class="text-rose-500 font-bold px-2"><i class="fa-solid fa-trash-can"></i></button>`; deleteListContainer.appendChild(div); }); }
@@ -654,7 +689,7 @@
             let updatedScriptContent = cleanScriptHTML.replace(/const DEFAULT_DATABASE = \n?[\s\S]*?};/m, "const DEFAULT_DATABASE = " + updatedDatabaseJSON + ";");
             updatedScriptContent = updatedScriptContent.replace(/const CODE_VERSION = \d+;/, "const CODE_VERSION = " + uniqueVersionToken + ";");
             const parser = new DOMParser(); const cleanDoc = parser.parseFromString(document.documentElement.outerHTML, 'text/html');
-            ['view-classrooms','view-decks','view-study','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => {
+            ['view-classrooms','view-decks','view-study','view-save-tutorial','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => {
                 if(id === 'view-classrooms') cleanDoc.getElementById(id).className = "w-full space-y-4"; else cleanDoc.getElementById(id).className = "w-full hidden space-y-6";
             });
             cleanDoc.getElementById('current-badge').className = "text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden";
@@ -664,14 +699,14 @@
         }
 
         function changeView(view) {
-            ['view-classrooms','view-decks','view-study','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            ['view-classrooms','view-decks','view-study','view-save-tutorial','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById('current-badge').classList.add('hidden');
-            document.getElementById('nav-btn-decks').className = "flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5";
-            document.getElementById('nav-btn-teacher').className = "flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5";
+            ['nav-btn-decks', 'nav-btn-save', 'nav-btn-teacher'].forEach(id => document.getElementById(id).className = "flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5");
 
             if (view === 'classrooms') { document.getElementById('view-classrooms').classList.remove('hidden'); document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); } 
             else if (view === 'decks') { document.getElementById('view-decks').classList.remove('hidden'); document.getElementById('current-badge').classList.remove('hidden'); document.getElementById('current-badge').innerText = (DATABASE[activeRoomKey] ? DATABASE[activeRoomKey].name : "Menu"); document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); renderDecksView(); } 
             else if (view === 'study') { document.getElementById('view-study').classList.remove('hidden'); document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); } 
+            else if (view === 'save-tutorial') { document.getElementById('view-save-tutorial').classList.remove('hidden'); document.getElementById('nav-btn-save').classList.add('text-indigo-600'); }
             else if (view === 'game-quiz') { document.getElementById('view-game-quiz').classList.remove('hidden'); }
             else if (view === 'game-memory') { document.getElementById('view-game-memory').classList.remove('hidden'); }
             else if (view === 'game-vocab') { document.getElementById('view-game-vocab').classList.remove('hidden'); }
