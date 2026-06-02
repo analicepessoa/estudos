@@ -4,959 +4,623 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Idiomas - Prof. Analice</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ClassStudy">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluent/180/000000/diploma.png">
     <link rel="icon" type="image/png" href="https://img.icons8.com/fluent/48/000000/diploma.png">
-    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1748563400"></script>
+
+    <script id="tailwind-script" src="https://cdn.tailwindcss.com?v=1716875010"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         .perspective { perspective: 1000px; }
         .flip-card-inner { transition: transform 0.4s; transform-style: preserve-3d; }
         .flipped { transform: rotateY(180deg); }
         .flip-card-front, .flip-card-back { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
         .flip-card-back { transform: rotateY(180deg); }
-        .word-chip { display:inline-block; cursor:pointer; user-select:none; transition: all 0.15s; }
-        .word-chip:active { transform: scale(0.93); }
-        .shake { animation: shake 0.4s; }
-        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-        .pulse-green { animation: pulseG 0.5s; }
-        @keyframes pulseG { 0%{background:#059669} 100%{background:inherit} }
-        #typing-input:focus { outline: none; }
-        .timer-ring { transition: stroke-dashoffset 1s linear; }
     </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col pb-24">
 
-<header class="bg-white border-b border-slate-100 py-4 px-6 sticky top-0 z-50 shadow-sm flex justify-between items-center">
-    <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>ClassStudy</h1>
-    <span id="current-badge" class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden">Sala</span>
-</header>
-
-<main class="flex-1 max-w-md w-full mx-auto px-4 py-6 flex flex-col justify-center">
-
-    <!-- TELA 1: SALAS -->
-    <section id="view-classrooms" class="w-full space-y-4">
-        <div class="mb-4">
-            <h2 class="text-xl font-bold text-slate-800">Seja Bem-vindo(a)!</h2>
-            <p class="text-sm text-slate-500">Selecione a sua sala para acessar os conteúdos:</p>
+    <header class="bg-white border-b border-slate-100 py-4 px-6 sticky top-0 z-50 shadow-sm flex justify-between items-center">
+        <h1 class="text-xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>ClassStudy</h1>
+        <div class="flex items-center gap-2">
+            <span id="current-badge" class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden">Sala</span>
+            <button id="btn-logout" onclick="logoutUser()" class="text-xs text-rose-500 font-bold hidden"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
         </div>
-        <div id="classrooms-list" class="space-y-3"></div>
-    </section>
+    </header>
 
-    <!-- TELA 2: DECKS -->
-    <section id="view-decks" class="w-full space-y-6 hidden">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="text-lg font-bold text-slate-700">Cronograma de Estudos</h2>
-                <p class="text-xs text-slate-500">Escolha como deseja praticar esta semana</p>
-            </div>
-            <button onclick="changeView('classrooms')" class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium"><i class="fa-solid fa-arrow-left-long mr-1"></i>Sair</button>
-        </div>
-        <div id="decks-list" class="space-y-4"></div>
-        <div class="pt-4 border-t border-slate-200 space-y-3">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Seu Progresso Geral</h3>
-            <div onclick="openStudiedHistory()" class="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-xl text-white shadow-sm hover:opacity-95 transition cursor-pointer flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-lg"><i class="fa-solid fa-box-archive"></i></div>
-                    <div>
-                        <h4 class="font-bold text-sm">Frases Concluídas / Arquivadas</h4>
-                        <p class="text-xs text-emerald-100">Rever conteúdos salvos deste dispositivo</p>
-                    </div>
+    <main class="flex-1 max-w-md w-full mx-auto px-4 py-6 flex flex-col justify-center relative">
+        
+        <section id="view-loading" class="w-full flex flex-col items-center justify-center space-y-4 h-[60vh]">
+            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-600"></i>
+            <p class="text-sm font-medium text-slate-500">Conectando ao servidor...</p>
+        </section>
+
+        <section id="view-auth" class="w-full hidden space-y-6">
+            <div class="text-center space-y-2 mb-8">
+                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-2xl mb-4">
+                    <i class="fa-solid fa-user-graduate"></i>
                 </div>
-                <span id="studied-count-badge" class="bg-white text-emerald-700 font-bold text-xs px-2.5 py-1 rounded-full">0</span>
+                <h2 class="text-2xl font-bold text-slate-800">Acesse sua Conta</h2>
+                <p class="text-sm text-slate-500">Faça login para continuar sua trilha.</p>
             </div>
-        </div>
-    </section>
 
-    <!-- TELA 3: FLASHCARDS -->
-    <section id="view-study" class="w-full hidden flex-col justify-between space-y-6">
-        <div class="w-full space-y-2">
-            <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-                <button onclick="changeView('decks')" class="text-indigo-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Voltar</button>
-                <span id="progress-text">Frase 0 de 0</span>
+            <div id="form-login" class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">E-mail</label>
+                    <input type="email" id="login-email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500" placeholder="seu@email.com">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Senha</label>
+                    <input type="password" id="login-password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500" placeholder="••••••••">
+                </div>
+                <button onclick="loginUser()" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl text-sm shadow hover:bg-indigo-700 transition">Entrar na Plataforma</button>
+                <p class="text-center text-xs text-slate-500 pt-2">Não tem conta? <button onclick="toggleAuth('register')" class="text-indigo-600 font-bold hover:underline">Criar conta nova</button></p>
             </div>
-            <div class="w-full bg-slate-200 rounded-full h-2">
-                <div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width:0%"></div>
+
+            <div id="form-register" class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4 hidden">
+                <h3 class="font-bold text-slate-700 border-b border-slate-100 pb-2 mb-2">1. Seus Dados</h3>
+                <div><input type="text" id="reg-name" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500" placeholder="Nome Completo"></div>
+                <div><input type="email" id="reg-email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500" placeholder="E-mail de acesso"></div>
+                <div><input type="password" id="reg-password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500" placeholder="Crie uma senha (mínimo 6 caracteres)"></div>
+                
+                <h3 class="font-bold text-slate-700 border-b border-slate-100 pb-2 mb-2 mt-4">2. Dados da sua Turma</h3>
+                <div>
+                    <select id="reg-room" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 text-slate-600"></select>
+                </div>
+                <div><input type="text" id="reg-room-password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500" placeholder="Senha da Turma fornecida pela Prof."></div>
+                
+                <button onclick="registerUser()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl text-sm shadow hover:bg-emerald-700 transition mt-2">Criar Conta e Entrar</button>
+                <p class="text-center text-xs text-slate-500 pt-2">Já tem conta? <button onclick="toggleAuth('login')" class="text-indigo-600 font-bold hover:underline">Fazer Login</button></p>
             </div>
-        </div>
-        <div class="w-full h-96 perspective cursor-pointer" onclick="flipCard()">
-            <div id="flashcard" class="w-full h-full flip-card-inner relative shadow-md rounded-2xl bg-white border border-slate-100">
-                <div class="flip-card-front absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-white rounded-2xl">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Como se diz?</span>
-                        <button onclick="event.stopPropagation(); playAudioWithTracking('card-english-text');" class="w-12 h-12 rounded-full bg-indigo-600 text-white shadow-md flex items-center justify-center">
-                            <i class="fa-solid fa-volume-high text-lg"></i>
-                        </button>
-                    </div>
-                    <div class="text-center flex flex-col items-center justify-center flex-1 px-2 space-y-4">
-                        <p id="card-english-text" class="text-2xl font-bold text-slate-900 leading-snug">English</p>
-                        <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 w-full">
-                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Pronúncia Prática Facilitada:</span>
-                            <p id="card-pronunciation-text" class="text-sm font-medium text-indigo-900 italic">pronunciation</p>
+            
+            <div class="text-center pt-8">
+                <button onclick="verifyTeacherAccess()" class="text-xs text-slate-400 hover:text-slate-600"><i class="fa-solid fa-chalkboard-user mr-1"></i>Acesso Restrito ao Professor</button>
+            </div>
+        </section>
+
+        <section id="view-decks" class="w-full space-y-6 hidden">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-700">Cronograma de Aulas</h2>
+                    <p class="text-xs text-slate-500">Estude o conteúdo semanal da sua turma</p>
+                </div>
+            </div>
+            <div id="decks-list" class="space-y-4"></div>
+            <div class="pt-4 border-t border-slate-200 space-y-3">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Progresso Geral</h3>
+                <div onclick="openStudiedHistory()" class="bg-gradient-to-r from-emerald-500 to-teal-600 p-4 rounded-xl text-white shadow-sm hover:opacity-95 transition cursor-pointer flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-lg"><i class="fa-solid fa-box-archive"></i></div>
+                        <div>
+                            <h4 class="font-bold text-sm">Frases Concluídas</h4>
+                            <p class="text-xs text-emerald-100">Revisar conteúdos salvos no seu perfil</p>
                         </div>
                     </div>
-                    <span class="text-center text-xs text-slate-400 w-full animate-pulse"><i class="fa-solid fa-rotate mr-1"></i> Toque para revelar a Tradução</span>
+                    <span id="studied-count-badge" class="bg-white text-emerald-700 font-bold text-xs px-2.5 py-1 rounded-full">0</span>
                 </div>
-                <div class="flip-card-back absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-emerald-50/40 rounded-2xl border-2 border-emerald-200">
-                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded w-max">Significado</span>
-                    <div class="text-center flex flex-col items-center justify-center flex-1 px-4 space-y-4">
-                        <p id="card-portuguese-text" class="text-xl font-semibold text-emerald-950">Tradução.</p>
-                        <button onclick="event.stopPropagation(); markAsStudied();" class="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-sm flex items-center gap-1.5">
-                            <i class="fa-solid fa-circle-check"></i> Marcar como Estudado ✓
-                        </button>
+            </div>
+        </section>
+
+        <section id="view-trilha" class="w-full space-y-6 hidden">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-700">Trilha de Reforço</h2>
+                    <p class="text-xs text-slate-500">Domine os fundamentos básicos passo a passo</p>
+                </div>
+            </div>
+            <div id="trilha-mapa-container" class="relative pl-6 border-l-2 border-indigo-200 ml-4 space-y-8 py-2"></div>
+        </section>
+
+        <section id="view-study" class="w-full hidden flex-col justify-between space-y-6">
+            <div class="w-full space-y-2">
+                <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
+                    <button onclick="exitStudySession()" class="text-indigo-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Voltar</button>
+                    <span id="progress-text">Cartão 0 de 0</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2"><div id="progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div></div>
+            </div>
+            <div class="w-full h-96 perspective cursor-pointer" onclick="flipCard()">
+                <div id="flashcard" class="w-full h-full flip-card-inner relative shadow-md rounded-2xl bg-white border border-slate-100">
+                    <div class="flip-card-front absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-white rounded-2xl">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Frente</span>
+                            <button onclick="event.stopPropagation(); playAudioWithTracking('card-english-text');" class="w-12 h-12 rounded-full bg-indigo-600 text-white shadow-md flex items-center justify-center"><i class="fa-solid fa-volume-high text-lg"></i></button>
+                        </div>
+                        <div class="text-center flex flex-col items-center justify-center flex-1 px-2 space-y-4">
+                            <p id="card-english-text" class="text-2xl font-bold text-slate-900 leading-snug">English</p>
+                            <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 w-full"><span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">Pronúncia Facilitada:</span><p id="card-pronunciation-text" class="text-sm font-medium text-indigo-900 italic">pronunciation</p></div>
+                        </div>
+                        <span class="text-center text-xs text-slate-400 w-full animate-pulse"><i class="fa-solid fa-rotate mr-1"></i> Toque para revelar</span>
                     </div>
-                    <span class="text-center text-xs text-slate-400 w-full"><i class="fa-solid fa-rotate mr-1"></i> Toque para voltar à frase</span>
+                    <div class="flip-card-back absolute inset-0 w-full h-full flex flex-col justify-between p-6 bg-emerald-50/40 rounded-2xl border-2 border-emerald-200">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded w-max">Tradução</span>
+                        <div class="text-center flex flex-col items-center justify-center flex-1 px-4 space-y-4">
+                            <p id="card-portuguese-text" class="text-xl font-semibold text-emerald-950">Tradução.</p>
+                            <button onclick="event.stopPropagation(); markAsStudied();" class="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Marcar como Concluído</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div id="action-buttons" class="grid grid-cols-2 gap-4 pt-2 hidden">
-            <button onclick="handleResponse(false)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1 shadow-sm">
-                <i class="fa-solid fa-circle-xmark text-lg text-orange-500"></i>Estudar Mais
-            </button>
-            <button onclick="handleResponse(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 py-3.5 px-4 rounded-xl font-bold text-sm flex flex-col items-center justify-center gap-1 shadow-sm">
-                <i class="fa-solid fa-forward text-lg text-slate-500"></i>Próxima Frase
-            </button>
-        </div>
-        <p id="flip-hint" class="text-center text-xs text-slate-400 font-medium">Toque no cartão para liberar os botões de treino.</p>
-    </section>
+            <div id="action-buttons" class="grid grid-cols-2 gap-4 pt-2 hidden">
+                <button onclick="handleResponse(false)" class="bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 py-3.5 px-4 rounded-xl font-bold text-sm shadow-sm flex flex-col items-center justify-center gap-1"><i class="fa-solid fa-circle-xmark text-lg text-orange-500"></i>Estudar Mais</button>
+                <button onclick="handleResponse(true)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 py-3.5 px-4 rounded-xl font-bold text-sm shadow-sm flex flex-col items-center justify-center gap-1"><i class="fa-solid fa-forward text-lg text-slate-500"></i>Próximo</button>
+            </div>
+        </section>
 
-    <!-- SALVAR TUTORIAL -->
-    <section id="view-save-tutorial" class="w-full hidden space-y-5">
-        <div class="mb-2">
-            <h2 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-mobile-screen-button mr-2 text-indigo-600"></i>Como Salvar na Tela do Celular</h2>
-            <p class="text-xs text-slate-500">Tenha o Portal da Prof. Analice como um aplicativo real:</p>
-        </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-2">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5"><i class="fa-brands fa-apple text-sm"></i> Se você usa iPhone (Safari):</h3>
-            <ol class="text-xs text-slate-600 space-y-1 list-decimal pl-4">
-                <li>Toque no botão de <b>Compartilhar</b> <i class="fa-solid fa-share-nodes text-slate-400"></i> na barra inferior.</li>
-                <li>Role as opções e toque em <b>Adicionar à Tela de Início</b>.</li>
-                <li>Confirme clicando em <b>Adicionar</b>. Pronto!</li>
-            </ol>
-        </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-2">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5"><i class="fa-brands fa-android text-sm"></i> Se você usa Android (Chrome):</h3>
-            <ol class="text-xs text-slate-600 space-y-1 list-decimal pl-4">
-                <li>Toque nos <b>três pontinhos</b> <i class="fa-solid fa-ellipsis-vertical text-slate-400"></i> no canto superior direito.</li>
-                <li>Selecione <b>Instalar aplicativo</b> ou <b>Adicionar à tela de início</b>.</li>
-                <li>Confirme. Pronto!</li>
-            </ol>
-        </div>
-        <button onclick="changeView('classrooms')" class="w-full bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-xs shadow">Voltar para o Início</button>
-    </section>
+        <section id="view-game-quiz" class="w-full hidden space-y-6">
+            <div class="flex justify-between items-center text-xs font-semibold text-slate-500"><button onclick="exitStudySession()" class="text-indigo-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair</button><span id="quiz-progress-text">Pergunta 0 de 0</span></div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm text-center space-y-4"><div class="flex justify-center"><button onclick="playAudio('quiz-target-text')" class="w-12 h-12 rounded-full bg-indigo-600 text-white shadow flex items-center justify-center animate-pulse"><i class="fa-solid fa-volume-high text-lg"></i></button></div><h3 id="quiz-target-text" class="text-xl font-bold text-slate-900 leading-tight">...</h3></div>
+            <div class="space-y-3"><p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tradução Correta:</p><div id="quiz-options-container" class="space-y-2.5"></div></div>
+        </section>
+        <section id="view-game-memory" class="w-full hidden space-y-4">
+            <div class="flex justify-between items-center text-xs font-semibold text-slate-500"><button onclick="exitStudySession()" class="text-purple-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair</button><span id="memory-score-text">Pares Encontrados: 0</span></div>
+            <div id="memory-grid" class="grid grid-cols-2 gap-3 pt-2"></div>
+        </section>
+        <section id="view-game-vocab" class="w-full hidden space-y-6">
+            <div class="flex justify-between items-center text-xs font-semibold text-slate-500"><button onclick="exitStudySession()" class="text-amber-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair</button><span id="vocab-progress-text">Palavra 0 de 0</span></div>
+            <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl text-white text-center space-y-4 shadow-md"><div class="flex justify-center"><button onclick="playAudio('vocab-target-text')" class="w-11 h-11 rounded-full bg-white/20 text-white shadow flex items-center justify-center"><i class="fa-solid fa-volume-high text-sm"></i></button></div><h3 id="vocab-target-text" class="text-2xl font-extrabold tracking-wide uppercase">...</h3></div>
+            <div class="space-y-3"><div id="vocab-options-container" class="space-y-2.5"></div></div>
+        </section>
+        <section id="view-history-list" class="w-full hidden space-y-4">
+            <div class="flex items-center justify-between mb-2"><div><h2 class="text-lg font-bold text-emerald-800">Seu Histórico</h2><p class="text-xs text-slate-500">Conteúdos salvos na nuvem</p></div><button onclick="changeView('decks')" class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium">Voltar</button></div>
+            <div id="history-items-container" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
+        </section>
+        <section id="view-success" class="w-full hidden text-center space-y-6 py-8">
+            <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-4xl"><i class="fa-solid fa-star animate-bounce"></i></div>
+            <div class="space-y-2"><h2 class="text-2xl font-bold text-slate-800">Excelente Trabalho! 🌟</h2><p id="success-custom-text" class="text-slate-500 text-sm max-w-xs mx-auto">Etapa concluída!</p></div>
+            <button onclick="exitStudySession()" class="w-full bg-indigo-600 text-white font-bold py-3.5 px-6 rounded-xl shadow">Avançar</button>
+        </section>
+        <section id="view-save-tutorial" class="w-full hidden space-y-5">
+            <div class="mb-2"><h2 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-mobile-screen-button mr-2 text-indigo-600"></i>Como Salvar na Tela do Celular</h2><p class="text-xs text-slate-500">Fixe o Portal de Estudos como um aplicativo nativo:</p></div>
+            <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-2"><h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5"><i class="fa-brands fa-apple text-sm"></i> iPhone (Safari):</h3><ol class="text-xs text-slate-600 space-y-1 list-decimal pl-4"><li>Toque no botão de <b>Compartilhar</b> <i class="fa-solid fa-share-nodes text-slate-400"></i>.</li><li>Escolha a opção <b>Adicionar à Tela de Início</b> <i class="fa-regular fa-square-plus text-slate-400"></i>.</li><li>Clique em <b>Adicionar</b>. Pronto!</li></ol></div>
+            <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-2"><h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-1.5"><i class="fa-brands fa-android text-sm"></i> Android (Chrome):</h3><ol class="text-xs text-slate-600 space-y-1 list-decimal pl-4"><li>Toque nos <b>três pontinhos</b> <i class="fa-solid fa-ellipsis-vertical text-slate-400"></i> no topo direito.</li><li>Escolha <b>Instalar aplicativo</b> ou <b>Adicionar à tela de início</b>. Confirme!</li></ol></div>
+        </section>
 
-    <!-- JOGO 1: QUIZ -->
-    <section id="view-game-quiz" class="w-full hidden space-y-6">
-        <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-            <button onclick="changeView('decks')" class="text-indigo-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair</button>
-            <span id="quiz-progress-text">Pergunta 0 de 0</span>
-        </div>
-        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm text-center space-y-4">
-            <button onclick="playAudio('quiz-target-text')" class="w-12 h-12 rounded-full bg-indigo-600 text-white shadow flex items-center justify-center mx-auto animate-pulse">
-                <i class="fa-solid fa-volume-high text-lg"></i>
-            </button>
-            <h3 id="quiz-target-text" class="text-xl font-bold text-slate-900 leading-tight">...</h3>
-        </div>
-        <div class="space-y-3">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Selecione a Tradução Correta:</p>
-            <div id="quiz-options-container" class="space-y-2.5"></div>
-        </div>
-    </section>
-
-    <!-- JOGO 2: COMPLETAR LACUNA -->
-    <section id="view-game-gap" class="w-full hidden space-y-5">
-        <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-            <button onclick="changeView('decks')" class="text-sky-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair</button>
-            <span id="gap-progress-text">Frase 0 de 0</span>
-        </div>
-        <div class="bg-gradient-to-br from-sky-500 to-blue-600 p-5 rounded-2xl text-white text-center space-y-3 shadow-md">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-sky-100">Complete a frase em inglês:</p>
-            <p id="gap-sentence-display" class="text-lg font-bold leading-relaxed"></p>
-            <button onclick="playAudio('gap-audio-source')" class="mx-auto flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full text-xs font-bold">
-                <i class="fa-solid fa-volume-high"></i> Ouvir frase completa
-            </button>
-            <span id="gap-audio-source" class="hidden"></span>
-        </div>
-        <div id="gap-options-container" class="grid grid-cols-2 gap-3"></div>
-        <div id="gap-feedback" class="hidden text-center py-2 rounded-xl text-sm font-bold"></div>
-    </section>
-
-    <!-- JOGO 3: ORDENAR PALAVRAS -->
-    <section id="view-game-order" class="w-full hidden space-y-5">
-        <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-            <button onclick="changeView('decks')" class="text-violet-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair</button>
-            <span id="order-progress-text">Frase 0 de 0</span>
-        </div>
-        <div class="bg-gradient-to-br from-violet-500 to-purple-700 p-5 rounded-2xl text-white text-center space-y-2 shadow-md">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-violet-200">Monte a frase em inglês:</p>
-            <p id="order-translation" class="text-base font-semibold text-violet-100 italic"></p>
-        </div>
-        <div id="order-answer-area" class="min-h-14 bg-white border-2 border-dashed border-slate-300 rounded-xl p-3 flex flex-wrap gap-2 items-start"></div>
-        <div id="order-word-bank" class="flex flex-wrap gap-2 justify-center py-2"></div>
-        <div class="grid grid-cols-2 gap-3">
-            <button onclick="clearOrderAnswer()" class="bg-slate-100 text-slate-600 py-2.5 rounded-xl font-bold text-sm border border-slate-200">
-                <i class="fa-solid fa-rotate-left mr-1"></i>Limpar
-            </button>
-            <button onclick="checkOrderAnswer()" class="bg-violet-600 text-white py-2.5 rounded-xl font-bold text-sm shadow">
-                <i class="fa-solid fa-check mr-1"></i>Verificar
-            </button>
-        </div>
-        <div id="order-feedback" class="hidden text-center py-2 rounded-xl text-sm font-bold"></div>
-    </section>
-
-    <!-- JOGO 4: DIGITAÇÃO CRONOMETRADA -->
-    <section id="view-game-typing" class="w-full hidden space-y-5">
-        <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-            <button onclick="stopTypingGame(); changeView('decks');" class="text-rose-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair</button>
-            <span id="typing-progress-text">Frase 0 de 0</span>
-        </div>
-        <div class="bg-gradient-to-br from-rose-500 to-pink-600 p-5 rounded-2xl text-white text-center space-y-3 shadow-md">
-            <div class="flex items-center justify-center gap-4">
-                <div class="text-center">
-                    <p class="text-2xl font-black" id="typing-timer">30</p>
-                    <p class="text-[10px] text-rose-200 uppercase font-bold">segundos</p>
+        <section id="view-teacher" class="w-full hidden space-y-6">
+            <div><h2 class="text-lg font-bold text-slate-700">Painel de Controle</h2><p class="text-xs text-slate-500">Gerencie salas, semanas normais e fases da trilha.</p></div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-folder-plus mr-1"></i> Gerenciar Salas de Aula</h3>
+                <div class="space-y-3 pt-2">
+                    <div><input type="text" id="new-room-id" placeholder="ID (Ex: sala_kids)" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
+                    <div><input type="text" id="new-room-name" placeholder="Nome (Ex: Inglês Prático)" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
+                    <div><input type="text" id="new-room-password" placeholder="Senha da Sala" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
+                    <button onclick="createNewClassroom()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-xs transition shadow hover:bg-emerald-700">Criar Nova Sala</button>
                 </div>
-                <button onclick="playAudio('typing-audio-source')" class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center">
-                    <i class="fa-solid fa-volume-high"></i>
-                </button>
-                <div class="text-center">
-                    <p class="text-2xl font-black" id="typing-score-display">0</p>
-                    <p class="text-[10px] text-rose-200 uppercase font-bold">pontos</p>
+                <div class="pt-3 border-t border-slate-100"><div id="teacher-rooms-delete-list" class="space-y-1.5"></div></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-file-medical mr-1"></i> Fabricar Flashcards</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><select id="form-room-id" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none"></select></div>
+                    <div><input type="text" id="form-week" placeholder="Ex: Semana 01 ou Fase 01" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
                 </div>
+                <div><input type="text" id="form-date" placeholder="Data da Aula" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
+                <div><input type="text" id="form-front" placeholder="Frase em Inglês" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
+                <div><input type="text" id="form-front-pronunciation" placeholder="Pronúncia Prática" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
+                <div><input type="text" id="form-back" placeholder="Tradução em Português" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
+                <button onclick="generateCardCode()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg text-sm transition shadow hover:bg-indigo-700">Injetar Card na Sala</button>
             </div>
-            <p class="text-[10px] font-bold uppercase tracking-wider text-rose-100">Traduza para o inglês:</p>
-            <p id="typing-target-text" class="text-lg font-bold text-white leading-snug"></p>
-            <span id="typing-audio-source" class="hidden"></span>
-        </div>
-        <div class="relative">
-            <input id="typing-input" type="text" placeholder="Digite a tradução em inglês..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-                class="w-full px-4 py-4 border-2 border-slate-200 rounded-xl text-sm font-medium focus:border-rose-400 transition bg-white">
-            <button onclick="checkTypingAnswer()" class="absolute right-3 top-1/2 -translate-y-1/2 bg-rose-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold">
-                OK
-            </button>
-        </div>
-        <div id="typing-feedback" class="hidden text-center py-2 rounded-xl text-sm font-bold"></div>
-    </section>
-
-    <!-- JOGO 5: DITADO -->
-    <section id="view-game-dictation" class="w-full hidden space-y-5">
-        <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-            <button onclick="changeView('decks')" class="text-teal-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair</button>
-            <span id="dict-progress-text">Frase 0 de 0</span>
-        </div>
-        <div class="bg-gradient-to-br from-teal-500 to-emerald-600 p-6 rounded-2xl text-white text-center space-y-4 shadow-md">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-teal-100">Ouça e identifique a frase:</p>
-            <button onclick="playDictationAudio()" id="dict-play-btn" class="w-16 h-16 rounded-full bg-white/20 border-2 border-white/40 text-white flex items-center justify-center mx-auto text-2xl hover:bg-white/30 transition">
-                <i class="fa-solid fa-headphones"></i>
-            </button>
-            <p class="text-xs text-teal-100">Toque para ouvir a frase</p>
-            <span id="dict-audio-source" class="hidden"></span>
-        </div>
-        <div id="dict-options-container" class="space-y-2.5"></div>
-        <div id="dict-feedback" class="hidden text-center py-2 rounded-xl text-sm font-bold"></div>
-    </section>
-
-    <!-- JOGO 6: CORRIJA O ERRO (GRAMÁTICA) -->
-    <section id="view-game-grammar" class="w-full hidden space-y-5">
-        <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-            <button onclick="changeView('decks')" class="text-amber-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair</button>
-            <span id="grammar-progress-text">Questão 0 de 0</span>
-        </div>
-        <div class="bg-gradient-to-br from-amber-400 to-orange-500 p-5 rounded-2xl text-white text-center space-y-3 shadow-md">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-amber-100">🔍 Encontre a palavra ERRADA:</p>
-            <p id="grammar-sentence" class="text-base font-bold leading-relaxed"></p>
-            <p class="text-xs text-amber-100">Toque na palavra incorreta na frase acima</p>
-        </div>
-        <div id="grammar-word-buttons" class="flex flex-wrap gap-2 justify-center py-2"></div>
-        <div id="grammar-rule-box" class="hidden bg-white border border-amber-200 rounded-xl p-4 space-y-1">
-            <p class="text-xs font-bold text-amber-700 uppercase tracking-wider">📚 Regra Gramatical:</p>
-            <p id="grammar-rule-text" class="text-sm text-slate-700"></p>
-        </div>
-        <div id="grammar-feedback" class="hidden text-center py-2 rounded-xl text-sm font-bold"></div>
-        <button id="grammar-next-btn" onclick="nextGrammarQuestion()" class="hidden w-full bg-amber-500 text-white py-3 rounded-xl font-bold text-sm shadow">
-            Próxima Questão <i class="fa-solid fa-arrow-right ml-1"></i>
-        </button>
-    </section>
-
-    <!-- JOGO 7: VOCABULÁRIO -->
-    <section id="view-game-vocab" class="w-full hidden space-y-6">
-        <div class="flex justify-between items-center text-xs font-semibold text-slate-500">
-            <button onclick="changeView('decks')" class="text-amber-600 hover:underline flex items-center"><i class="fa-solid fa-arrow-left mr-1"></i> Sair</button>
-            <span id="vocab-progress-text">Palavra 0 de 0</span>
-        </div>
-        <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-2xl text-white text-center space-y-4 shadow-md">
-            <button onclick="playAudio('vocab-target-text')" class="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center mx-auto">
-                <i class="fa-solid fa-volume-high text-sm"></i>
-            </button>
-            <h3 id="vocab-target-text" class="text-2xl font-extrabold tracking-wide uppercase">...</h3>
-            <p class="text-[10px] text-amber-100 uppercase tracking-wider font-bold">Como se traduz essa palavra?</p>
-        </div>
-        <div id="vocab-options-container" class="space-y-2.5"></div>
-    </section>
-
-    <!-- HISTÓRICO -->
-    <section id="view-history-list" class="w-full hidden space-y-4">
-        <div class="flex items-center justify-between mb-2">
-            <div>
-                <h2 class="text-lg font-bold text-emerald-800">Frases Estudadas</h2>
-                <p class="text-xs text-slate-500">Conteúdos marcados como concluídos</p>
+            <div class="space-y-2">
+                <label class="block text-xs font-bold text-slate-500 uppercase">📋 CÓDIGO FONTE TOTAL DO APP (ANTI-CACHE):</label>
+                <textarea id="output-code" rows="8" readonly class="w-full bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-[10px] focus:outline-none"></textarea>
             </div>
-            <button onclick="changeView('decks')" class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium">Voltar</button>
+            <button onclick="logoutUser()" class="w-full bg-rose-50 text-rose-600 font-bold py-3 rounded-lg text-sm transition border border-rose-200">Sair do Painel / Fazer Logout</button>
+        </section>
+
+    </main>
+
+    <nav id="bottom-nav" class="bg-white border-t border-slate-100 fixed bottom-0 left-0 right-0 py-2 shadow-lg z-50 hidden">
+        <div class="max-w-md mx-auto grid grid-cols-4 text-center">
+            <button onclick="changeView('decks')" id="nav-btn-decks" class="flex flex-col items-center justify-center text-indigo-600 font-medium text-xs gap-0.5"><i class="fa-solid fa-book-open text-lg"></i>Aulas</button>
+            <button onclick="changeView('trilha')" id="nav-btn-trilha" class="flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5"><i class="fa-solid fa-route text-lg"></i>Trilha</button>
+            <button onclick="changeView('save-tutorial')" id="nav-btn-save" class="flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5"><i class="fa-solid fa-mobile-screen-button text-lg"></i>Salvar</button>
+            <button onclick="verifyTeacherAccess()" id="nav-btn-teacher" class="flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5"><i class="fa-solid fa-user-gear text-lg"></i>Prof</button>
         </div>
-        <div id="history-items-container" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1"></div>
-    </section>
+    </nav>
 
-    <!-- SUCESSO -->
-    <section id="view-success" class="w-full hidden text-center space-y-6 py-8">
-        <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-4xl">
-            <i class="fa-solid fa-star animate-bounce"></i>
-        </div>
-        <div class="space-y-2">
-            <h2 class="text-2xl font-bold text-slate-800">Excelente Trabalho! 🌟</h2>
-            <p id="success-custom-text" class="text-slate-500 text-sm max-w-xs mx-auto">Você passou por todas as etapas!</p>
-        </div>
-        <button onclick="changeView('decks')" class="w-full bg-indigo-600 text-white font-bold py-3.5 px-6 rounded-xl shadow">Voltar para o Menu</button>
-    </section>
+    <script id="main-script-tag">
+        /* ==========================================================================
+           📌 CONFIGURAÇÕES DO SUPABASE
+           ========================================================================== */
+        const SUPABASE_URL = 'https://ilcvihbawgoidmotvrky.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_ZA5JFbtrBWEPkLlhEUgEFQ_j9vjBD_W'; 
 
-    <!-- PAINEL PROFESSOR -->
-    <section id="view-teacher" class="w-full hidden space-y-6">
-        <div>
-            <h2 class="text-lg font-bold text-slate-700">Painel de Controle do Professor</h2>
-            <p class="text-xs text-slate-500">Gerencie salas, senhas e atualize o cache dos alunos.</p>
-        </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-folder-plus mr-1"></i> Gerenciar Salas</h3>
-            <div class="space-y-3 pt-2">
-                <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">ID Único da Sala</label><input type="text" id="new-room-id" placeholder="Ex: sala_kids" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
-                <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome de Exibição</label><input type="text" id="new-room-name" placeholder="Ex: Inglês Prático - Kids" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
-                <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Senha dos Alunos</label><input type="text" id="new-room-password" placeholder="Ex: kids123" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
-                <button onclick="createNewClassroom()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-xs shadow hover:bg-emerald-700"><i class="fa-solid fa-plus mr-1"></i> Criar Nova Sala</button>
-            </div>
-            <div class="pt-3 border-t border-slate-100">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2">Salas Ativas:</label>
-                <div id="teacher-rooms-delete-list" class="space-y-1.5"></div>
-            </div>
-        </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-600"><i class="fa-solid fa-file-medical mr-1"></i> Fabricar Flashcards</h3>
-            <div class="grid grid-cols-2 gap-3">
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Sala</label><select id="form-room-id" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none"></select></div>
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Semana</label><input type="text" id="form-week" placeholder="Ex: Semana 01" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
-            </div>
-            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Data da Aula</label><input type="text" id="form-date" placeholder="Ex: 30/05/2026" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Frase em Inglês</label><input type="text" id="form-front" placeholder="Ex: What time is it?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Pronúncia Facilitada</label><input type="text" id="form-front-pronunciation" placeholder="Ex: uót táim ízit?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
-            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tradução em Português</label><input type="text" id="form-back" placeholder="Ex: Que horas são?" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none"></div>
-            <button onclick="generateCardCode()" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-lg text-sm shadow hover:bg-indigo-700"><i class="fa-solid fa-gears mr-1"></i> Injetar Card na Sala</button>
-        </div>
-        <div class="space-y-2">
-            <label class="block text-xs font-bold text-slate-500 uppercase">📋 Código Fonte Total (Anti-Cache):</label>
-            <p class="text-[11px] text-slate-400 bg-slate-100 p-2 border border-slate-200 rounded-lg">Clique na caixa, use <b>Ctrl+A</b> para selecionar tudo e cole no GitHub.</p>
-            <textarea id="output-code" rows="8" readonly class="w-full bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-[10px] focus:outline-none"></textarea>
-        </div>
-    </section>
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-</main>
+        /* ==========================================================================
+           📌 BANCO DE DADOS BASE DINÂMICO CONSOLIDADO (CONTEÚDOS E TRILHAS)
+           ========================================================================== */
+        const DEFAULT_DATABASE = {
+            "IQ15/0003": { "name": "Turma IQ15/0003", "password": "iq15", "cards": [] },
+            "Turma_IQ19/00013": { "name": "Turma IQ19/0013 Noite", "password": "iq1913", "cards": [] },
+            "Turma_iq19/0004": { "name": "Turma IQ19/0004 Quinta", "password": "iq194", "cards": [] },
+            "Turma_IQ19/0007": {
+                "name": "Turma IQ19/0007",
+                "password": "iq1907",
+                "cards": [
+                    { "id": "id_v01", "week": "Semana 01", "front": "Can you grab a carton of milk from the fridge?", "pronunciation": "Kén iú græb â KÁR-ton óv mɪlk frâm-đâ frídj?", "back": "Você pode pegar uma caixinha de leite da geladeira?" },
+                    { "id": "id_v02", "week": "Semana 01", "front": "I'd like a glass of water, please.", "pronunciation": "Áid láik â glæs óv UÁ-têr, plíz.", "back": "Eu gostaria de um copo de água, por favor." },
+                    { "id": "id_v03", "week": "Semana 01", "front": "Open a can of beer for me!", "pronunciation": "Óu-pên â kæn óv bí-êr fór mí!", "back": "Abre uma lata de cerveja para mim!" },
+                    { "id": "id_v04", "week": "Semana 01", "front": "The jar of honey is sticky.", "pronunciation": "Đâ djár óv HÁ-ni íz STÍ-ki.", "back": "O pote de mel está grudento." },
+                    { "id": "id_v05", "week": "Semana 01", "front": "I ate a whole bag of cookies yesterday.", "pronunciation": "Ái éit â hohl bæg óv CÚ-kiz iés-têr-dêi.", "back": "Eu comi um pacote inteiro de biscoitos ontem." },
+                    { "id": "id_v06", "week": "Semana 01", "front": "How much is it?", "pronunciation": "Háu mâtch íz ít?", "back": "Quanto custa isto?" },
+                    { "id": "id_v07", "week": "Semana 01", "front": "Thanks a lot!", "pronunciation": "Tænks â lót!", "back": "Muito obrigado!" },
+                    { "id": "id_v08", "week": "Semana 01", "front": "I have too many things to do today.", "pronunciation": "Ái hæv tú MÉ-ni tíngz tú dú tú-dêi.", "back": "Eu tenho coisas demais para fazer hoje." },
+                    { "id": "id_v09", "week": "Semana 01", "front": "Can I have a little water, please?", "pronunciation": "Kén ái hæv â LÍT-tol UÁ-têr, plíz?", "back": "Você pode me dar um pouco de água, por favor?" },
+                    { "id": "id_v10", "week": "Semana 01", "front": "I have a few questions.", "pronunciation": "Ái hæv â fiú QUÉS-tchônz.", "back": "Eu tenho algumas perguntas." },
+                    { "id": "id_v11", "week": "Semana 01", "front": "I have a few hours before my flight.", "pronunciation": "Ái hæv â fiú ÁU-êrz bi-fór mái fláit.", "back": "Eu tenho algumas horas antes do meu voo." },
+                    { "id": "id_v12", "week": "Semana 01", "front": "Don't lose hope!", "pronunciation": "Dóunt lúz hohp!", "back": "Não perca a esperança!" },
+                    { "id": "id_v13", "week": "Semana 01", "front": "There is little chance of rain today.", "pronunciation": "Đér íz LÍT-tol tchæns óv rêin tú-dêi.", "back": "Há pouca chance de chuva hoje." },
+                    { "id": "id_v14", "week": "Semana 01", "front": "Many companies are working from home now.", "pronunciation": "MÉ-ni KÓM-pâ-niz ár UÓR-kín frâm hohm náu.", "back": "Muitas empresas estão trabalhando de home office agora." },
+                    { "id": "id_v15", "week": "Semana 01", "front": "Give me a little time to think.", "pronunciation": "Gív mí â LÍT-tol táim tú tí-nk.", "back": "Me dê um tempinho para pensar." },
+                    { "id": "id_v16", "week": "Semana 01", "front": "We bought a fresh baguette from the bakery.", "pronunciation": "Ui baht â frech bâ-GÉT frâm-đâ BÊI-kâ-ri.", "back": "Nós compramos uma baguete fresquinha na padaria." },
+                    { "id": "id_v17", "week": "Semana 01", "front": "Whole wheat bread is healthier for breakfast.", "pronunciation": "Hohl uíit brêd íz HÉL-fi-êr fár BRÉK-fâst.", "back": "Pão integral é mais saudável para o café da manhã." },
+                    { "id": "id_v18", "week": "Semana 01", "front": "She ordered a warm croissant and coffee.", "pronunciation": "Xi ÓR-dârd â uárm krwâ-SÁN ân KÁ-fi.", "back": "Ela pediu um croissant quentinho e café." },
+                    { "id": "id_v19", "week": "Semana 01", "front": "Toast the bun before making the burger.", "pronunciation": "Tohst đâ BAN bi-fór MÊI-kin đâ BÛR-gûr.", "back": "Torre o pão antes de fazer o hambúrguer." },
+                    { "id": "id_v20", "week": "Semana 01", "front": "Would you like a dinner roll with your soup?", "pronunciation": "Uuh-djú láik â DÍ-nêr rohl uíđ iór suup?", "back": "Você gostaria de um pãozinho para acompanhar a sua sopa?" },
+                    { "id": "id_v21", "week": "Semana 01", "front": "I always buy French bread in the morning.", "pronunciation": "Ái ÁL-uêiz bái frentch brêd ín-đâ MÓR-níng.", "back": "Eu sempre compro pão francês de manhã." },
+                    { "id": "id_c01", "week": "Semana 01", "front": "Five hundred grams", "pronunciation": "Fáiv RÁN-drêd grémz", "back": "500 gramas" },
+                    { "id": "id_c02", "week": "Semana 01", "front": "Canjica (white corn)", "pronunciation": "Can-jí-ca (uáit córn)", "back": "Canjica (milho branco)" },
+                    { "id": "id_c03", "week": "Semana 01", "front": "A can of condensed milk", "pronunciation": "Â kæn óv con-DÉNST mɪlk", "back": "Uma lata de leite condensado" },
+                    { "id": "id_c04", "week": "Semana 01", "front": "Two hundred milliliters", "pronunciation": "Tú RÁN-drêd MÍ-li-li-têrz", "back": "200 mililitros" },
+                    { "id": "id_c05", "week": "Semana 01", "front": "Coconut milk", "pronunciation": "CÓU-có-nat mɪlk", "back": "Leite de coco" },
+                    { "id": "id_c06", "week": "Semana 01", "front": "Fifty grams", "pronunciation": "FÍF-ti grémz", "back": "50 gramas" },
+                    { "id": "id_c07", "week": "Semana 01", "front": "Grated coconut", "pronunciation": "GRÊI-têd CÓU-có-nat", "back": "Coco ralado" },
+                    { "id": "id_c08", "week": "Semana 01", "front": "One liter of milk", "pronunciation": "Uán LÍ-têr óv mɪlk", "back": "Um litro de leite" },
+                    { "id": "id_c09", "week": "Semana 01", "front": "Eight tablespoons", "pronunciation": "Êit TÊI-bol-spunz", "back": "Oito colheres de sopa" },
+                    { "id": "id_c10", "week": "Semana 01", "front": "Sugar", "pronunciation": "CHÚ-gâr", "back": "Açúcar" },
+                    { "id": "id_c11", "week": "Semana 01", "front": "Dessert", "pronunciation": "di-ZÊRT", "back": "Sobremesa" },
+                    { "id": "id_c12", "week": "Semana 01", "front": "After the break", "pronunciation": "ÁF-têr đâ brêik", "back": "Depois do intervalo / comercial" },
+                    { "id": "id_c13", "week": "Semana 01", "front": "Host", "pronunciation": "RÔUST", "back": "Apresentador / Anfitrião" },
+                    { "id": "id_c14", "week": "Semana 01", "front": "Recipe", "pronunciation": "RÉ-si-pi", "back": "Receita" },
+                    { "id": "id_c15", "week": "Semana 01", "front": "Ingredients", "pronunciation": "in-GRÍ-di-ents", "back": "Ingredientes" },
+                    { "id": "id_c16", "week": "Semana 01", "front": "Can you pass me a tablespoon of sugar, please?", "pronunciation": "Kén iú pæs mí â TÊI-bol-spun óv CHÚ-gâr, plíz?", "back": "Você pode me passar uma colher de sopa de açúcar, por favor?" },
+                    { "id": "id_c17", "week": "Semana 01", "front": "Hold on, I need to take notes of this.", "pronunciation": "RÔULD ÓN, ái níd tu têik nôuts óv đís.", "back": "Espera aí, eu preciso anotar isso." },
+                    { "id": "id_c18", "week": "Semana 01", "front": "I didn't get what you said. Can you repeat?", "pronunciation": "Ái DÍ-dent guét uát iú séd. Kén iú ri-PÍT?", "back": "Eu não entendi o que você disse. Pode repetir?" },
+                    { "id": "id_c19", "week": "Semana 01", "front": "We are out of milk. We need to buy a liter.", "pronunciation": "Uí ár ÁUT óv mɪlk. Uí níd tu bái â LÍ-têr.", "back": "Estamos sem leite. Precisamos comprar um litro." },
+                    { "id": "id_c20", "week": "Semana 01", "front": "Just add a pinch of salt to the recipe.", "pronunciation": "Djhâst éd â píntch óv sôlt tu đâ RÉ-si-pi.", "back": "Só adicione uma pitada de sal na receita." },
+                    { "id": "id_c21", "week": "Semana 01", "front": "Let's take a quick break and we'll be right back.", "pronunciation": "Léts têik â kuík brêik ænd uíl bí ráit bæk.", "back": "Vamos fazer um intervalo rápido e já voltamos." },
 
-<nav class="bg-white border-t border-slate-100 fixed bottom-0 left-0 right-0 py-2 shadow-lg z-50">
-    <div class="max-w-md mx-auto grid grid-cols-3 text-center">
-        <button onclick="changeView('classrooms')" id="nav-btn-decks" class="flex flex-col items-center justify-center text-indigo-600 font-medium text-xs gap-0.5">
-            <i class="fa-solid fa-graduation-cap text-lg"></i>Estudar
-        </button>
-        <button onclick="changeView('save-tutorial')" id="nav-btn-save" class="flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5">
-            <i class="fa-solid fa-mobile-screen-button text-lg"></i>Salvar App
-        </button>
-        <button onclick="verifyTeacherAccess()" id="nav-btn-teacher" class="flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5">
-            <i class="fa-solid fa-chalkboard-user text-lg"></i>Professor
-        </button>
-    </div>
-</nav>
+                    // TRILHAS BÁSICAS BLOQUEÁVEIS
+                    { "id": "id_t01", "week": "Fase 01: Alfabeto Básico", "front": "A is for Apple", "pronunciation": "Êi íz fór É-pol", "back": "A de Maçã" },
+                    { "id": "id_t02", "week": "Fase 01: Alfabeto Básico", "front": "B is for Book", "pronunciation": "Bí íz fór Búk", "back": "B de Livro" },
+                    { "id": "id_t03", "week": "Fase 01: Alfabeto Básico", "front": "C is for Car", "pronunciation": "Sí íz fór Kár", "back": "C de Carro" },
+                    { "id": "id_t04", "week": "Fase 01: Alfabeto Básico", "front": "E is for English", "pronunciation": "Í íz fór Ín-glish", "back": "E de Inglês" },
+                    
+                    { "id": "id_t05", "week": "Fase 02: Números de 1 a 10", "front": "One", "pronunciation": "Uán", "back": "Um (1)" },
+                    { "id": "id_t06", "week": "Fase 02: Números de 1 a 10", "front": "Two", "pronunciation": "Tú", "back": "Dois (2)" },
+                    { "id": "id_t07", "week": "Fase 02: Números de 1 a 10", "front": "Three", "pronunciation": "Thrí", "back": "Três (3)" },
+                    { "id": "id_t08", "week": "Fase 02: Números de 1 a 10", "front": "Four", "pronunciation": "Fór", "back": "Quatro (4)" },
 
-<script id="main-script-tag">
-const DEFAULT_DATABASE = {
-    "IQ15/0003": { "name": "Turma IQ15/0003", "password": "iq15", "cards": [] },
-    "Turma_IQ19/00013": {
-        "name": "Turma IQ19/0013 Noite", "password": "iq1913",
-        "cards": [
-            { "id": "id_10v8", "week": "Semana 01", "date": "26/05/2026", "front": "The kitchen is equipped with a modern stove", "pronunciation": "thâ KEE-tchâ-ne e-ze e-KWEEPD wi-thâ MAH-dârn STOHV", "back": "A cozinha é equipada com um fogão moderno." },
-            { "id": "id_koog", "week": "Semana 01", "date": "26/05/2026", "front": "My living room is so cozy.", "pronunciation": "mâi lívin rum íz sôu côuzi", "back": "Minha sala de estar é tão aconchegante." },
-            { "id": "id_yg4t", "week": "Semana 01", "date": "26/05/2026", "front": "Does your apartment have a balcony?", "pronunciation": "dâz iór a-párt-ment hév a bálconi?", "back": "Seu apartamento tem varanda?" },
-            { "id": "id_9xvt", "week": "Semana 01", "date": "26/05/2026", "front": "The master bedroom has an en-suite bathroom.", "pronunciation": "dâ máster bédrum hév an éns-uit báth-rum", "back": "O quarto principal tem um banheiro privativo." },
-            { "id": "id_wc03", "week": "Semana 01", "date": "26/05/2026", "front": "Our kitchen is a mess right now.", "pronunciation": "áur kítchen íz a més ráit náu", "back": "Nossa cozinha está uma bagunça agora." },
-            { "id": "id_cpjd", "week": "Semana 01", "date": "26/05/2026", "front": "They remodeled their kitchen last year.", "pronunciation": "dâi ri-mó-deld déir kítchen lést íer", "back": "Eles reformaram a cozinha deles no ano passado." },
-            { "id": "id_gb3m", "week": "Semana 01", "date": "26/05/2026", "front": "Is your bedroom spacious or small?", "pronunciation": "íz iór béd-rum spêichas ór smól?", "back": "Seu quarto é espaçoso ou pequeno?" },
-            { "id": "id_bk9o", "week": "Semana 01", "date": "26/05/2026", "front": "I need to organize the guest room.", "pronunciation": "âi níd tu ór-ga-náiz dâ gést rum", "back": "Eu preciso organizar o quarto de hóspedes." },
-            { "id": "id_y1la", "week": "Semana 01", "date": "26/05/2026", "front": "What a lovely dining area!", "pronunciation": "uát a lóv-li dâi-nin é-ria!", "back": "Que área de jantar adorável!" },
-            { "id": "id_xghv", "week": "Semana 01", "date": "26/05/2026", "front": "This property is fully furnished and ready to move in.", "pronunciation": "Dís pró-per-ti ís fú-li fér-nisht énd ré-di tu múv ín", "back": "Esta propriedade está totalmente mobiliada e pronta para morar." },
-            { "id": "id_q62c", "week": "Semana 01", "date": "26/05/2026", "front": "The living room is very spacious and gets lots of light.", "pronunciation": "Dá lí-vin rúm ís vé-ri spêi-shos énd guéts lóts óv láit.", "back": "A sala de estar é muito espaçosa e recebe muita luz." },
-            { "id": "id_1a3g", "week": "Semana 01", "date": "26/05/2026", "front": "It has a breathtaking view of the ocean.", "pronunciation": "It hév a bréf-têi-kin víu óv dí ôu-shon", "back": "Tem uma vista de tirar o fôlego para o oceano." },
-            { "id": "id_w1dn", "week": "Semana 01", "date": "26/05/2026", "front": "The master bedroom features a king-size bed.", "pronunciation": "Dá més-ter béd-rum fí-tchurs a quín-sáiz béd.", "back": "O quarto principal conta com uma cama tamanho king." },
-            { "id": "id_g022", "week": "Semana 01", "date": "26/05/2026", "front": "There is a cozy fireplace between the two windows.", "pronunciation": "Dér ís a côu-zi fáier-plêis bi-tuín dá tu uín-dôus.", "back": "Tem uma lareira aconchegante entre as duas janelas." },
-            { "id": "id_tfbv", "week": "Semana 01", "date": "26/05/2026", "front": "The kitchen is equipped with stainless steel appliances.", "pronunciation": "Dá kít-chin ís i-cuípt uíf stêin-les stíl a-plái-an-siz.", "back": "A cozinha é equipada com eletrodomésticos de aço inoxidável." },
-            { "id": "id_frsm", "week": "Semana 01", "date": "26/05/2026", "front": "This neighborhood is perfect for raising a family.", "pronunciation": "Dís nêi-bor-rud ís pér-fict fór rêi-zin a fá-mi-li.", "back": "Este bairro é perfeito para criar uma família." },
-            { "id": "id_xr6b", "week": "Semana 01", "date": "26/05/2026", "front": "Are you looking to buy or to rent?", "pronunciation": "Ár iú lú-kin tu bái ór tu rént?", "back": "Você está procurando para comprar ou para alugar?" },
-            { "id": "id_n101", "week": "Semana 01", "date": "26/05/2026", "front": "Make yourself at home.", "pronunciation": "Mêik ior-sélf ét rôm.", "back": "Sinta-se em casa." },
-            { "id": "id_n102", "week": "Semana 01", "date": "26/05/2026", "front": "My house is a bit messy today.", "pronunciation": "Mai ráus is a bít mé-ssi tu-dêi.", "back": "Minha casa está um pouco bagunçada hoje." },
-            { "id": "id_n103", "week": "Semana 01", "date": "26/05/2026", "front": "I need to clean up my room.", "pronunciation": "Ai níd tu clín áp mai rúm.", "back": "Eu preciso arrumar o meu quarto." },
-            { "id": "id_n104", "week": "Semana 01", "date": "26/05/2026", "front": "There's no place like home.", "pronunciation": "Dérs nôu plêis láik rôm.", "back": "Não há lugar como o nosso lar." },
-            { "id": "id_n105", "week": "Semana 01", "date": "26/05/2026", "front": "I live in a very quiet neighborhood.", "pronunciation": "Ai lív in a vé-ri cuá-iet nêi-bor-rud.", "back": "Eu moro em um bairro muito silencioso." },
-            { "id": "id_n106", "week": "Semana 01", "date": "26/05/2026", "front": "We are looking for a place to rent.", "pronunciation": "Ui ár lú-kin fór a plêis tu rént.", "back": "Nós estamos procurando um lugar para alugar." },
-            { "id": "id_n107", "week": "Semana 01", "date": "26/05/2026", "front": "My kitchen is the heart of the house.", "pronunciation": "Mai kít-chin is dá rárt óv dá ráus.", "back": "Minha cozinha é o coração da casa." },
-            { "id": "id_n108", "week": "Semana 01", "date": "26/05/2026", "front": "I love just chilling on the couch.", "pronunciation": "Ai láv djâst tchí-lin on dá cáutch.", "back": "Eu amo ficar apenas relaxando no sofá." }
-        ]
-    },
-    "Turma_iq19/0004": { "name": "Turma IQ19/0004 Quinta", "password": "iq1904", "cards": [] },
-    "Turma_IQ19/0007": {
-        "name": "Turma IQ19/0007", "password": "iq1907",
-        "cards": [
-            { "id": "id_v01", "week": "Semana 01", "date": "27/05/2026", "front": "Can you grab a carton of milk from the fridge?", "pronunciation": "Kén iú græb â KÁR-ton óv mɪlk frâm-đâ frídj?", "back": "Você pode pegar uma caixinha de leite da geladeira?" },
-            { "id": "id_v02", "week": "Semana 01", "date": "27/05/2026", "front": "I'd like a glass of water, please.", "pronunciation": "Áid láik â glæs óv UÁ-têr, plíz.", "back": "Eu gostaria de um copo de água, por favor." },
-            { "id": "id_v03", "week": "Semana 01", "date": "27/05/2026", "front": "Open a can of beer for me!", "pronunciation": "Óu-pên â kæn óv bí-êr fór mí!", "back": "Abre uma lata de cerveja para mim!" },
-            { "id": "id_v04", "week": "Semana 01", "date": "27/05/2026", "front": "The jar of honey is sticky.", "pronunciation": "Đâ djár óv HÁ-ni íz STÍ-ki.", "back": "O pote de mel está grudento." },
-            { "id": "id_v05", "week": "Semana 01", "date": "27/05/2026", "front": "I ate a whole bag of cookies yesterday.", "pronunciation": "Ái éit â hohl bæg óv CÚ-kiz iés-têr-dêi.", "back": "Eu comi um pacote inteiro de biscoitos ontem." },
-            { "id": "id_v06", "week": "Semana 01", "date": "27/05/2026", "front": "How much is it?", "pronunciation": "Háu mâtch íz ít?", "back": "Quanto custa isto?" },
-            { "id": "id_v07", "week": "Semana 01", "date": "27/05/2026", "front": "Thanks a lot!", "pronunciation": "Tænks â lót!", "back": "Muito obrigado!" },
-            { "id": "id_v08", "week": "Semana 01", "date": "27/05/2026", "front": "I have too many things to do today.", "pronunciation": "Ái hæv tú MÉ-ni tíngz tú dú tú-dêi.", "back": "Eu tenho coisas demais para fazer hoje." },
-            { "id": "id_v09", "week": "Semana 01", "date": "27/05/2026", "front": "Can I have a little water, please?", "pronunciation": "Kén ái hæv â LÍT-tol UÁ-têr, plíz?", "back": "Você pode me dar um pouco de água, por favor?" },
-            { "id": "id_v10", "week": "Semana 01", "date": "27/05/2026", "front": "I have a few questions.", "pronunciation": "Ái hæv â fiú QUÉS-tchônz.", "back": "Eu tenho algumas perguntas." },
-            { "id": "id_v11", "week": "Semana 01", "date": "27/05/2026", "front": "I have a few hours before my flight.", "pronunciation": "Ái hæv â fiú ÁU-êrz bi-fór mái fláit.", "back": "Eu tenho algumas horas antes do meu voo." },
-            { "id": "id_v12", "week": "Semana 01", "date": "27/05/2026", "front": "Don't lose hope!", "pronunciation": "Dóunt lúz hohp!", "back": "Não perca a esperança!" },
-            { "id": "id_v13", "week": "Semana 01", "date": "27/05/2026", "front": "There is little chance of rain today.", "pronunciation": "Đér íz LÍT-tol tchæns óv rêin tú-dêi.", "back": "Há pouca chance de chuva hoje." },
-            { "id": "id_v14", "week": "Semana 01", "date": "27/05/2026", "front": "Many companies are working from home now.", "pronunciation": "MÉ-ni KÓM-pâ-niz ár UÓR-kín frâm hohm náu.", "back": "Muitas empresas estão trabalhando de home office agora." },
-            { "id": "id_v15", "week": "Semana 01", "date": "27/05/2026", "front": "Give me a little time to think.", "pronunciation": "Gív mí â LÍT-tol táim tú tí-nk.", "back": "Me dê um tempinho para pensar." },
-            { "id": "id_v16", "week": "Semana 01", "date": "27/05/2026", "front": "We bought a fresh baguette from the bakery.", "pronunciation": "Ui baht â frech bâ-GÉT frâm-đâ BÊI-kâ-ri.", "back": "Nós compramos uma baguete fresquinha na padaria." },
-            { "id": "id_v17", "week": "Semana 01", "date": "27/05/2026", "front": "Whole wheat bread is healthier for breakfast.", "pronunciation": "Hohl uíit brêd íz HÉL-fi-êr fár BRÉK-fâst.", "back": "Pão integral é mais saudável para o café da manhã." },
-            { "id": "id_v18", "week": "Semana 01", "date": "27/05/2026", "front": "She ordered a warm croissant and coffee.", "pronunciation": "Xi ÓR-dârd â uárm krwâ-SÁN ân KÁ-fi.", "back": "Ela pediu um croissant quentinho e café." },
-            { "id": "id_v19", "week": "Semana 01", "date": "27/05/2026", "front": "Toast the bun before making the burger.", "pronunciation": "Tohst đâ BAN bi-fór MÊI-kin đâ BÛR-gûr.", "back": "Torre o pão antes de fazer o hambúrguer." },
-            { "id": "id_v20", "week": "Semana 01", "date": "27/05/2026", "front": "Would you like a dinner roll with your soup?", "pronunciation": "Uuh-djú láik â DÍ-nêr rohl uíđ iór suup?", "back": "Você gostaria de um pãozinho para acompanhar a sua sopa?" },
-            { "id": "id_v21", "week": "Semana 01", "date": "27/05/2026", "front": "I always buy French bread in the morning.", "pronunciation": "Ái ÁL-uêiz bái frentch brêd ín-đâ MÓR-níng.", "back": "Eu sempre compro pão francês de manhã." },
-            { "id": "id_c01", "week": "Semana 01", "date": "27/05/2026", "front": "Five hundred grams", "pronunciation": "Fáiv RÁN-drêd grémz", "back": "500 gramas" },
-            { "id": "id_c02", "week": "Semana 01", "date": "27/05/2026", "front": "Canjica (white corn)", "pronunciation": "Can-jí-ca (uáit córn)", "back": "Canjica (milho branco)" },
-            { "id": "id_c03", "week": "Semana 01", "date": "27/05/2026", "front": "A can of condensed milk", "pronunciation": "Â kæn óv con-DÉNST mɪlk", "back": "Uma lata de leite condensado" },
-            { "id": "id_c04", "week": "Semana 01", "date": "27/05/2026", "front": "Two hundred milliliters", "pronunciation": "Tú RÁN-drêd MÍ-li-li-têrz", "back": "200 mililitros" },
-            { "id": "id_c05", "week": "Semana 01", "date": "27/05/2026", "front": "Coconut milk", "pronunciation": "CÓU-có-nat mɪlk", "back": "Leite de coco" },
-            { "id": "id_c06", "week": "Semana 01", "date": "27/05/2026", "front": "Fifty grams", "pronunciation": "FÍF-ti grémz", "back": "50 gramas" },
-            { "id": "id_c07", "week": "Semana 01", "date": "27/05/2026", "front": "Grated coconut", "pronunciation": "GRÊI-têd CÓU-có-nat", "back": "Coco ralado" },
-            { "id": "id_c08", "week": "Semana 01", "date": "27/05/2026", "front": "One liter of milk", "pronunciation": "Uán LÍ-têr óv mɪlk", "back": "Um litro de leite" },
-            { "id": "id_c09", "week": "Semana 01", "date": "27/05/2026", "front": "Eight tablespoons", "pronunciation": "Êit TÊI-bol-spunz", "back": "Oito colheres de sopa" },
-            { "id": "id_c10", "week": "Semana 01", "date": "27/05/2026", "front": "Sugar", "pronunciation": "CHÚ-gâr", "back": "Açúcar" },
-            { "id": "id_c11", "week": "Semana 01", "date": "27/05/2026", "front": "Dessert", "pronunciation": "di-ZÊRT", "back": "Sobremesa" },
-            { "id": "id_c12", "week": "Semana 01", "date": "27/05/2026", "front": "After the break", "pronunciation": "ÁF-têr đâ brêik", "back": "Depois do intervalo / comercial" },
-            { "id": "id_c13", "week": "Semana 01", "date": "27/05/2026", "front": "Host", "pronunciation": "RÔUST", "back": "Apresentador / Anfitrião" },
-            { "id": "id_c14", "week": "Semana 01", "date": "27/05/2026", "front": "Recipe", "pronunciation": "RÉ-si-pi", "back": "Receita" },
-            { "id": "id_c15", "week": "Semana 01", "date": "27/05/2026", "front": "Ingredients", "pronunciation": "in-GRÍ-di-ents", "back": "Ingredientes" },
-            { "id": "id_c16", "week": "Semana 01", "date": "27/05/2026", "front": "Can you pass me a tablespoon of sugar, please?", "pronunciation": "Kén iú pæs mí â TÊI-bol-spun óv CHÚ-gâr, plíz?", "back": "Você pode me passar uma colher de sopa de açúcar, por favor?" },
-            { "id": "id_c17", "week": "Semana 01", "date": "27/05/2026", "front": "Hold on, I need to take notes of this.", "pronunciation": "RÔULD ÓN, ái níd tu têik nôuts óv đís.", "back": "Espera aí, eu preciso anotar isso." },
-            { "id": "id_c18", "week": "Semana 01", "date": "27/05/2026", "front": "I didn't get what you said. Can you repeat?", "pronunciation": "Ái DÍ-dent guét uát iú séd. Kén iú ri-PÍT?", "back": "Eu não entendi o que você disse. Pode repetir?" },
-            { "id": "id_c19", "week": "Semana 01", "date": "27/05/2026", "front": "We are out of milk. We need to buy a liter.", "pronunciation": "Uí ár ÁUT óv mɪlk. Uí níd tu bái â LÍ-têr.", "back": "Estamos sem leite. Precisamos comprar um litro." },
-            { "id": "id_c20", "week": "Semana 01", "date": "27/05/2026", "front": "Just add a pinch of salt to the recipe.", "pronunciation": "Djhâst éd â píntch óv sôlt tu đâ RÉ-si-pi.", "back": "Só adicione uma pitada de sal na receita." },
-            { "id": "id_c21", "week": "Semana 01", "date": "27/05/2026", "front": "Let's take a quick break and we'll be right back.", "pronunciation": "Léts têik â kuík brêik ænd uíl bí ráit bæk.", "back": "Vamos fazer um intervalo rápido e já voltamos." }
-        ]
-    },
-    "IS08/0008": {
-        "name": "Turma IS08/0008", "password": "is08",
-        "cards": [
-            { "id": "id_p001", "week": "Semana 01", "date": "30/05/2026", "front": "I studied English last night.", "pronunciation": "Ái STÁ-did ÍNG-glish lést náit.", "back": "Eu estudei inglês ontem à noite. (Simple Past)" },
-            { "id": "id_p002", "week": "Semana 01", "date": "30/05/2026", "front": "She called me yesterday.", "pronunciation": "Xi KÓLD mí IÉS-têr-dêi.", "back": "Ela me ligou ontem. (Simple Past)" },
-            { "id": "id_p003", "week": "Semana 01", "date": "30/05/2026", "front": "We went to the beach last weekend.", "pronunciation": "Uí UÉNT tu đâ BÍTCH lést UÍK-end.", "back": "Nós fomos à praia no fim de semana passado." },
-            { "id": "id_p004", "week": "Semana 01", "date": "30/05/2026", "front": "They didn't watch the game.", "pronunciation": "Đêi DÍ-dent UÁTCH đâ GUÊIM.", "back": "Eles não assistiram ao jogo." },
-            { "id": "id_p005", "week": "Semana 01", "date": "30/05/2026", "front": "Did you sleep well last night?", "pronunciation": "Díd iú SLÍP uél lést náit?", "back": "Você dormiu bem ontem à noite?" },
-            { "id": "id_p006", "week": "Semana 01", "date": "30/05/2026", "front": "He worked a lot last month.", "pronunciation": "Hi UÓRKT â lót lést mânth.", "back": "Ele trabalhou muito no mês passado." },
-            { "id": "id_p007", "week": "Semana 01", "date": "30/05/2026", "front": "I was watching TV when you called.", "pronunciation": "Ái uâz UÁ-tching TÍ-VI uén iú KÓLD.", "back": "Eu estava assistindo TV quando você ligou." },
-            { "id": "id_p008", "week": "Semana 01", "date": "30/05/2026", "front": "She was cooking dinner at 7 PM.", "pronunciation": "Xi uâz CÚ-king DÍ-nêr ét SÉ-vên pí-ém.", "back": "Ela estava cozinhando o jantar às 19h." },
-            { "id": "id_p009", "week": "Semana 01", "date": "30/05/2026", "front": "They were playing football all afternoon.", "pronunciation": "Đêi uêr PLÊI-ing FÚT-bol ól ÆF-têr-nun.", "back": "Eles estavam jogando futebol a tarde toda." },
-            { "id": "id_p010", "week": "Semana 01", "date": "30/05/2026", "front": "What were you doing when it started to rain?", "pronunciation": "Uát uêr iú DÚ-ing uén ít STÁR-têd tu RÊIN?", "back": "O que você estava fazendo quando começou a chover?" },
-            { "id": "id_p011", "week": "Semana 01", "date": "30/05/2026", "front": "He was reading a book while she was sleeping.", "pronunciation": "Hi uâz RÍ-ding â BÚK uáil xi uâz SLÍP-ing.", "back": "Ele estava lendo um livro enquanto ela estava dormindo." },
-            { "id": "id_p012", "week": "Semana 01", "date": "30/05/2026", "front": "I wasn't paying attention in class.", "pronunciation": "Ái UÁ-zent PÊI-ing â-TÉN-chon in KLÆS.", "back": "Eu não estava prestando atenção na aula." },
-            { "id": "id_p013", "week": "Semana 01", "date": "30/05/2026", "front": "We were talking on the phone for hours.", "pronunciation": "Uí uêr TÓ-king on đâ FÔUN fór ÁUÊRZ.", "back": "Nós estávamos falando no telefone por horas." },
-            { "id": "id_p014", "week": "Semana 01", "date": "30/05/2026", "front": "The baby was crying when I arrived.", "pronunciation": "Đâ BÊI-bi uâz KRÁI-ing uén ái â-RÁIVD.", "back": "O bebê estava chorando quando eu cheguei." },
-            { "id": "id_p015", "week": "Semana 01", "date": "30/05/2026", "front": "Did she finish the project?", "pronunciation": "Díd xi FÍ-nish đâ PRÓD-jekt?", "back": "Ela terminou o projeto?" },
-            { "id": "id_p016", "week": "Semana 01", "date": "30/05/2026", "front": "I dropped my phone and the screen broke.", "pronunciation": "Ái DRÓPT mái FÔUN ænd đâ SKRÍN BRÔUK.", "back": "Eu derrubei meu celular e a tela quebrou." },
-            { "id": "id_p017", "week": "Semana 01", "date": "30/05/2026", "front": "She was driving when the accident happened.", "pronunciation": "Xi uâz DRÁI-ving uén đí ÁK-si-dent HÆ-pend.", "back": "Ela estava dirigindo quando o acidente aconteceu." },
-            { "id": "id_p018", "week": "Semana 01", "date": "30/05/2026", "front": "We didn't go out because it was raining.", "pronunciation": "Uí DÍ-dent GÔU áut bi-KÓZ ít uâz RÊI-ning.", "back": "Nós não saímos porque estava chovendo." },
-            { "id": "id_p019", "week": "Semana 01", "date": "30/05/2026", "front": "They were laughing the whole time.", "pronunciation": "Đêi uêr LÆ-fing đâ RÔUL táim.", "back": "Eles estavam rindo o tempo todo." },
-            { "id": "id_p020", "week": "Semana 01", "date": "30/05/2026", "front": "I met my best friend when I was living in São Paulo.", "pronunciation": "Ái MÉT mái bést FRÉND uén ái uâz LÍ-ving in SÃO PÁU-lo.", "back": "Eu conheci meu melhor amigo quando eu morava em São Paulo." }
-        ]
-    }
-};
+                    { "id": "id_t09", "week": "Fase 03: Ordinais (Datas)", "front": "First (1st)", "pronunciation": "Férst", "back": "Primeiro" },
+                    { "id": "id_t10", "week": "Fase 03: Ordinais (Datas)", "front": "Second (2nd)", "pronunciation": "Sé-când", "back": "Segundo" },
+                    { "id": "id_t11", "week": "Fase 03: Ordinais (Datas)", "front": "Third (3rd)", "pronunciation": "Thérd", "back": "Terceiro" }
+                ]
+            }
+        };
 
-const SHEET_WEB_API = "https://script.google.com/macros/s/AKfycbyixLasg-0TGX8vaeVPtiuW04cEmhSuW40fIa4qqXt6iHASAeMq_278SkaGF7LjsYk/exec";
-const CODE_VERSION = 1748563400;
-const TEACHER_PASSWORD = "admin";
-let DATABASE = {};
-let activeRoomKey = "", activeWeek = "";
-let currentDeckCards = [], currentIndex = 0, isFlipped = false;
+        const SHEET_WEB_API = "https://script.google.com/macros/s/AKfycbyixLasg-0TGX8vaeVPtiuW04cEmhSuW40fIa4qqXt6iHASAeMq_278SkaGF7LjsYk/exec";
+        const CODE_VERSION = 1716875010; // Atualização Forçada de Cache
+        const TEACHER_PASSWORD = "admin"; 
+        let DATABASE = {};
 
-// Quiz
-let quizSessionCards = [], quizCurrentIdx = 0, quizCorrectAnswer = "", quizMistakesInTurn = 0;
-// Gap Fill
-let gapSessionCards = [], gapCurrentIdx = 0, gapMistakesInTurn = 0, gapAnswered = false;
-// Word Order
-let orderSessionCards = [], orderCurrentIdx = 0, orderMistakesInTurn = 0;
-let orderAnswer = [], orderWordBank = [];
-// Typing
-let typingSessionCards = [], typingCurrentIdx = 0, typingScore = 0, typingTimer = null, typingTimeLeft = 30, typingActive = false;
-// Dictation
-let dictSessionCards = [], dictCurrentIdx = 0, dictMistakesInTurn = 0, dictCorrectAnswer = "";
-// Grammar
-let grammarQuestions = [], grammarCurrentIdx = 0, grammarMistakesInTurn = 0, grammarAnswered = false;
-// Vocab
-let vocabSessionArray = [], vocabCurrentIdx = 0, vocabCorrectAnswer = "", vocabMistakesInTurn = 0;
+        // Variáveis do Aluno (Vindas do Supabase)
+        let currentUserInfo = null; 
+        let activeRoomKey = "";
+        let studentStudiedIds = [];
+        let studentUnlockedFases = ["Fase 01: Alfabeto Básico"];
+        let studentName = "";
 
-// ── GRAMMAR QUESTIONS BANK (keyed by week theme keyword) ──────────────────────
-const GRAMMAR_BANKS = {
-    "past": [
-        { sentence: "She go to the store yesterday.", errorWord: "go", correctWord: "went", rule: "No Simple Past, verbos irregulares mudam de forma: go → went. Não usamos a forma base com 'yesterday'." },
-        { sentence: "I was study when you called.", errorWord: "study", correctWord: "studying", rule: "No Past Continuous usamos: was/were + verbo-ING. Correto: 'I was studying'." },
-        { sentence: "They didn't went to the party.", errorWord: "went", correctWord: "go", rule: "Depois de 'didn't', o verbo sempre fica na forma base (infinitivo): didn't go." },
-        { sentence: "He were reading a book.", errorWord: "were", correctWord: "was", rule: "Com pronomes singulares (he, she, it), usamos WAS, não were. 'Were' é para I, you, we, they." },
-        { sentence: "We was talking for hours.", errorWord: "was", correctWord: "were", rule: "Com 'we', usamos WERE no Past Continuous: 'We were talking'." },
-        { sentence: "Did she went home early?", errorWord: "went", correctWord: "go", rule: "Em perguntas com 'did', o verbo principal fica sempre na forma base: Did she go?" },
-        { sentence: "I didn't studying last night.", errorWord: "studying", correctWord: "study", rule: "Depois de 'didn't', o verbo deve estar na forma base: didn't study." },
-        { sentence: "The baby were crying all night.", errorWord: "were", correctWord: "was", rule: "'The baby' é singular (= it/he/she), então usamos WAS: 'The baby was crying'." },
-        { sentence: "What you were doing yesterday?", errorWord: "you", correctWord: "were you", rule: "Em perguntas com Past Continuous, a ordem é: What + were + sujeito + verbo-ING?" },
-        { sentence: "She was drive when it rained.", errorWord: "drive", correctWord: "driving", rule: "No Past Continuous: was/were + verbo-ING. Correto: 'was driving'." }
-    ],
-    "default": [
-        { sentence: "She don't like coffee.", errorWord: "don't", correctWord: "doesn't", rule: "Com he, she, it usamos DOESN'T (not don't) na forma negativa do Simple Present." },
-        { sentence: "They is playing football now.", errorWord: "is", correctWord: "are", rule: "Com 'they' usamos ARE no Present Continuous. 'Is' é para he, she, it." },
-        { sentence: "I have went to the store.", errorWord: "went", correctWord: "gone", rule: "Com 'have/has', usamos o particípio passado: have GONE (não went)." },
-        { sentence: "She can to speak English.", errorWord: "to", correctWord: "(remover 'to')", rule: "Depois de verbos modais (can, should, must), o verbo fica na forma base SEM 'to'." },
-        { sentence: "We was happy yesterday.", errorWord: "was", correctWord: "were", rule: "Com 'we' usamos WERE no passado. 'Was' é para I, he, she, it." }
-    ]
-};
+        let activeWeek = "";
+        let isTrailMode = false;
+        let currentDeckCards = [];
+        let currentIndex = 0;
+        let isFlipped = false;
 
-function getGrammarQuestions(cards) {
-    const allFronts = cards.map(c => c.front.toLowerCase()).join(" ");
-    const isPastTopic = allFronts.includes("was") || allFronts.includes("were") || allFronts.includes("did") || allFronts.includes("went") || allFronts.includes("called");
-    const bank = isPastTopic ? GRAMMAR_BANKS["past"] : GRAMMAR_BANKS["default"];
-    return [...bank].sort(() => Math.random() - 0.5).slice(0, Math.min(6, bank.length));
-}
+        let quizSessionCards = []; let quizCurrentIdx = 0; let quizCorrectAnswer = ""; let quizMistakesInTurn = 0;
+        let memoryCardsArray = []; let firstSelectedCard = null; let secondSelectedCard = null; let lockMemoryBoard = false; let memoryPairsFound = 0; let memoryStartTime = null;
+        let vocabSessionArray = []; let vocabCurrentIdx = 0; let vocabCorrectAnswer = ""; let vocabMistakesInTurn = 0;
 
-function loadDatabase() {
-    const saved = localStorage.getItem('prof_analice_database');
-    const savedVersion = localStorage.getItem('prof_analice_version');
-    if (saved && savedVersion && parseInt(savedVersion) === CODE_VERSION) { DATABASE = JSON.parse(saved); }
-    else { DATABASE = JSON.parse(JSON.stringify(DEFAULT_DATABASE)); localStorage.setItem('prof_analice_database', JSON.stringify(DATABASE)); localStorage.setItem('prof_analice_version', CODE_VERSION.toString()); }
-    updateDatabaseOutputArea();
-}
-function saveDatabaseToStorage() { localStorage.setItem('prof_analice_database', JSON.stringify(DATABASE)); updateDatabaseOutputArea(); }
-function init() { loadDatabase(); renderClassrooms(); updateTeacherSelectorsAndLists(); forceInitialViewState(); }
-function forceInitialViewState() {
-    document.getElementById('view-classrooms').classList.remove('hidden');
-    ['view-decks','view-study','view-save-tutorial','view-game-quiz','view-game-gap','view-game-order','view-game-typing','view-game-dictation','view-game-grammar','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => document.getElementById(id).classList.add('hidden'));
-}
-function dispatchStudentReport(activityName, scoreResult) {
-    const currentStudentName = localStorage.getItem('classstudy_student_name') || "Aluno Anônimo";
-    const currentRoomName = DATABASE[activeRoomKey] ? DATABASE[activeRoomKey].name : "Sala Desconhecida";
-    fetch(SHEET_WEB_API, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ aluno: currentStudentName, turma: currentRoomName, atividade: activeWeek + " - " + activityName, resultado: scoreResult }) }).catch(()=>{});
-}
-function renderClassrooms() {
-    const container = document.getElementById('classrooms-list'); container.innerHTML = "";
-    Object.keys(DATABASE).forEach(key => {
-        const room = DATABASE[key]; const div = document.createElement('div');
-        div.className = "bg-white p-5 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center cursor-pointer border-l-4 border-l-indigo-500";
-        div.onclick = () => accessClassroom(key);
-        div.innerHTML = `<div><h3 class="font-bold text-slate-800 text-base">${room.name}</h3><p class="text-xs text-slate-400"><i class="fa-solid fa-lock mr-1"></i> Digite a senha dos alunos</p></div><i class="fa-solid fa-chevron-right text-slate-300"></i>`;
-        container.appendChild(div);
-    });
-}
-function accessClassroom(key) {
-    const room = DATABASE[key]; const inputPassword = prompt(`Senha de acesso para ${room.name}:`); if (inputPassword === null) return;
-    if (inputPassword === room.password) {
-        activeRoomKey = key;
-        if(!localStorage.getItem('classstudy_student_name')) {
-            let sName = ""; while(!sName || sName.trim().length < 2) { sName = prompt("Portal de Idiomas - Prof. Analice\nInforme seu Nome Completo:"); if(sName === null) return; }
-            localStorage.setItem('classstudy_student_name', sName.trim());
+        // INICIALIZAÇÃO COM PROTEÇÃO ANTI-BLOQUEIO
+        async function init() { 
+            DATABASE = JSON.parse(JSON.stringify(DEFAULT_DATABASE));
+            
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if(error) throw error;
+                
+                if(session) {
+                    await loadStudentSupabaseProfile(session.user);
+                } else {
+                    changeView('auth');
+                    populateRegisterDropdown();
+                }
+            } catch (err) {
+                console.error("Erro do Supabase:", err);
+                document.getElementById('view-loading').innerHTML = `
+                    <div class='text-center p-6 space-y-4 max-w-sm mx-auto'>
+                        <i class='fa-solid fa-triangle-exclamation text-5xl text-rose-500 animate-pulse'></i>
+                        <h2 class='text-xl font-bold text-slate-800'>Erro de Conexão à Nuvem</h2>
+                        <p class='text-sm text-slate-500'>O servidor retornou o seguinte erro:</p>
+                        <div class='bg-rose-50 border border-rose-200 rounded-lg p-3 text-left font-mono text-xs text-rose-700'>
+                            ${err.message || "A chave de API do Supabase fornecida não foi aceite pelo servidor."}
+                        </div>
+                        <p class='text-xs text-slate-500 mt-2'>Verifique se não ficou nenhum espaço em branco antes ou depois da chave no código.</p>
+                        <button onclick="verifyTeacherAccess()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg text-xs transition shadow hover:bg-slate-700 mt-4">Acesso de Emergência (Professor)</button>
+                    </div>
+                `;
+            }
         }
-        changeView('decks');
-    } else { alert("Senha incorreta!"); }
-}
-function verifyTeacherAccess() { const p = prompt("Senha Administrativa:"); if(p === null) return; if(p === TEACHER_PASSWORD) { changeView('teacher'); } else { alert("Acesso negado!"); } }
-function getStudiedIds() { const s = localStorage.getItem(`studied_${activeRoomKey}`); return s ? JSON.parse(s) : []; }
-function updateStudiedBadge() { document.getElementById('studied-count-badge').innerText = getStudiedIds().length; }
 
-function renderDecksView() {
-    const container = document.getElementById('decks-list'); const room = DATABASE[activeRoomKey]; const studiedIds = getStudiedIds(); const decksMap = {};
-    if(room.cards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhum conteúdo cadastrado.</p>`; return; }
-    room.cards.forEach(card => { if (!decksMap[card.week]) decksMap[card.week] = { date: card.date, cardsList: [] }; decksMap[card.week].cardsList.push(card); });
-    container.innerHTML = "";
-    Object.keys(decksMap).forEach(weekName => {
-        const item = decksMap[weekName]; const activeCount = item.cardsList.filter(c => !studiedIds.includes(c.id)).length;
-        const cardBlock = document.createElement('div'); cardBlock.className = "bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4";
-        const statusTag = activeCount === 0 ? `<span class="text-[11px] font-bold bg-emerald-50 text-emerald-600 py-1 px-2.5 rounded-full">Concluída! 🎉</span>` : `<span class="text-[11px] font-bold bg-amber-50 text-amber-600 py-1 px-2.5 rounded-full">${activeCount} pendentes</span>`;
-        cardBlock.innerHTML = `
-            <div class="flex justify-between items-start border-b border-slate-50 pb-3">
-                <div><h3 class="font-extrabold text-slate-800 text-base">${weekName}</h3><p class="text-xs text-slate-400 mt-0.5">Aula de: ${item.date}</p></div>
-                ${statusTag}
-            </div>
-            <div class="grid grid-cols-3 gap-1.5 pt-1 text-center">
-                <button onclick="activeWeek='${weekName}'; startStudySession('${weekName}');" class="bg-indigo-600 text-white p-2 rounded-xl flex flex-col items-center justify-center gap-1">
-                    <i class="fa-solid fa-layer-group text-xs"></i><span class="text-[9px] font-bold uppercase">Cards</span>
-                </button>
-                <button onclick="activeWeek='${weekName}'; startQuizGame();" class="bg-indigo-50 border border-indigo-100 text-indigo-700 p-2 rounded-xl flex flex-col items-center justify-center gap-1">
-                    <i class="fa-solid fa-list-check text-xs"></i><span class="text-[9px] font-bold uppercase">Quiz</span>
-                </button>
-                <button onclick="activeWeek='${weekName}'; startGapGame();" class="bg-sky-50 border border-sky-100 text-sky-700 p-2 rounded-xl flex flex-col items-center justify-center gap-1">
-                    <i class="fa-solid fa-pen-to-square text-xs"></i><span class="text-[9px] font-bold uppercase">Lacuna</span>
-                </button>
-                <button onclick="activeWeek='${weekName}'; startOrderGame();" class="bg-violet-50 border border-violet-100 text-violet-700 p-2 rounded-xl flex flex-col items-center justify-center gap-1">
-                    <i class="fa-solid fa-shuffle text-xs"></i><span class="text-[9px] font-bold uppercase">Ordem</span>
-                </button>
-                <button onclick="activeWeek='${weekName}'; startTypingGame();" class="bg-rose-50 border border-rose-100 text-rose-700 p-2 rounded-xl flex flex-col items-center justify-center gap-1">
-                    <i class="fa-solid fa-keyboard text-xs"></i><span class="text-[9px] font-bold uppercase">Digitação</span>
-                </button>
-                <button onclick="activeWeek='${weekName}'; startDictationGame();" class="bg-teal-50 border border-teal-100 text-teal-700 p-2 rounded-xl flex flex-col items-center justify-center gap-1">
-                    <i class="fa-solid fa-headphones text-xs"></i><span class="text-[9px] font-bold uppercase">Ditado</span>
-                </button>
-                <button onclick="activeWeek='${weekName}'; startGrammarGame();" class="bg-amber-50 border border-amber-100 text-amber-800 p-2 rounded-xl flex flex-col items-center justify-center gap-1 col-span-2">
-                    <i class="fa-solid fa-magnifying-glass text-xs"></i><span class="text-[9px] font-bold uppercase">Corrija o Erro</span>
-                </button>
-                <button onclick="activeWeek='${weekName}'; startVocabGame();" class="bg-orange-50 border border-orange-100 text-orange-800 p-2 rounded-xl flex flex-col items-center justify-center gap-1">
-                    <i class="fa-solid fa-font text-xs"></i><span class="text-[9px] font-bold uppercase">Vocab</span>
-                </button>
-            </div>`;
-        container.appendChild(cardBlock);
-    });
-    updateStudiedBadge();
-}
+        // SUPABASE: CARREGAR PERFIL
+        async function loadStudentSupabaseProfile(user) {
+            currentUserInfo = user;
+            const meta = user.user_metadata;
+            
+            activeRoomKey = meta.roomKey || "";
+            studentStudiedIds = meta.studiedIds || [];
+            studentUnlockedFases = meta.unlockedFases || ["Fase 01: Alfabeto Básico"];
+            studentName = meta.name || "Aluno";
+            
+            document.getElementById('current-badge').innerText = (DATABASE[activeRoomKey] ? DATABASE[activeRoomKey].name : "Sala");
+            document.getElementById('current-badge').classList.remove('hidden');
+            document.getElementById('btn-logout').classList.remove('hidden');
+            document.getElementById('bottom-nav').classList.remove('hidden');
+            
+            changeView('decks');
+        }
 
-// ── FLASHCARDS ────────────────────────────────────────────────────────────────
-function startStudySession(weekName) { currentDeckCards = DATABASE[activeRoomKey].cards.filter(c => c.week === weekName).sort(() => Math.random() - 0.5); currentIndex = 0; showCurrentCard(); changeView('study'); }
-function showCurrentCard() { if (currentIndex >= currentDeckCards.length) { document.getElementById('success-custom-text').innerText = "Parabéns! Você completou todos os cartões!"; changeView('success'); return; } resetCardFlip(); const c = currentDeckCards[currentIndex]; document.getElementById('card-english-text').innerText = c.front; document.getElementById('card-pronunciation-text').innerText = c.pronunciation; document.getElementById('card-portuguese-text').innerText = c.back; const total = currentDeckCards.length; document.getElementById('progress-text').innerText = `Frase ${currentIndex + 1} de ${total}`; document.getElementById('progress-bar').style.width = `${(currentIndex / total) * 100}%`; setTimeout(() => playAudioWithTracking('card-english-text'), 400); }
-function flipCard() { isFlipped = !isFlipped; const el = document.getElementById('flashcard'); if(isFlipped) { el.classList.add('flipped'); document.getElementById('action-buttons').classList.remove('hidden'); document.getElementById('flip-hint').classList.add('hidden'); } else { el.classList.remove('flipped'); } }
-function resetCardFlip() { isFlipped = false; document.getElementById('flashcard').classList.remove('flipped'); document.getElementById('action-buttons').classList.add('hidden'); document.getElementById('flip-hint').classList.remove('hidden'); }
-function handleResponse(knew) { if(knew) { currentIndex++; showCurrentCard(); } else { const c = currentDeckCards.splice(currentIndex, 1)[0]; currentDeckCards.push(c); showCurrentCard(); } }
-function markAsStudied() { const c = currentDeckCards[currentIndex]; let ids = getStudiedIds(); if(!ids.includes(c.id)) { ids.push(c.id); localStorage.setItem(`studied_${activeRoomKey}`, JSON.stringify(ids)); } alert("✨ Frase arquivada!"); currentIndex++; showCurrentCard(); }
+        // SUPABASE: REGISTRO
+        async function registerUser() {
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const roomKey = document.getElementById('reg-room').value;
+            const roomPassword = document.getElementById('reg-room-password').value.trim();
 
-// ── AUDIO ─────────────────────────────────────────────────────────────────────
-function playAudio(elementId) { const text = document.getElementById(elementId).innerText; if('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang='en-US'; u.rate=0.70; window.speechSynthesis.speak(u); } }
-function playAudioText(text) { if('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang='en-US'; u.rate=0.70; window.speechSynthesis.speak(u); } }
-function playAudioWithTracking(elementId) { const text = document.getElementById(elementId).innerText; playAudioText(text); dispatchStudentReport("Cards (Escuta Ativa)", "Ouviu: [" + text + "]"); }
+            if(!name || !email || !password || !roomKey || !roomPassword) return alert("Preencha todos os campos do cadastro.");
+            if(DATABASE[roomKey].password !== roomPassword) return alert("Senha da Turma incorreta! Peça a senha certa para a Professora Analice.");
 
-// ── JOGO 1: QUIZ ──────────────────────────────────────────────────────────────
-function startQuizGame() { quizSessionCards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek).sort(() => Math.random() - 0.5); if(!quizSessionCards.length) { alert("Sem conteúdo!"); return; } quizCurrentIdx = 0; quizMistakesInTurn = 0; changeView('game-quiz'); loadQuizQuestion(); }
-function loadQuizQuestion() {
-    if(quizCurrentIdx >= quizSessionCards.length) { let s = Math.max(5, 10 - ((quizMistakesInTurn / quizSessionCards.length) * 5)).toFixed(1); dispatchStudentReport("Quiz", "Nota: " + s); document.getElementById('success-custom-text').innerText = `Quiz concluído! Nota: ${s}`; changeView('success'); return; }
-    const card = quizSessionCards[quizCurrentIdx];
-    document.getElementById('quiz-progress-text').innerText = `Desafio ${quizCurrentIdx + 1} de ${quizSessionCards.length}`;
-    document.getElementById('quiz-target-text').innerText = card.front; quizCorrectAnswer = card.back;
-    let wrong = DATABASE[activeRoomKey].cards.map(c => c.back).filter(b => b !== quizCorrectAnswer).sort(() => Math.random() - 0.5);
-    let opts = [quizCorrectAnswer, wrong[0] || "Outra opção", wrong[1] || "Opção diferente"].sort(() => Math.random() - 0.5);
-    const cont = document.getElementById('quiz-options-container'); cont.innerHTML = "";
-    opts.forEach(opt => { const btn = document.createElement('button'); btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm transition active:scale-95"; btn.innerText = opt; btn.onclick = () => { if(opt === quizCorrectAnswer) { btn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl text-left font-bold text-sm shadow-sm"; setTimeout(() => { quizCurrentIdx++; loadQuizQuestion(); }, 700); } else { quizMistakesInTurn++; btn.className = "w-full bg-rose-50 text-rose-700 border border-rose-300 p-4 rounded-xl text-left font-medium text-sm shadow-sm shake"; setTimeout(() => { btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm"; }, 900); } }; cont.appendChild(btn); });
-    setTimeout(() => playAudio('quiz-target-text'), 300);
-}
+            changeView('loading');
+            
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: { data: { name: name, roomKey: roomKey, studiedIds: [], unlockedFases: ["Fase 01: Alfabeto Básico"] } }
+            });
 
-// ── JOGO 2: COMPLETAR LACUNA ──────────────────────────────────────────────────
-function startGapGame() {
-    gapSessionCards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek).sort(() => Math.random() - 0.5);
-    if(gapSessionCards.length === 0) { alert("Sem conteúdo!"); return; }
-    gapCurrentIdx = 0; gapMistakesInTurn = 0; changeView('game-gap'); loadGapQuestion();
-}
-function loadGapQuestion() {
-    if(gapCurrentIdx >= gapSessionCards.length) { let s = Math.max(5, 10 - ((gapMistakesInTurn / gapSessionCards.length) * 5)).toFixed(1); dispatchStudentReport("Completar Lacuna", "Nota: " + s); document.getElementById('success-custom-text').innerText = `Lacunas concluídas! Nota: ${s}`; changeView('success'); return; }
-    const card = gapSessionCards[gapCurrentIdx]; gapAnswered = false;
-    document.getElementById('gap-progress-text').innerText = `Frase ${gapCurrentIdx + 1} de ${gapSessionCards.length}`;
-    document.getElementById('gap-feedback').classList.add('hidden');
-    // pick a key word to blank out (not the first or last)
-    const words = card.front.split(' ');
-    let pickIdx = Math.floor(Math.random() * (words.length - 2)) + 1;
-    const correctWord = words[pickIdx].replace(/[.,?!]/g, '');
-    const punctuation = words[pickIdx].replace(correctWord, '');
-    words[pickIdx] = '_____' + punctuation;
-    document.getElementById('gap-sentence-display').innerText = words.join(' ');
-    document.getElementById('gap-audio-source').innerText = card.front;
-    // options
-    const allWords = DATABASE[activeRoomKey].cards.flatMap(c => c.front.split(' ').map(w => w.replace(/[.,?!]/g,''))).filter(w => w.length > 2 && w.toLowerCase() !== correctWord.toLowerCase());
-    const wrong = [...new Set(allWords)].sort(() => Math.random() - 0.5).slice(0, 3);
-    const opts = [correctWord, ...wrong.slice(0,3)].sort(() => Math.random() - 0.5);
-    const cont = document.getElementById('gap-options-container'); cont.innerHTML = "";
-    opts.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = "bg-white border border-slate-200 p-3 rounded-xl font-bold text-sm text-slate-700 shadow-sm transition active:scale-95 text-center";
-        btn.innerText = opt;
-        btn.onclick = () => {
-            if(gapAnswered) return; gapAnswered = true;
-            const fb = document.getElementById('gap-feedback');
-            if(opt.toLowerCase() === correctWord.toLowerCase()) {
-                btn.className = "bg-emerald-600 text-white p-3 rounded-xl font-bold text-sm shadow-sm text-center";
-                fb.innerText = "✅ Correto! " + card.front; fb.className = "text-center py-2 rounded-xl text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-200"; fb.classList.remove('hidden');
-                setTimeout(() => { gapCurrentIdx++; loadGapQuestion(); }, 1200);
-            } else {
-                gapMistakesInTurn++;
-                btn.className = "bg-rose-50 text-rose-700 border border-rose-300 p-3 rounded-xl font-bold text-sm shadow-sm text-center shake";
-                fb.innerText = `❌ Era: "${correctWord}"`; fb.className = "text-center py-2 rounded-xl text-sm font-bold text-rose-700 bg-rose-50 border border-rose-200"; fb.classList.remove('hidden');
-                setTimeout(() => { gapAnswered = false; btn.className = "bg-white border border-slate-200 p-3 rounded-xl font-bold text-sm text-slate-700 shadow-sm text-center"; fb.classList.add('hidden'); }, 1500);
+            if(error) { alert("Erro ao criar conta: " + error.message); changeView('auth'); return; }
+            if(data.user) { await loadStudentSupabaseProfile(data.user); }
+        }
+
+        // SUPABASE: LOGIN
+        async function loginUser() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            if(!email || !password) return alert("Preencha e-mail e senha.");
+
+            changeView('loading');
+            
+            const { data, error } = await supabase.auth.signInWithPassword({ email: email, password: password });
+            
+            if(error) { alert("Erro de Login: Senha ou E-mail incorretos."); changeView('auth'); return; }
+            if(data.user) { await loadStudentSupabaseProfile(data.user); }
+        }
+
+        // SUPABASE: LOGOUT
+        async function logoutUser() {
+            await supabase.auth.signOut();
+            currentUserInfo = null; activeRoomKey = ""; studentStudiedIds = []; studentUnlockedFases = []; studentName = "";
+            document.getElementById('current-badge').classList.add('hidden');
+            document.getElementById('btn-logout').classList.add('hidden');
+            document.getElementById('bottom-nav').classList.add('hidden');
+            changeView('auth');
+            populateRegisterDropdown();
+        }
+
+        // SUPABASE: ATUALIZAR PROGRESSO NA NUVEM
+        async function syncProgressToSupabase() {
+            if(!currentUserInfo) return;
+            await supabase.auth.updateUser({
+                data: { studiedIds: studentStudiedIds, unlockedFases: studentUnlockedFases }
+            });
+        }
+
+        function populateRegisterDropdown() {
+            const select = document.getElementById('reg-room'); select.innerHTML = "";
+            Object.keys(DATABASE).forEach(key => { const opt = document.createElement('option'); opt.value = key; opt.innerText = DATABASE[key].name; select.appendChild(opt); });
+        }
+
+        function toggleAuth(type) {
+            if(type === 'register') { document.getElementById('form-login').classList.add('hidden'); document.getElementById('form-register').classList.remove('hidden'); }
+            else { document.getElementById('form-register').classList.add('hidden'); document.getElementById('form-login').classList.remove('hidden'); }
+        }
+
+        function verifyTeacherAccess() {
+            const inputPassword = prompt("Acesso Administrativo:"); if (inputPassword === null) return;
+            if (inputPassword === TEACHER_PASSWORD) { document.getElementById('bottom-nav').classList.add('hidden'); changeView('teacher'); updateDatabaseOutputArea(); } 
+            else { alert("Acesso negado!"); }
+        }
+
+        function dispatchStudentReport(activityName, scoreResult) {
+            const currentRoomName = DATABASE[activeRoomKey] ? DATABASE[activeRoomKey].name : "Sala Desconhecida";
+            const payload = { aluno: studentName, turma: currentRoomName, atividade: activeWeek + " - " + activityName, resultado: scoreResult };
+            fetch(SHEET_WEB_API, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).catch(err => console.log("Erro:", err));
+        }
+
+        function renderDecksView() {
+            const container = document.getElementById('decks-list'); const room = DATABASE[activeRoomKey]; const decksMap = {};
+            const normalCards = room.cards.filter(c => !c.week.toUpperCase().includes("FASE"));
+            if(normalCards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhuma aula semanal cadastrada.</p>`; return; }
+            normalCards.forEach(card => { if (!decksMap[card.week]) { decksMap[card.week] = []; } decksMap[card.week].push(card); });
+            container.innerHTML = "";
+            Object.keys(decksMap).forEach(weekName => {
+                const itemCards = decksMap[weekName]; const activeCount = itemCards.filter(c => !studentStudiedIds.includes(c.id)).length;
+                const cardBlock = document.createElement('div'); cardBlock.className = "bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4";
+                const statusTag = activeCount === 0 ? `<span class="text-[11px] font-bold bg-emerald-50 text-emerald-600 py-1 px-2.5 rounded-full">Concluída! 🎉</span>` : `<span class="text-[11px] font-bold bg-amber-50 text-amber-600 py-1 px-2.5 rounded-full">${activeCount} pendentes</span>`;
+                cardBlock.innerHTML = `
+                    <div class="flex justify-between items-start border-b border-slate-50 pb-3">
+                        <div><h3 class="font-extrabold text-slate-800 text-base">${weekName}</h3></div>${statusTag}
+                    </div>
+                    <div class="grid grid-cols-4 gap-1.5 pt-1 text-center">
+                        <button onclick="isTrailMode=false; activeWeek='${weekName}'; startStudySession('${weekName}');" class="bg-indigo-600 text-white p-2 rounded-xl flex flex-col items-center justify-center gap-1"><i class="fa-solid fa-layer-group text-xs"></i><span class="text-[9px] font-bold uppercase">Cards</span></button>
+                        <button onclick="isTrailMode=false; activeWeek='${weekName}'; startQuizGame();" class="bg-indigo-50 border border-indigo-100 text-indigo-700 p-2 rounded-xl flex flex-col items-center justify-center gap-1"><i class="fa-solid fa-list-check text-xs"></i><span class="text-[9px] font-bold uppercase">Quiz</span></button>
+                        <button onclick="isTrailMode=false; activeWeek='${weekName}'; startMemoryGame();" class="bg-purple-50 border border-purple-100 text-purple-700 p-2 rounded-xl flex flex-col items-center justify-center gap-1"><i class="fa-solid fa-border-all text-xs"></i><span class="text-[9px] font-bold uppercase">Memória</span></button>
+                        <button onclick="isTrailMode=false; activeWeek='${weekName}'; startVocabGame();" class="bg-amber-50 border border-amber-100 text-amber-800 p-2 rounded-xl flex flex-col items-center justify-center gap-1"><i class="fa-solid fa-font text-xs"></i><span class="text-[9px] font-bold uppercase">Vocab</span></button>
+                    </div>`;
+                container.appendChild(cardBlock);
+            });
+            document.getElementById('studied-count-badge').innerText = studentStudiedIds.length;
+        }
+
+        function renderTrilhaMapa() {
+            const container = document.getElementById('trilha-mapa-container'); const room = DATABASE[activeRoomKey];
+            const trailCards = room.cards.filter(c => c.week.toUpperCase().includes("FASE"));
+            if(trailCards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 py-8">Nenhuma fase de trilha criada para esta turma ainda.</p>`; return; }
+            const decksMap = {}; trailCards.forEach(c => { if (!decksMap[c.week]) { decksMap[c.week] = []; } decksMap[c.week].push(c); });
+            const faseNames = Object.keys(decksMap).sort();
+            
+            if(faseNames.length > 0 && !studentUnlockedFases.includes(faseNames[0])) { studentUnlockedFases.push(faseNames[0]); syncProgressToSupabase(); }
+
+            container.innerHTML = "";
+            faseNames.forEach(faseName => {
+                const isUnlocked = studentUnlockedFases.includes(faseName);
+                const block = document.createElement('div'); block.className = "relative flex flex-col space-y-3 pl-4";
+                const nodeIcon = document.createElement('div');
+                nodeIcon.className = `absolute -left-[35px] top-1 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shadow border transition-all duration-300 ` + (isUnlocked ? "bg-indigo-600 border-indigo-700 text-white animate-pulse" : "bg-slate-200 border-slate-300 text-slate-400");
+                nodeIcon.innerHTML = isUnlocked ? `<i class="fa-solid fa-play"></i>` : `<i class="fa-solid fa-lock"></i>`;
+                block.appendChild(nodeIcon);
+
+                if (isUnlocked) {
+                    block.innerHTML += `
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-indigo-400">
+                            <div class="flex justify-between items-center mb-2"><h3 class="font-extrabold text-slate-800 text-sm tracking-wide uppercase text-indigo-600">${faseName}</h3><span class="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full">Aberto</span></div>
+                            <div class="grid grid-cols-4 gap-1 pt-1 text-center">
+                                <button onclick="isTrailMode=true; activeWeek='${faseName}'; startStudySession('${faseName}');" class="bg-indigo-600 text-white p-2 rounded-lg flex flex-col items-center justify-center gap-0.5"><i class="fa-solid fa-book-open text-xs"></i><span class="text-[8px] font-bold">Teoria</span></button>
+                                <button onclick="isTrailMode=true; activeWeek='${faseName}'; startQuizGame();" class="bg-indigo-50 text-indigo-700 p-2 rounded-lg flex flex-col items-center justify-center gap-0.5"><i class="fa-solid fa-list-check text-xs"></i><span class="text-[8px] font-bold">Quiz</span></button>
+                                <button onclick="isTrailMode=true; activeWeek='${faseName}'; startMemoryGame();" class="bg-purple-50 text-purple-700 p-2 rounded-lg flex flex-col items-center justify-center gap-0.5"><i class="fa-solid fa-border-all text-xs"></i><span class="text-[8px] font-bold">Memória</span></button>
+                                <button onclick="isTrailMode=true; activeWeek='${faseName}'; startVocabGame();" class="bg-amber-50 text-amber-800 p-2 rounded-lg flex flex-col items-center justify-center gap-0.5"><i class="fa-solid fa-font text-xs"></i><span class="text-[8px] font-bold">Vocab</span></button>
+                            </div>
+                        </div>`;
+                } else {
+                    block.innerHTML += `<div class="bg-slate-100 p-4 rounded-xl border border-slate-200 opacity-60 select-none"><h3 class="font-extrabold text-slate-400 text-sm tracking-wide uppercase">${faseName}</h3><p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i> Tire nota 8.0+ na fase anterior para abrir!</p></div>`;
+                }
+                container.appendChild(block);
+            });
+        }
+
+        function checkTrilhaUnlocks(faseConcluida, notaObtida) {
+            if (!isTrailMode) return; 
+            if (parseFloat(notaObtida) >= 8.0) {
+                const room = DATABASE[activeRoomKey]; const decksMap = {};
+                room.cards.forEach(c => { if(c.week.toUpperCase().includes("FASE")) { decksMap[c.week] = true; } });
+                const todasFases = Object.keys(decksMap).sort();
+                let idxAtual = todasFases.indexOf(faseConcluida);
+                if (idxAtual !== -1 && idxAtual + 1 < todasFases.length) {
+                    let proximaFase = todasFases[idxAtual + 1];
+                    if (!studentUnlockedFases.includes(proximaFase)) {
+                        studentUnlockedFases.push(proximaFase);
+                        syncProgressToSupabase();
+                        alert(`🌟 INCRÍVEL! Você tirou nota ${notaObtida} e DESBLOQUEOU a próxima etapa: ${proximaFase}!`);
+                    }
+                }
             }
-        };
-        cont.appendChild(btn);
-    });
-}
+        }
 
-// ── JOGO 3: ORDENAR PALAVRAS ──────────────────────────────────────────────────
-function startOrderGame() {
-    orderSessionCards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek).sort(() => Math.random() - 0.5);
-    if(orderSessionCards.length === 0) { alert("Sem conteúdo!"); return; }
-    orderCurrentIdx = 0; orderMistakesInTurn = 0; changeView('game-order'); loadOrderQuestion();
-}
-function loadOrderQuestion() {
-    if(orderCurrentIdx >= orderSessionCards.length) { let s = Math.max(5, 10 - ((orderMistakesInTurn / orderSessionCards.length) * 5)).toFixed(1); dispatchStudentReport("Ordenar Palavras", "Nota: " + s); document.getElementById('success-custom-text').innerText = `Ordem concluída! Nota: ${s}`; changeView('success'); return; }
-    const card = orderSessionCards[orderCurrentIdx]; orderAnswer = [];
-    document.getElementById('order-progress-text').innerText = `Frase ${orderCurrentIdx + 1} de ${orderSessionCards.length}`;
-    document.getElementById('order-translation').innerText = card.back;
-    document.getElementById('order-feedback').classList.add('hidden');
-    document.getElementById('order-answer-area').innerHTML = '';
-    orderWordBank = card.front.split(' ').map((w, i) => ({ w, i })).sort(() => Math.random() - 0.5);
-    renderOrderWordBank();
-}
-function renderOrderWordBank() {
-    const bank = document.getElementById('order-word-bank'); bank.innerHTML = "";
-    orderWordBank.forEach((item, idx) => {
-        if(item.used) return;
-        const chip = document.createElement('span');
-        chip.className = "word-chip bg-violet-100 border border-violet-300 text-violet-900 px-3 py-1.5 rounded-lg text-sm font-bold";
-        chip.innerText = item.w; chip.dataset.idx = idx;
-        chip.onclick = () => { orderWordBank[idx].used = true; orderAnswer.push(item.w); renderOrderAnswer(); renderOrderWordBank(); };
-        bank.appendChild(chip);
-    });
-}
-function renderOrderAnswer() {
-    const area = document.getElementById('order-answer-area'); area.innerHTML = "";
-    orderAnswer.forEach((w, i) => {
-        const chip = document.createElement('span');
-        chip.className = "word-chip bg-violet-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold";
-        chip.innerText = w;
-        chip.onclick = () => {
-            // find back in wordBank
-            const bankIdx = orderWordBank.findIndex((item, bi) => item.used && item.w === w && !orderWordBank.slice(0, bi).some(x => x.used && x.w === w && orderAnswer.indexOf(x.w) === orderAnswer.indexOf(w)));
-            if(bankIdx >= 0) orderWordBank[bankIdx].used = false;
-            orderAnswer.splice(i, 1); renderOrderAnswer(); renderOrderWordBank();
-        };
-        area.appendChild(chip);
-    });
-}
-function clearOrderAnswer() { orderWordBank.forEach(item => item.used = false); orderAnswer = []; renderOrderAnswer(); renderOrderWordBank(); document.getElementById('order-feedback').classList.add('hidden'); }
-function checkOrderAnswer() {
-    const correct = orderSessionCards[orderCurrentIdx].front;
-    const attempt = orderAnswer.join(' ');
-    const fb = document.getElementById('order-feedback');
-    if(attempt.toLowerCase() === correct.toLowerCase()) {
-        fb.innerText = "✅ Correto! Ótimo trabalho!"; fb.className = "text-center py-2 rounded-xl text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-200"; fb.classList.remove('hidden');
-        setTimeout(() => { orderCurrentIdx++; loadOrderQuestion(); }, 1200);
-    } else {
-        orderMistakesInTurn++;
-        fb.innerText = `❌ Tente novamente! Dica: ${correct.split(' ').slice(0,3).join(' ')}...`; fb.className = "text-center py-2 rounded-xl text-sm font-bold text-rose-700 bg-rose-50 border border-rose-200"; fb.classList.remove('hidden');
-        document.getElementById('order-answer-area').classList.add('shake'); setTimeout(() => document.getElementById('order-answer-area').classList.remove('shake'), 500);
-    }
-}
+        function exitStudySession() { if(isTrailMode) { changeView('trilha'); } else { changeView('decks'); } }
 
-// ── JOGO 4: DIGITAÇÃO CRONOMETRADA ───────────────────────────────────────────
-function startTypingGame() {
-    typingSessionCards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek).sort(() => Math.random() - 0.5);
-    if(typingSessionCards.length === 0) { alert("Sem conteúdo!"); return; }
-    typingCurrentIdx = 0; typingScore = 0; typingTimeLeft = 30; typingActive = true;
-    changeView('game-typing');
-    document.getElementById('typing-score-display').innerText = 0;
-    document.getElementById('typing-input').value = '';
-    document.getElementById('typing-feedback').classList.add('hidden');
-    loadTypingQuestion();
-    typingTimer = setInterval(() => {
-        typingTimeLeft--;
-        document.getElementById('typing-timer').innerText = typingTimeLeft;
-        if(typingTimeLeft <= 0) { stopTypingGame(); }
-    }, 1000);
-    setTimeout(() => document.getElementById('typing-input').focus(), 300);
-}
-function loadTypingQuestion() {
-    if(typingCurrentIdx >= typingSessionCards.length) typingCurrentIdx = 0;
-    const card = typingSessionCards[typingCurrentIdx];
-    document.getElementById('typing-progress-text').innerText = `Frase ${typingCurrentIdx + 1} de ${typingSessionCards.length}`;
-    document.getElementById('typing-target-text').innerText = card.back;
-    document.getElementById('typing-audio-source').innerText = card.front;
-    document.getElementById('typing-input').value = '';
-    document.getElementById('typing-feedback').classList.add('hidden');
-}
-function checkTypingAnswer() {
-    if(!typingActive) return;
-    const card = typingSessionCards[typingCurrentIdx];
-    const attempt = document.getElementById('typing-input').value.trim().toLowerCase();
-    const correct = card.front.toLowerCase().replace(/[.,?!]/g, '');
-    const attemptClean = attempt.replace(/[.,?!]/g, '');
-    const fb = document.getElementById('typing-feedback');
-    if(attemptClean === correct || levenshtein(attemptClean, correct) <= 2) {
-        typingScore++; document.getElementById('typing-score-display').innerText = typingScore;
-        fb.innerText = "✅ Correto!"; fb.className = "text-center py-2 rounded-xl text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-200"; fb.classList.remove('hidden');
-        playAudioText(card.front);
-        typingCurrentIdx++; setTimeout(() => loadTypingQuestion(), 800);
-    } else {
-        fb.innerText = `❌ Era: "${card.front}"`; fb.className = "text-center py-2 rounded-xl text-sm font-bold text-rose-700 bg-rose-50 border border-rose-200"; fb.classList.remove('hidden');
-        document.getElementById('typing-input').value = ''; document.getElementById('typing-input').focus();
-    }
-}
-function stopTypingGame() {
-    clearInterval(typingTimer); typingActive = false;
-    dispatchStudentReport("Digitação Cronometrada", typingScore + " frases corretas em 30s");
-    document.getElementById('success-custom-text').innerText = `Tempo esgotado! Você digitou ${typingScore} frase(s) corretamente em 30 segundos!`;
-    changeView('success');
-}
-function levenshtein(a, b) { const m = a.length, n = b.length, dp = Array.from({length: m+1}, (_, i) => [i, ...Array(n).fill(0)]); dp[0] = Array.from({length: n+1}, (_, j) => j); for(let i=1;i<=m;i++) for(let j=1;j<=n;j++) dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]); return dp[m][n]; }
-document.addEventListener('keydown', e => { if(e.key === 'Enter' && typingActive) checkTypingAnswer(); });
+        function startStudySession(weekName) { const room = DATABASE[activeRoomKey]; currentDeckCards = room.cards.filter(card => card.week === weekName); currentDeckCards.sort(() => Math.random() - 0.5); currentIndex = 0; showCurrentCard(); changeView('study'); }
+        function showCurrentCard() { if (currentIndex >= currentDeckCards.length) { document.getElementById('success-custom-text').innerText = "Parabéns! Você completou os cartões teóricos!"; changeView('success'); return; } resetCardFlip(); const currentCard = currentDeckCards[currentIndex]; document.getElementById('card-english-text').innerText = currentCard.front; document.getElementById('card-pronunciation-text').innerText = currentCard.pronunciation; document.getElementById('card-portuguese-text').innerText = currentCard.back; const total = currentDeckCards.length; document.getElementById('progress-text').innerText = `Cartão ${currentIndex + 1} de ${total}`; document.getElementById('progress-bar').style.width = `${((currentIndex) / total) * 100}%`; setTimeout(() => { playAudioWithTracking('card-english-text'); }, 400); }
+        function flipCard() { isFlipped = !isFlipped; const cardEl = document.getElementById('flashcard'); if (isFlipped) { cardEl.classList.add('flipped'); document.getElementById('action-buttons').classList.remove('hidden'); document.getElementById('flip-hint').classList.add('hidden'); } else { cardEl.classList.remove('flipped'); } }
+        function resetCardFlip() { isFlipped = false; document.getElementById('flashcard').classList.remove('flipped'); document.getElementById('action-buttons').classList.add('hidden'); document.getElementById('flip-hint').classList.remove('hidden'); }
+        function handleResponse(knew) { if (knew) { currentIndex++; showCurrentCard(); } else { const runningCard = currentDeckCards.splice(currentIndex, 1)[0]; currentDeckCards.push(runningCard); showCurrentCard(); } }
+        
+        function markAsStudied() { 
+            const currentCard = currentDeckCards[currentIndex]; 
+            if (!studentStudiedIds.includes(currentCard.id)) { 
+                studentStudiedIds.push(currentCard.id); 
+                syncProgressToSupabase(); 
+            } 
+            alert("✨ Salvo na sua nuvem pessoal!"); 
+            currentIndex++; 
+            showCurrentCard(); 
+        }
 
-// ── JOGO 5: DITADO ────────────────────────────────────────────────────────────
-function startDictationGame() {
-    dictSessionCards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek).sort(() => Math.random() - 0.5);
-    if(dictSessionCards.length === 0) { alert("Sem conteúdo!"); return; }
-    dictCurrentIdx = 0; dictMistakesInTurn = 0; changeView('game-dictation'); loadDictationQuestion();
-}
-function loadDictationQuestion() {
-    if(dictCurrentIdx >= dictSessionCards.length) { let s = Math.max(5, 10 - ((dictMistakesInTurn / dictSessionCards.length) * 5)).toFixed(1); dispatchStudentReport("Ditado", "Nota: " + s); document.getElementById('success-custom-text').innerText = `Ditado concluído! Nota: ${s}`; changeView('success'); return; }
-    const card = dictSessionCards[dictCurrentIdx]; dictCorrectAnswer = card.front;
-    document.getElementById('dict-progress-text').innerText = `Frase ${dictCurrentIdx + 1} de ${dictSessionCards.length}`;
-    document.getElementById('dict-audio-source').innerText = card.front;
-    document.getElementById('dict-feedback').classList.add('hidden');
-    const allFronts = DATABASE[activeRoomKey].cards.map(c => c.front).filter(f => f !== card.front).sort(() => Math.random() - 0.5);
-    const opts = [card.front, allFronts[0] || "Another sentence here.", allFronts[1] || "One more option here."].sort(() => Math.random() - 0.5);
-    const cont = document.getElementById('dict-options-container'); cont.innerHTML = "";
-    opts.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm transition active:scale-95";
-        btn.innerText = opt;
-        btn.onclick = () => {
-            const fb = document.getElementById('dict-feedback');
-            if(opt === dictCorrectAnswer) {
-                btn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl text-left font-bold text-sm shadow-sm";
-                fb.innerText = "✅ Correto!"; fb.className = "text-center py-2 rounded-xl text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-200"; fb.classList.remove('hidden');
-                setTimeout(() => { dictCurrentIdx++; loadDictationQuestion(); }, 900);
-            } else {
-                dictMistakesInTurn++;
-                btn.className = "w-full bg-rose-50 text-rose-700 border border-rose-300 p-4 rounded-xl text-left font-medium text-sm shadow-sm shake";
-                fb.innerText = `❌ Ouça com atenção e tente de novo!`; fb.className = "text-center py-2 rounded-xl text-sm font-bold text-rose-700 bg-rose-50 border border-rose-200"; fb.classList.remove('hidden');
-                setTimeout(() => { btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm"; fb.classList.add('hidden'); }, 1200);
-            }
-        };
-        cont.appendChild(btn);
-    });
-    setTimeout(() => playDictationAudio(), 400);
-}
-function playDictationAudio() { playAudioText(document.getElementById('dict-audio-source').innerText); }
+        function playAudioWithTracking(elementId) { const text = document.getElementById(elementId).innerText; if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'en-US'; utterance.rate = 0.70; window.speechSynthesis.speak(utterance); dispatchStudentReport("Leitura Teórica", "Ouviu o áudio: [" + text + "]"); } }
 
-// ── JOGO 6: CORRIJA O ERRO (GRAMÁTICA) ───────────────────────────────────────
-function startGrammarGame() {
-    const cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek);
-    grammarQuestions = getGrammarQuestions(cards);
-    if(grammarQuestions.length === 0) { alert("Sem questões disponíveis!"); return; }
-    grammarCurrentIdx = 0; grammarMistakesInTurn = 0; changeView('game-grammar'); loadGrammarQuestion();
-}
-function loadGrammarQuestion() {
-    if(grammarCurrentIdx >= grammarQuestions.length) { let s = Math.max(5, 10 - ((grammarMistakesInTurn / grammarQuestions.length) * 5)).toFixed(1); dispatchStudentReport("Corrija o Erro (Gramática)", "Nota: " + s); document.getElementById('success-custom-text').innerText = `Gramática concluída! Nota: ${s}`; changeView('success'); return; }
-    const q = grammarQuestions[grammarCurrentIdx]; grammarAnswered = false;
-    document.getElementById('grammar-progress-text').innerText = `Questão ${grammarCurrentIdx + 1} de ${grammarQuestions.length}`;
-    document.getElementById('grammar-sentence').innerText = q.sentence;
-    document.getElementById('grammar-rule-box').classList.add('hidden');
-    document.getElementById('grammar-feedback').classList.add('hidden');
-    document.getElementById('grammar-next-btn').classList.add('hidden');
-    const btnCont = document.getElementById('grammar-word-buttons'); btnCont.innerHTML = "";
-    q.sentence.split(' ').forEach(word => {
-        const cleanWord = word.replace(/[.,?!]/g, '');
-        const btn = document.createElement('button');
-        btn.className = "word-chip bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm font-bold text-slate-700 shadow-sm";
-        btn.innerText = word;
-        btn.onclick = () => {
-            if(grammarAnswered) return; grammarAnswered = true;
-            const fb = document.getElementById('grammar-feedback');
-            const ruleBox = document.getElementById('grammar-rule-box');
-            document.getElementById('grammar-rule-text').innerText = q.rule;
-            ruleBox.classList.remove('hidden');
-            if(cleanWord.toLowerCase() === q.errorWord.toLowerCase()) {
-                btn.className = "word-chip bg-emerald-600 text-white px-3 py-2 rounded-xl text-sm font-bold shadow-sm";
-                fb.innerText = `✅ Correto! A palavra errada era "${q.errorWord}" → deveria ser "${q.correctWord}"`;
-                fb.className = "text-center py-2 rounded-xl text-sm font-bold text-emerald-700 bg-emerald-50 border border-emerald-200"; fb.classList.remove('hidden');
-            } else {
-                grammarMistakesInTurn++;
-                btn.className = "word-chip bg-rose-100 text-rose-700 border border-rose-300 px-3 py-2 rounded-xl text-sm font-bold shadow-sm";
-                // highlight correct
-                Array.from(btnCont.children).forEach(b => { if(b.innerText.replace(/[.,?!]/g,'').toLowerCase() === q.errorWord.toLowerCase()) b.className = "word-chip bg-emerald-600 text-white px-3 py-2 rounded-xl text-sm font-bold shadow-sm"; });
-                fb.innerText = `❌ Era "${q.errorWord}" → correto: "${q.correctWord}"`;
-                fb.className = "text-center py-2 rounded-xl text-sm font-bold text-rose-700 bg-rose-50 border border-rose-200"; fb.classList.remove('hidden');
-            }
-            document.getElementById('grammar-next-btn').classList.remove('hidden');
-        };
-        btnCont.appendChild(btn);
-    });
-}
-function nextGrammarQuestion() { grammarCurrentIdx++; loadGrammarQuestion(); }
+        /* JOGOS */
+        function startQuizGame() { quizSessionCards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(quizSessionCards.length === 0) { alert("Sem conteúdo!"); return; } quizSessionCards.sort(() => Math.random() - 0.5); quizCurrentIdx = 0; quizMistakesInTurn = 0; changeView('game-quiz'); loadQuizQuestion(); }
+        function loadQuizQuestion() { if(quizCurrentIdx >= quizSessionCards.length) { let rawScore = 10 - ((quizMistakesInTurn / quizSessionCards.length) * 5); let finalScore = Math.max(4, rawScore).toFixed(1); dispatchStudentReport("Quiz Desafio", "Nota: " + finalScore); document.getElementById('success-custom-text').innerText = `Desafio concluído! Nota final: ${finalScore}`; checkTrilhaUnlocks(activeWeek, finalScore); changeView('success'); return; } const card = quizSessionCards[quizCurrentIdx]; document.getElementById('quiz-progress-text').innerText = `Questão ${quizCurrentIdx + 1} de ${quizSessionCards.length}`; document.getElementById('quiz-target-text').innerText = card.front; quizCorrectAnswer = card.back; let allBacks = DATABASE[activeRoomKey].cards.map(c => c.back); let wrongOptions = allBacks.filter(b => b !== quizCorrectAnswer).sort(() => Math.random() - 0.5); let options = [quizCorrectAnswer]; if(wrongOptions[0]) options.push(wrongOptions[0]); if(wrongOptions[1]) options.push(wrongOptions[1]); while(options.length < 3) { options.push("Alternativa de fixação"); } options.sort(() => Math.random() - 0.5); const container = document.getElementById('quiz-options-container'); container.innerHTML = ""; options.forEach(opt => { const btn = document.createElement('button'); btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm transition active:scale-95"; btn.innerText = opt; btn.onclick = () => { if(opt === quizCorrectAnswer) { btn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl text-left font-bold text-sm shadow-sm"; setTimeout(() => { quizCurrentIdx++; loadQuizQuestion(); }, 700); } else { quizMistakesInTurn++; btn.className = "w-full bg-rose-50 text-rose-700 border border-rose-300 p-4 rounded-xl text-left font-medium text-sm shadow-sm animate-bounce"; setTimeout(() => { btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-left font-medium text-sm text-slate-700 shadow-sm"; }, 1000); } }; container.appendChild(btn); }); setTimeout(() => { playAudio('quiz-target-text'); }, 300); }
 
-// ── JOGO 7: VOCABULÁRIO ───────────────────────────────────────────────────────
-function startVocabGame() {
-    const cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek);
-    if(cards.length === 0) { alert("Sem conteúdo!"); return; }
-    const vocabMap = { "studied":"estudei/estudou","called":"ligou/chamou","went":"foi/foram","watched":"assistiu","slept":"dormiu","worked":"trabalhou","watching":"assistindo","cooking":"cozinhando","playing":"jogando","doing":"fazendo","reading":"lendo","sleeping":"dormindo","talking":"conversando","crying":"chorando","driving":"dirigindo","laughing":"rindo","finished":"terminou","dropped":"derrubou","broke":"quebrou","happened":"aconteceu","started":"começou","arrived":"chegou","met":"conheceu","living":"morando","raining":"chovendo","paying":"pagando","attention":"atenção","accident":"acidente","project":"projeto","screen":"tela","phone":"celular","beach":"praia","football":"futebol","afternoon":"tarde","yesterday":"ontem","weekend":"fim de semana","friend":"amigo","kitchen":"cozinha","equipped":"equipada","stove":"fogão","cozy":"aconchegante","apartment":"apartamento","balcony":"varanda","bedroom":"quarto","bathroom":"banheiro","spacious":"espaçoso","organize":"organizar","lovely":"adorável","property":"propriedade","furnished":"mobiliada","ocean":"oceano","fireplace":"lareira","appliances":"eletrodomésticos","neighborhood":"bairro","family":"família","sugar":"açúcar","recipe":"receita","ingredients":"ingredientes","bread":"pão","bakery":"padaria","breakfast":"café da manhã","dinner":"jantar","soup":"sopa","water":"água","salt":"sal","milk":"leite","butter":"manteiga","flour":"farinha","carton":"caixinha","bottle":"garrafa","can":"lata","jar":"pote","bag":"sacola","honey":"mel","beer":"cerveja","cookies":"biscoitos","hope":"esperança","chance":"chance","hours":"horas","questions":"perguntas","flight":"voo","companies":"empresas" };
-    vocabSessionArray = [];
-    cards.forEach(c => { c.front.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?']/g,"").split(" ").forEach(w => { if(vocabMap[w] && !vocabSessionArray.some(i => i.en === w)) vocabSessionArray.push({ en: w, pt: vocabMap[w] }); }); });
-    if(vocabSessionArray.length === 0) vocabSessionArray = [{ en: "studied", pt: "estudei/estudou" }, { en: "went", pt: "foi/foram" }];
-    vocabSessionArray.sort(() => Math.random() - 0.5); vocabCurrentIdx = 0; vocabMistakesInTurn = 0;
-    changeView('game-vocab'); loadVocabQuestion();
-}
-function loadVocabQuestion() {
-    if(vocabCurrentIdx >= vocabSessionArray.length) { let s = Math.max(5, 10 - ((vocabMistakesInTurn / vocabSessionArray.length) * 5)).toFixed(1); dispatchStudentReport("Vocabulário", "Nota: " + s); document.getElementById('success-custom-text').innerText = `Vocabulário concluído! Nota: ${s}`; changeView('success'); return; }
-    const item = vocabSessionArray[vocabCurrentIdx];
-    document.getElementById('vocab-progress-text').innerText = `Palavra ${vocabCurrentIdx + 1} de ${vocabSessionArray.length}`;
-    document.getElementById('vocab-target-text').innerText = item.en; vocabCorrectAnswer = item.pt;
-    const wrong = ["carro","janela","livro","mesa","cadeira","porta","professor","aluno","computador","chave"].sort(() => Math.random() - 0.5);
-    const opts = [vocabCorrectAnswer, wrong[0], wrong[1]].sort(() => Math.random() - 0.5);
-    const cont = document.getElementById('vocab-options-container'); cont.innerHTML = "";
-    opts.forEach(opt => { const btn = document.createElement('button'); btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-center font-bold text-sm text-slate-700 shadow-sm transition active:scale-95"; btn.innerText = opt; btn.onclick = () => { if(opt === vocabCorrectAnswer) { btn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl text-center font-bold text-sm shadow-sm"; setTimeout(() => { vocabCurrentIdx++; loadVocabQuestion(); }, 600); } else { vocabMistakesInTurn++; btn.className = "w-full bg-rose-50 text-rose-700 border border-rose-300 p-4 rounded-xl text-center font-medium text-sm shadow-sm shake"; setTimeout(() => { btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-center font-bold text-sm text-slate-700 shadow-sm"; }, 800); } }; cont.appendChild(btn); });
-    setTimeout(() => playAudio('vocab-target-text'), 200);
-}
+        function startMemoryGame() { let cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(cards.length === 0) { alert("Sem conteúdo!"); return; } cards.sort(() => Math.random() - 0.5); let selectedCards = cards.slice(0, 4); memoryCardsArray = []; selectedCards.forEach(c => { memoryCardsArray.push({ id: c.id, type: 'en', text: c.front }); memoryCardsArray.push({ id: c.id, type: 'pt', text: c.back }); }); memoryCardsArray.sort(() => Math.random() - 0.5); memoryPairsFound = 0; firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; memoryStartTime = Date.now(); document.getElementById('memory-score-text').innerText = `Pares: 0 / ${selectedCards.length}`; changeView('game-memory'); const grid = document.getElementById('memory-grid'); grid.innerHTML = ""; memoryCardsArray.forEach((item, index) => { const block = document.createElement('div'); block.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer shadow-sm select-none transition-all"; block.innerText = "?"; block.dataset.index = index; block.onclick = () => { if(lockMemoryBoard) return; if(block.classList.contains('bg-white') || block.classList.contains('bg-emerald-50')) return; block.className = "h-24 bg-white border-2 border-purple-500 rounded-xl flex items-center justify-center p-2 text-center text-[10px] font-extrabold text-purple-950 shadow-md"; block.innerText = item.text; if(item.type === 'en') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const ut = new SpeechSynthesisUtterance(item.text); ut.lang = 'en-US'; ut.rate = 0.75; window.speechSynthesis.speak(ut); } } if(!firstSelectedCard) { firstSelectedCard = { element: block, item }; } else { if(firstSelectedCard.element.dataset.index === block.dataset.index) return; secondSelectedCard = { element: block, item }; lockMemoryBoard = true; if(firstSelectedCard.item.id === secondSelectedCard.item.id) { setTimeout(() => { Array.from([firstSelectedCard.element, secondSelectedCard.element]).forEach(el => { el.className = "h-24 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center p-2 text-center text-[9px] font-medium text-emerald-700 opacity-50"; }); memoryPairsFound++; document.getElementById('memory-score-text').innerText = `Pares: ${memoryPairsFound} / ${selectedCards.length}`; if(memoryPairsFound === selectedCards.length) { let secondsElapsed = Math.floor((Date.now() - memoryStartTime) / 1000); dispatchStudentReport("Memória", "Tempo: " + secondsElapsed + "s"); checkTrilhaUnlocks(activeWeek, 10); setTimeout(() => { document.getElementById('success-custom-text').innerText = `Fantástico! Memória finalizada em ${secondsElapsed}s!`; changeView('success'); }, 500); } firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 600); } else { setTimeout(() => { Array.from([firstSelectedCard.element, secondSelectedCard.element]).forEach(el => { el.className = "h-24 bg-slate-200 border border-slate-300 rounded-xl flex items-center justify-center p-2 text-center text-xs font-bold text-slate-400 cursor-pointer"; el.innerText = "?"; }); firstSelectedCard = null; secondSelectedCard = null; lockMemoryBoard = false; }, 1100); } } }; grid.appendChild(block); }); }
 
-// ── HISTÓRICO ─────────────────────────────────────────────────────────────────
-function openStudiedHistory() {
-    const cont = document.getElementById('history-items-container'); const room = DATABASE[activeRoomKey]; const ids = getStudiedIds(); const list = room.cards.filter(c => ids.includes(c.id));
-    if(list.length === 0) { cont.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhuma frase guardada.</p>`; changeView('history-list'); return; }
-    cont.innerHTML = "";
-    list.forEach((card, idx) => { const div = document.createElement('div'); div.className = "bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center gap-3"; div.innerHTML = `<div class="flex-1 min-w-0"><p id="hist-txt-${idx}" class="text-base font-bold text-slate-800 leading-tight">${card.front}</p><p class="text-xs font-medium text-indigo-700 italic">${card.pronunciation}</p><p class="text-xs text-slate-500 mt-1">➔ ${card.back}</p></div><button onclick="playAudio('hist-txt-${idx}')" class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><i class="fa-solid fa-volume-high text-xs"></i></button>`; cont.appendChild(div); });
-    changeView('history-list');
-}
+        function startVocabGame() {
+            const cards = DATABASE[activeRoomKey].cards.filter(c => c.week === activeWeek); if(cards.length === 0) { alert("Sem conteúdo!"); return; }
+            const vocabMap = { "neighborhood": "bairro", "perfect": "perfeito", "family": "família", "kitchen": "cozinha", "modern": "moderno", "stove": "fogão", "cozy": "aconchegante", "apartment": "apartamento", "balcony": "varanda", "bedroom": "quarto", "bathroom": "banheiro", "mess": "bagunça", "year": "ano", "spacious": "espaçoso", "sugar": "açúcar", "recipe": "receita", "host": "apresentador", "break": "intervalo", "grams": "gramas", "milliliters": "mililitros", "liter": "litro", "tablespoons": "colheres de sopa", "salt": "sal", "baguette": "baguete", "bakery": "padaria", "bread": "pão", "breakfast": "café da manhã", "croissant": "croissant", "bun": "pão de hambúrguer", "apple": "maçã", "book": "livro", "car": "carro", "english": "inglês", "one": "um", "two": "dois", "three": "três", "four": "quatro", "first": "primeiro", "second": "segundo", "third": "terceiro" };
+            vocabSessionArray = []; cards.forEach(c => { const words = c.front.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?']/g,"").split(" "); words.forEach(w => { if(vocabMap[w] && !vocabSessionArray.some(item => item.en === w)) { vocabSessionArray.push({ en: w, pt: vocabMap[w] }); } }); });
+            if(vocabSessionArray.length === 0) { vocabSessionArray = [{ en: "sugar", pt: "açúcar" }, { en: "recipe", pt: "receita" }]; }
+            vocabSessionArray.sort(() => Math.random() - 0.5); vocabCurrentIdx = 0; vocabMistakesInTurn = 0; changeView('game-vocab'); loadVocabQuestion();
+        }
 
-// ── PAINEL PROFESSOR ──────────────────────────────────────────────────────────
-function createNewClassroom() { const id = document.getElementById('new-room-id').value.trim(); const name = document.getElementById('new-room-name').value.trim(); const password = document.getElementById('new-room-password').value.trim(); if(!id||!name||!password) { alert("Campos incompletos!"); return; } DATABASE[id] = { name, password, cards: [] }; saveDatabaseToStorage(); document.getElementById('new-room-id').value=""; document.getElementById('new-room-name').value=""; document.getElementById('new-room-password').value=""; renderClassrooms(); updateTeacherSelectorsAndLists(); alert("Sala criada!"); }
-function deleteClassroom(key) { if(!confirm("Deletar sala?")) return; delete DATABASE[key]; saveDatabaseToStorage(); renderClassrooms(); updateTeacherSelectorsAndLists(); }
-function updateTeacherSelectorsAndLists() { const sel = document.getElementById('form-room-id'); const delList = document.getElementById('teacher-rooms-delete-list'); if(!sel||!delList) return; sel.innerHTML=""; delList.innerHTML=""; Object.keys(DATABASE).forEach(key => { const opt = document.createElement('option'); opt.value=key; opt.innerText=DATABASE[key].name; sel.appendChild(opt); const div = document.createElement('div'); div.className="flex justify-between items-center bg-slate-50 p-2 rounded-lg text-xs"; div.innerHTML=`<span>${DATABASE[key].name}</span><button onclick="deleteClassroom('${key}')" class="text-rose-500 font-bold px-2"><i class="fa-solid fa-trash-can"></i></button>`; delList.appendChild(div); }); }
-function generateCardCode() { const room=document.getElementById('form-room-id').value; const week=document.getElementById('form-week').value.trim(); const date=document.getElementById('form-date').value.trim(); const front=document.getElementById('form-front').value.trim(); const pron=document.getElementById('form-front-pronunciation').value.trim(); const back=document.getElementById('form-back').value.trim(); if(!room||!week||!date||!front||!pron||!back) { alert("Campos incompletos!"); return; } const id="id_"+Math.random().toString(36).substr(2,4); DATABASE[room].cards.push({ id, week, date, front, pronunciation: pron, back }); saveDatabaseToStorage(); document.getElementById('form-front').value=""; document.getElementById('form-front-pronunciation').value=""; document.getElementById('form-back').value=""; renderClassrooms(); alert("Card Injetado!"); }
+        function loadVocabQuestion() {
+            if(vocabCurrentIdx >= vocabSessionArray.length) { let rawScore = 10 - ((vocabMistakesInTurn / vocabSessionArray.length) * 5); let finalScore = Math.max(4, rawScore).toFixed(1); dispatchStudentReport("Desafio Vocab", "Nota: " + finalScore); document.getElementById('success-custom-text').innerText = `Fase concluída! Nota Vocab: ${finalScore}`; checkTrilhaUnlocks(activeWeek, finalScore); changeView('success'); return; }
+            const item = vocabSessionArray[vocabCurrentIdx]; document.getElementById('vocab-progress-text').innerText = `Palavra ${vocabCurrentIdx + 1} de ${vocabSessionArray.length}`; document.getElementById('vocab-target-text').innerText = item.en; vocabCorrectAnswer = item.pt;
+            const wrongPool = ["carro", "janela", "livro", "mesa", "cadeira", "porta", "computador", "chave", "gato", "escola", "rua"]; wrongPool.sort(() => Math.random() - 0.5); let options = [vocabCorrectAnswer, wrongPool[0], wrongPool[1]].slice(0, 3).sort(() => Math.random() - 0.5);
+            const container = document.getElementById('vocab-options-container'); container.innerHTML = "";
+            options.forEach(opt => { const btn = document.createElement('button'); btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-center font-bold text-sm text-slate-700 shadow-sm transition active:scale-95"; btn.innerText = opt; btn.onclick = () => { if(opt === vocabCorrectAnswer) { btn.className = "w-full bg-emerald-600 text-white p-4 rounded-xl text-center font-bold text-sm shadow-sm"; setTimeout(() => { vocabCurrentIdx++; loadVocabQuestion(); }, 600); } else { vocabMistakesInTurn++; btn.className = "w-full bg-rose-50 text-rose-700 border border-rose-300 p-4 rounded-xl text-center font-medium text-sm shadow-sm animate-bounce"; setTimeout(() => { btn.className = "w-full bg-white border border-slate-200 p-4 rounded-xl text-center font-bold text-sm text-slate-700 shadow-sm"; }, 800); } }; container.appendChild(btn); }); setTimeout(() => { playAudio('vocab-target-text'); }, 200);
+        }
 
-function updateDatabaseOutputArea() {
-    const updatedDatabaseJSON = JSON.stringify(DATABASE, null, 4);
-    const cleanScriptHTML = document.getElementById('main-script-tag').innerHTML;
-    const uniqueVersionToken = Math.floor(Date.now() / 1000);
-    let updatedScriptContent = cleanScriptHTML.replace(/const DEFAULT_DATABASE = \n?[\s\S]*?};/m, "const DEFAULT_DATABASE = " + updatedDatabaseJSON + ";");
-    updatedScriptContent = updatedScriptContent.replace(/const CODE_VERSION = \d+;/, "const CODE_VERSION = " + uniqueVersionToken + ";");
-    const parser = new DOMParser(); const cleanDoc = parser.parseFromString(document.documentElement.outerHTML, 'text/html');
-    const allViews = ['view-classrooms','view-decks','view-study','view-save-tutorial','view-game-quiz','view-game-gap','view-game-order','view-game-typing','view-game-dictation','view-game-grammar','view-game-vocab','view-success','view-history-list','view-teacher'];
-    allViews.forEach(id => { const el = cleanDoc.getElementById(id); if(el) el.className = id === 'view-classrooms' ? "w-full space-y-4" : "w-full hidden space-y-6"; });
-    const badge = cleanDoc.getElementById('current-badge'); if(badge) badge.className = "text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden";
-    let headHTML = cleanDoc.getElementsByTagName('head')[0].outerHTML; headHTML = headHTML.replace(/cdn\.tailwindcss\.com\?v=\d+/, "cdn.tailwindcss.com?v=" + uniqueVersionToken);
-    const bodyEl = cleanDoc.getElementsByTagName('body')[0]; bodyEl.innerHTML = bodyEl.innerHTML.replace(cleanDoc.getElementById('main-script-tag').innerHTML, updatedScriptContent);
-    document.getElementById('output-code').value = "<!DOCTYPE html>\n<html lang=\"pt-BR\">\n" + headHTML + "\n" + bodyEl.outerHTML + "\n</html>";
-}
+        function playAudio(elementId) { const text = document.getElementById(elementId).innerText; if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'en-US'; utterance.rate = 0.70; window.speechSynthesis.speak(utterance); } }
+        function openStudiedHistory() { const container = document.getElementById('history-items-container'); const room = DATABASE[activeRoomKey]; const listCards = room.cards.filter(c => studentStudiedIds.includes(c.id)); if (listCards.length === 0) { container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Nenhum conteúdo salvo.</p>`; changeView('history-list'); return; } container.innerHTML = ""; listCards.forEach((card, idx) => { const div = document.createElement('div'); div.className = "bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center gap-3"; div.innerHTML = `<div class="flex-1 min-w-0"><p id="hist-txt-${idx}" class="text-base font-bold text-slate-800 leading-tight">${card.front}</p><p class="text-xs font-medium text-indigo-700 italic">${card.pronunciation}</p><p class="text-xs text-slate-500 mt-1">➔ ${card.back}</p></div><button onclick="playAudio('hist-txt-${idx}')" class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><i class="fa-solid fa-volume-high text-xs"></i></button>`; container.appendChild(div); }); changeView('history-list'); }
+        
+        function createNewClassroom() { const id = document.getElementById('new-room-id').value.trim(); const name = document.getElementById('new-room-name').value.trim(); const password = document.getElementById('new-room-password').value.trim(); if (!id || !name || !password) { alert("Campos incompletos!"); return; } DATABASE[id] = { name: name, password: password, cards: [] }; saveDatabaseToStorage(); document.getElementById('new-room-id').value = ""; document.getElementById('new-room-name').value = ""; document.getElementById('new-room-password').value = ""; updateTeacherSelectorsAndLists(); alert(`Sala criada!`); }
+        function deleteClassroom(key) { if (!confirm(`Deletar sala?`)) return; delete DATABASE[key]; saveDatabaseToStorage(); updateTeacherSelectorsAndLists(); }
+        function updateTeacherSelectorsAndLists() { const select = document.getElementById('form-room-id'); const deleteListContainer = document.getElementById('teacher-rooms-delete-list'); if(!select || !deleteListContainer) return; select.innerHTML = ""; deleteListContainer.innerHTML = ""; Object.keys(DATABASE).forEach(key => { const option = document.createElement('option'); option.value = key; option.innerText = DATABASE[key].name; select.appendChild(option); const div = document.createElement('div'); div.className = "flex justify-between items-center bg-slate-50 p-2 rounded-lg text-xs"; div.innerHTML = `<span>${DATABASE[key].name}</span><button onclick="deleteClassroom('${key}')" class="text-rose-500 font-bold px-2"><i class="fa-solid fa-trash-can"></i></button>`; deleteListContainer.appendChild(div); }); }
+        function generateCardCode() { const targetRoom = document.getElementById('form-room-id').value; const week = document.getElementById('form-week').value.trim(); const date = document.getElementById('form-date').value.trim(); const front = document.getElementById('form-front').value.trim(); const pronunciation = document.getElementById('form-front-pronunciation').value.trim(); const back = document.getElementById('form-back').value.trim(); if(!targetRoom || !week || !date || !front || !pronunciation || !back) { alert("Campos incompletos!"); return; } const randomId = "id_" + Math.random().toString(36).substr(2, 4); DATABASE[targetRoom].cards.push({ id: randomId, week, date, front, pronunciation, back }); saveDatabaseToStorage(); document.getElementById('form-front').value = ""; document.getElementById('form-front-pronunciation').value = ""; document.getElementById('form-back').value = ""; alert(`Card Injetado!`); }
 
-function changeView(view) {
-    const allViews = ['view-classrooms','view-decks','view-study','view-save-tutorial','view-game-quiz','view-game-gap','view-game-order','view-game-typing','view-game-dictation','view-game-grammar','view-game-vocab','view-success','view-history-list','view-teacher'];
-    allViews.forEach(id => document.getElementById(id).classList.add('hidden'));
-    document.getElementById('current-badge').classList.add('hidden');
-    ['nav-btn-decks','nav-btn-save','nav-btn-teacher'].forEach(id => document.getElementById(id).className = "flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5");
-    if(typingActive && view !== 'game-typing') stopTypingGame();
-    const map = { 'classrooms':'view-classrooms','decks':'view-decks','study':'view-study','save-tutorial':'view-save-tutorial','game-quiz':'view-game-quiz','game-gap':'view-game-gap','game-order':'view-game-order','game-typing':'view-game-typing','game-dictation':'view-game-dictation','game-grammar':'view-game-grammar','game-vocab':'view-game-vocab','success':'view-success','history-list':'view-history-list','teacher':'view-teacher' };
-    if(map[view]) document.getElementById(map[view]).classList.remove('hidden');
-    if(view === 'classrooms' || view === 'decks' || view === 'study') document.getElementById('nav-btn-decks').classList.add('text-indigo-600');
-    if(view === 'save-tutorial') document.getElementById('nav-btn-save').classList.add('text-indigo-600');
-    if(view === 'teacher') { document.getElementById('nav-btn-teacher').classList.add('text-indigo-600'); updateDatabaseOutputArea(); }
-    if(view === 'decks') { document.getElementById('current-badge').classList.remove('hidden'); document.getElementById('current-badge').innerText = DATABASE[activeRoomKey] ? DATABASE[activeRoomKey].name : "Menu"; renderDecksView(); }
-}
+        function updateDatabaseOutputArea() {
+            const updatedDatabaseJSON = JSON.stringify(DATABASE, null, 4);
+            const cleanScriptHTML = document.getElementById('main-script-tag').innerHTML;
+            const uniqueVersionToken = Math.floor(Date.now() / 1000);
+            let updatedScriptContent = cleanScriptHTML.replace(/const DEFAULT_DATABASE = \n?[\s\S]*?};/m, "const DEFAULT_DATABASE = " + updatedDatabaseJSON + ";");
+            updatedScriptContent = updatedScriptContent.replace(/const CODE_VERSION = \d+;/, "const CODE_VERSION = " + uniqueVersionToken + ";");
+            const parser = new DOMParser(); const cleanDoc = parser.parseFromString(document.documentElement.outerHTML, 'text/html');
+            ['view-loading','view-auth','view-classrooms','view-decks','view-trilha','view-study','view-save-tutorial','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => {
+                if(id === 'view-classrooms') cleanDoc.getElementById(id).className = "w-full space-y-4"; else cleanDoc.getElementById(id).className = "w-full hidden space-y-6";
+            });
+            cleanDoc.getElementById('current-badge').className = "text-xs bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium hidden";
+            cleanDoc.getElementById('bottom-nav').className = "bg-white border-t border-slate-100 fixed bottom-0 left-0 right-0 py-2 shadow-lg z-50 hidden";
+            let headHTML = cleanDoc.getElementsByTagName('head')[0].outerHTML; headHTML = headHTML.replace(/cdn\.tailwindcss\.com\?v=\d+/, "cdn.tailwindcss.com?v=" + uniqueVersionToken);
+            const bodyElement = cleanDoc.getElementsByTagName('body')[0]; bodyElement.innerHTML = bodyElement.innerHTML.replace(cleanDoc.getElementById('main-script-tag').innerHTML, updatedScriptContent);
+            document.getElementById('output-code').value = "<!DOCTYPE html>\n<html lang=\"pt-BR\">\n" + headHTML + "\n" + bodyElement.outerHTML + "\n</html>";
+        }
 
-window.onload = init;
-</script>
+        function changeView(view) {
+            ['view-loading','view-auth','view-classrooms','view-decks','view-trilha','view-study','view-save-tutorial','view-game-quiz','view-game-memory','view-game-vocab','view-success','view-history-list','view-teacher'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            ['nav-btn-decks', 'nav-btn-trilha', 'nav-btn-save'].forEach(id => document.getElementById(id).className = "flex flex-col items-center justify-center text-slate-400 font-medium text-xs gap-0.5");
+
+            if (view === 'auth') { document.getElementById('view-auth').classList.remove('hidden'); document.getElementById('bottom-nav').classList.add('hidden'); }
+            else if (view === 'loading') { document.getElementById('view-loading').classList.remove('hidden'); document.getElementById('bottom-nav').classList.add('hidden'); }
+            else if (view === 'classrooms') { document.getElementById('view-classrooms').classList.remove('hidden'); document.getElementById('bottom-nav').classList.add('hidden'); } 
+            else if (view === 'decks') { document.getElementById('view-decks').classList.remove('hidden'); document.getElementById('nav-btn-decks').classList.add('text-indigo-600'); renderDecksView(); } 
+            else if (view === 'trilha') { document.getElementById('view-trilha').classList.remove('hidden'); document.getElementById('nav-btn-trilha').classList.add('text-indigo-600'); renderTrilhaMapa(); } 
+            else if (view === 'study') { document.getElementById('view-study').classList.remove('hidden'); document.getElementById(isTrailMode ? 'nav-btn-trilha' : 'nav-btn-decks').classList.add('text-indigo-600'); } 
+            else if (view === 'save-tutorial') { document.getElementById('view-save-tutorial').classList.remove('hidden'); document.getElementById('nav-btn-save').classList.add('text-indigo-600'); }
+            else if (view === 'game-quiz') { document.getElementById('view-game-quiz').classList.remove('hidden'); }
+            else if (view === 'game-memory') { document.getElementById('view-game-memory').classList.remove('hidden'); }
+            else if (view === 'game-vocab') { document.getElementById('view-game-vocab').classList.remove('hidden'); }
+            else if (view === 'success') { document.getElementById('view-success').classList.remove('hidden'); } 
+            else if (view === 'history-list') { document.getElementById('view-history-list').classList.remove('hidden'); } 
+            else if (view === 'teacher') { document.getElementById('view-teacher').classList.remove('hidden'); updateDatabaseOutputArea(); }
+        }
+
+        window.onload = init;
+    </script>
 </body>
 </html>
