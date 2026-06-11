@@ -1650,6 +1650,7 @@ select.input { appearance: none; cursor: pointer; }
       <button class="tnav-btn" onclick="showTeacherTab('aulas-admin')" id="tnav-aulas-admin">Aulas</button>
       <button class="tnav-btn" onclick="showTeacherTab('musicas-admin')" id="tnav-musicas-admin">🎧 Músicas</button>
       <button class="tnav-btn" onclick="showTeacherTab('semanas-lista')" id="tnav-semanas-lista">Conteúdo</button>
+      <button class="tnav-btn" onclick="showTeacherTab('dashboard')" id="tnav-dashboard">📊 Alunos</button>
     </div>
   </div>
 
@@ -1740,6 +1741,16 @@ select.input { appearance: none; cursor: pointer; }
     <div id="ttab-semanas-lista" class="hidden">
       <div class="section-header"><h2>Conteúdo Cadastrado</h2></div>
       <div id="admin-semanas-list"></div>
+    </div>
+
+    <!-- DASHBOARD ALUNOS -->
+    <div id="ttab-dashboard" class="hidden">
+      <div class="section-header" style="display:flex;justify-content:space-between;align-items:center">
+        <h2>Acompanhamento dos Alunos</h2>
+        <button class="btn btn-ghost" style="padding:6px 12px" onclick="renderDashboard()"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+      </div>
+      <div id="dashboard-summary" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px"></div>
+      <div id="dashboard-content"></div>
     </div>
     
     <!-- MÚSICAS ADMIN -->
@@ -3324,8 +3335,9 @@ function doLogout(){
 async function setupUserSession(user){
   const m=user.user_metadata||{};
   currentUser={id:user.id,email:user.email,role:'student',name:m.name||"Aluno",
-    turma:m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"]};
+    turma:m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{}};
   document.getElementById('student-xp').textContent=currentUser.xp;
+  saveStudentProgress();
   document.getElementById('xp-num').textContent=currentUser.xp;
   updateXpLevel();
   document.getElementById('btn-back-admin').classList.add('hidden');
@@ -3397,16 +3409,18 @@ function renderStudentTrilha(){
         cont.appendChild(levelHeader);
     }
 
-    const isUnlocked=unlocked.includes(fase.id)||i===0||currentUser.role==='teacher';
-    const isDone=unlocked.includes(fase.id+"_done")||(trilhasToRender[i+1]&&unlocked.includes(trilhasToRender[i+1].id));
-    const dotCls=isDone?'done':isUnlocked?'unlocked':'locked';
-    const dotIcon=isDone?'<i class="fa-solid fa-check"></i>':isUnlocked?'<i class="fa-solid fa-star"></i>':'<i class="fa-solid fa-lock"></i>';
-    const cardCls=isDone?'done':isUnlocked?'unlocked':'locked';
+    const lockedByTeacher = fase.locked && currentUser.role!=='teacher';
+    const isUnlocked=!lockedByTeacher && (unlocked.includes(fase.id)||i===0||currentUser.role==='teacher');
+    const isDone=!lockedByTeacher && (unlocked.includes(fase.id+"_done")||(trilhasToRender[i+1]&&unlocked.includes(trilhasToRender[i+1].id)));
+    const dotCls=lockedByTeacher?'locked':isDone?'done':isUnlocked?'unlocked':'locked';
+    const dotIcon=lockedByTeacher?'<i class="fa-solid fa-lock"></i>':isDone?'<i class="fa-solid fa-check"></i>':isUnlocked?'<i class="fa-solid fa-star"></i>':'<i class="fa-solid fa-lock"></i>';
+    const cardCls=lockedByTeacher?'locked':isDone?'done':isUnlocked?'unlocked':'locked';
     const starsEarned=isDone?3:isUnlocked?1:0;
     const starsHtml=[1,2,3].map(s=>`<span class="star${s<=starsEarned?' lit':''}" style="font-size:14px">${s<=starsEarned?'★':'☆'}</span>`).join('');
 
     const gameButtons=isUnlocked?buildFaseButtons(fase):'';
-    const badge = currentUser.role === 'teacher' ? `<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${fase.turmaName||''}</span>` : '';
+    const teacherLockTag = currentUser.role==='teacher'&&fase.locked ? '<span class="badge" style="background:#FEF2F2;color:#991B1B;font-size:10px;margin-left:6px">🔒 travada</span>' : '';
+    const badge = currentUser.role === 'teacher' ? `<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${fase.turmaName||''}</span>${teacherLockTag}` : '';
 
     const node=document.createElement('div');
     node.className='fase-node';
@@ -3420,7 +3434,7 @@ function renderStudentTrilha(){
             <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
               <div class="stars-row">${starsHtml}</div>
               ${isDone?'<span class="badge badge-teal" style="font-size:10px">Concluído</span>':''}
-              ${!isUnlocked?'<span class="badge" style="background:var(--surface2);color:var(--slate);font-size:10px;border:1px solid var(--border)">Bloqueado</span>':''}
+              ${lockedByTeacher?'<span class="badge" style="background:var(--orange-pale);color:var(--orange-dark);font-size:10px;border:1px solid rgba(245,124,0,.3)">🔒 Em breve</span>':!isUnlocked?'<span class="badge" style="background:var(--surface2);color:var(--slate);font-size:10px;border:1px solid var(--border)">Bloqueado</span>':''}
             </div>
           </div>
           ${isUnlocked?`<i class="fa-solid fa-chevron-right fase-chevron" id="chevron-${fase.id}"></i>`:''}
@@ -3481,12 +3495,31 @@ function renderStudentSemanas(){
   }
   if(list.length===0){cont.innerHTML='<div class="card card-body text-center text-muted">Nenhuma aula cadastrada ainda.</div>';return;}
   [...list].reverse().forEach(sem=>{
-    const badge=currentUser.role==='teacher'?`<span class="badge badge-violet">${sem.turmaName}</span>`:'';
+    const isTeacher=currentUser.role==='teacher';
+    const lockedByTeacher=sem.locked && !isTeacher;
+    const badge=isTeacher?`<span class="badge badge-violet">${sem.turmaName}</span>`:'';
+    const lockTag=isTeacher&&sem.locked?'<span class="badge" style="background:#FEF2F2;color:#991B1B;margin-left:6px">🔒 travada</span>':'';
     const div=document.createElement('div');
     div.className='card semana-card';
-    div.innerHTML=`
+
+    if(lockedByTeacher){
+      div.style.opacity='.7';
+      div.innerHTML=`
       <div class="semana-header">
         <div class="semana-title">${sem.title}</div>
+      </div>
+      <div style="text-align:center;padding:24px 16px;color:var(--orange-dark)">
+        <div style="font-size:32px;margin-bottom:8px">🔒</div>
+        <div style="font-weight:800">Em breve!</div>
+        <div style="font-size:13px;color:var(--slate);margin-top:4px">Esta aula ainda não foi liberada pela professora.</div>
+      </div>`;
+      cont.appendChild(div);
+      return;
+    }
+
+    div.innerHTML=`
+      <div class="semana-header">
+        <div class="semana-title">${sem.title}${lockTag}</div>
         ${badge?`<div class="semana-turma-badge" style="margin-top:6px">${badge}</div>`:''}
       </div>
       <div class="semana-games">
@@ -3888,6 +3921,11 @@ async function endGame(){
   let xpGain=activeGame.score*10;
 
   if(activeGame.type==='trilha_pratica'){
+    if(currentUser.role!=='teacher'){
+      currentUser.notas=currentUser.notas||{};
+      const notaAnterior=parseFloat(currentUser.notas[activeGame.context]||0);
+      if(parseFloat(nota)>=notaAnterior) currentUser.notas[activeGame.context]=parseFloat(nota);
+    }
     if(pct>=80){
       if(currentUser.role!=='teacher'){
         const arr=DATABASE.trilhas[currentUser.turma]||[];
@@ -3895,13 +3933,17 @@ async function endGame(){
         if(fIdx>=0){
           const nextId=arr[fIdx+1]?.id||(activeGame.context+'_done');
           if(!currentUser.unlockedFases.includes(nextId))currentUser.unlockedFases.push(nextId);
-          if(sbClient)await sbClient.auth.updateUser({data:{unlockedFases:currentUser.unlockedFases}}).catch(()=>{});
+          if(sbClient)await sbClient.auth.updateUser({data:{unlockedFases:currentUser.unlockedFases,notas:currentUser.notas}}).catch(()=>{});
         }
       }
       unlockMsg='🌟 Fase desbloqueada!';
     } else {
       unlockMsg=`Sua nota: ${nota} — Para desbloquear a próxima fase é necessário tirar no mínimo 8.0. Revise a teoria!`;
       xpGain=0;
+    }
+    if(currentUser.role!=='teacher'){
+      if(sbClient)sbClient.auth.updateUser({data:{notas:currentUser.notas}}).catch(()=>{});
+      saveStudentProgress();
     }
   }
 
@@ -3966,12 +4008,97 @@ function dispatchReport(act,result){
 function initTeacherPanel(){showView('teacher');renderAdminRooms();updateAdminSelects();renderAdminSemanas();renderAdminTrilhas();renderAdminMusicas();initTrilhaFormExtras();showTeacherTab('salas');}
 
 function showTeacherTab(tab){
-  ['salas','trilha-admin','aulas-admin','semanas-lista','musicas-admin'].forEach(t=>{
+  ['salas','trilha-admin','aulas-admin','semanas-lista','musicas-admin','dashboard'].forEach(t=>{
     const el=document.getElementById('ttab-'+t);
     if(el)el.classList.toggle('hidden',t!==tab);
     const btn=document.getElementById('tnav-'+t);
     if(btn)btn.classList.toggle('active',t===tab);
   });
+  if(tab==='dashboard')renderDashboard();
+}
+
+// Grava o progresso do aluno numa tabela que a professora consegue ler no dashboard
+async function saveStudentProgress(){
+  if(!currentUser||currentUser.role==='teacher'||!currentUser.id)return;
+  try{
+    if(!sbClient)sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    await sbClient.from('student_progress').upsert({
+      id: currentUser.id,
+      name: currentUser.name||'Aluno',
+      turma: currentUser.turma||'',
+      xp: currentUser.xp||0,
+      notas: currentUser.notas||{},
+      unlocked: currentUser.unlockedFases||[],
+      updated_at: new Date().toISOString()
+    });
+  }catch(e){console.warn('Progresso não salvo:',e);}
+}
+
+async function renderDashboard(){
+  const cont=document.getElementById('dashboard-content');
+  const summary=document.getElementById('dashboard-summary');
+  cont.innerHTML='<div class="text-muted text-center" style="padding:24px">Carregando dados dos alunos...</div>';
+  summary.innerHTML='';
+  try{
+    if(!sbClient)sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    const {data,error}=await withTimeout(sbClient.from('student_progress').select('*'),8000);
+    if(error){
+      cont.innerHTML=`<div class="card card-body" style="text-align:center;color:var(--slate)">Não consegui carregar os dados.<br>Verifique se a tabela <b>student_progress</b> existe no Supabase.<br><br><span style="font-size:11px;opacity:.7">${error.message}</span></div>`;
+      return;
+    }
+    if(!data||data.length===0){
+      cont.innerHTML='<div class="card card-body" style="text-align:center;color:var(--slate)">Nenhum aluno registrou atividade ainda.<br><span style="font-size:12px">Os dados aparecem aqui assim que os alunos começarem a estudar.</span></div>';
+      return;
+    }
+
+    const now=Date.now();
+    const diasDesde=(d)=> d? Math.floor((now-new Date(d).getTime())/86400000) : null;
+    const ativos=data.filter(a=>{const dd=diasDesde(a.updated_at);return dd!==null&&dd<=7;}).length;
+
+    summary.innerHTML=`
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px">
+        <div style="font-size:24px;font-weight:900;color:var(--orange)">${data.length}</div>
+        <div style="font-size:12px;color:var(--slate)">alunos no app</div>
+      </div>
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px">
+        <div style="font-size:24px;font-weight:900;color:var(--teal)">${ativos}</div>
+        <div style="font-size:12px;color:var(--slate)">ativos (7 dias)</div>
+      </div>`;
+
+    // agrupa por turma
+    const turmas={};
+    data.forEach(a=>{(turmas[a.turma]=turmas[a.turma]||[]).push(a);});
+    let html='';
+    Object.keys(turmas).sort().forEach(tk=>{
+      const nome=DATABASE.turmas[tk]?.name||tk||'Sem turma';
+      const alunos=turmas[tk].sort((a,b)=>(b.xp||0)-(a.xp||0));
+      html+=`<div class="label" style="margin-top:16px;margin-bottom:8px">${nome} · ${alunos.length} aluno(s)</div>`;
+      alunos.forEach(a=>{
+        const notas=a.notas&&typeof a.notas==='object'?Object.values(a.notas):[];
+        const numNotas=notas.length;
+        const media=numNotas?(notas.reduce((s,n)=>s+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
+        const nivel=Math.floor((a.xp||0)/200)+1;
+        const dd=diasDesde(a.updated_at);
+        const quando=dd===null?'nunca':dd===0?'hoje':dd===1?'ontem':`há ${dd} dias`;
+        const ativo=dd!==null&&dd<=7;
+        const mediaColor=media==='—'?'var(--slate)':parseFloat(media)>=8?'var(--teal)':parseFloat(media)>=5?'var(--orange)':'#DC2626';
+        html+=`
+        <div class="admin-item" style="margin-bottom:8px">
+          <div style="flex:1">
+            <div class="admin-item-name">${ativo?'🟢':'⚪'} ${a.name||'Aluno'}</div>
+            <div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · visto ${quando}</div>
+          </div>
+          <div style="text-align:center;min-width:54px">
+            <div style="font-size:20px;font-weight:900;color:${mediaColor}">${media}</div>
+            <div style="font-size:10px;color:var(--slate)">média</div>
+          </div>
+        </div>`;
+      });
+    });
+    cont.innerHTML=html;
+  }catch(e){
+    cont.innerHTML='<div class="card card-body" style="text-align:center;color:var(--slate)">Servidor lento. Toque em Atualizar para tentar de novo.</div>';
+  }
 }
 
 function saveLocalDB(){localStorage.setItem('english_hub_db',JSON.stringify(DATABASE));}
@@ -4242,10 +4369,13 @@ function renderAdminTrilhas(){
     if(!arr || !arr.length || !DATABASE.turmas[rKey]) return;
     let bloco = `<div class="label" style="margin-top:12px;margin-bottom:8px">${DATABASE.turmas[rKey].name}</div>`;
     arr.forEach((t,i) => {
+      const lock = t.locked;
       bloco += `
-      <div class="admin-item">
-        <div><div class="admin-item-name">${t.nivel?'['+t.nivel+'] ':''}${t.emoji||'📚'} ${t.title}</div><div class="admin-item-sub">${(t.tipo||'flashcard+quiz').split('+').join(', ')}</div></div>
+      <div class="admin-item"${lock?' style="opacity:.65"':''}>
+        <div><div class="admin-item-name">${lock?'🔒 ':''}${t.nivel?'['+t.nivel+'] ':''}${t.emoji||'📚'} ${t.title}</div><div class="admin-item-sub">${(t.tipo||'flashcard+quiz').split('+').join(', ')}${lock?' · TRAVADA':''}</div></div>
         <div style="display:flex;gap:4px">
+          <button class="admin-edit" title="${lock?'Liberar para os alunos':'Travar (esconder dos alunos)'}" onclick="adminToggleLockTrilha('${rKey}', ${i})"><i class="fa-solid fa-${lock?'lock':'lock-open'}"></i></button>
+          <button class="admin-edit" title="Copiar para outra turma" onclick="adminCopyTrilha('${rKey}', ${i})"><i class="fa-solid fa-copy"></i></button>
           <button class="admin-edit" onclick="adminEditTrilha('${rKey}', ${i})"><i class="fa-solid fa-pen"></i></button>
           <button class="admin-delete" onclick="adminDeleteTrilha('${rKey}', ${i})"><i class="fa-solid fa-trash"></i></button>
         </div>
@@ -4253,6 +4383,33 @@ function renderAdminTrilhas(){
     });
     cont.innerHTML += bloco;
   });
+}
+
+// Escolhe uma turma de destino (para copiar conteúdo entre salas)
+function pickTurma(msg, excludeKey){
+  const keys=Object.keys(DATABASE.turmas).filter(k=>k!==excludeKey);
+  if(keys.length===0){alert('Não há outra turma disponível.');return null;}
+  const lista=keys.map((k,idx)=>`${idx+1}) ${DATABASE.turmas[k].name}`).join('\n');
+  const escolha=prompt(`${msg}\n\n${lista}\n\nDigite o número da turma de destino:`);
+  if(escolha===null)return null;
+  const idx=parseInt(String(escolha).trim())-1;
+  if(isNaN(idx)||idx<0||idx>=keys.length){alert('Opção inválida.');return null;}
+  return keys[idx];
+}
+function adminCopyTrilha(rKey,i){
+  const t=DATABASE.trilhas[rKey][i];
+  const dest=pickTurma(`Copiar a fase "${t.title}" para qual turma?`,rKey);
+  if(!dest)return;
+  if(!DATABASE.trilhas[dest])DATABASE.trilhas[dest]=[];
+  const copia=JSON.parse(JSON.stringify(t));
+  copia.id='fase_'+Date.now();
+  DATABASE.trilhas[dest].push(copia);
+  saveCloudDB();renderAdminTrilhas();
+  alert(`✅ Fase copiada para ${DATABASE.turmas[dest].name}!`);
+}
+function adminToggleLockTrilha(rKey,i){
+  DATABASE.trilhas[rKey][i].locked=!DATABASE.trilhas[rKey][i].locked;
+  saveCloudDB();renderAdminTrilhas();
 }
 
 function adminSaveSemana(){
@@ -4325,17 +4482,34 @@ function renderAdminSemanas(){
     const wrap=document.createElement('div');
     wrap.style.marginBottom='16px';
     wrap.innerHTML=`<div class="label" style="margin-bottom:8px">${DATABASE.turmas[k].name}</div>`+
-      DATABASE.semanas[k].map((s,i)=>`
-        <div class="admin-item" style="margin-bottom:8px">
-          <div><div class="admin-item-name">${s.title}</div><div class="admin-item-sub">${(s.vocab||[]).length} vocab · ${(s.chunks||[]).length} chunks · ${(s.ditado||[]).length} ditado</div></div>
+      DATABASE.semanas[k].map((s,i)=>{
+        const lock=s.locked;
+        return `
+        <div class="admin-item" style="margin-bottom:8px${lock?';opacity:.65':''}">
+          <div><div class="admin-item-name">${lock?'🔒 ':''}${s.title}</div><div class="admin-item-sub">${(s.vocab||[]).length} vocab · ${(s.chunks||[]).length} chunks · ${(s.ditado||[]).length} ditado${lock?' · TRAVADA':''}</div></div>
           <div style="display:flex;gap:4px">
+            <button class="admin-edit" title="${lock?'Liberar para os alunos':'Travar (esconder dos alunos)'}" onclick="adminToggleLockSemana('${k}',${i})"><i class="fa-solid fa-${lock?'lock':'lock-open'}"></i></button>
+            <button class="admin-edit" title="Copiar para outra turma" onclick="adminCopySemana('${k}',${i})"><i class="fa-solid fa-copy"></i></button>
             <button class="admin-edit" onclick="adminEditSemana('${k}',${i})"><i class="fa-solid fa-pen"></i></button>
             <button class="admin-delete" onclick="adminDeleteSemana('${k}',${i})"><i class="fa-solid fa-xmark"></i></button>
           </div>
-        </div>`).join('');
+        </div>`;}).join('');
     cont.appendChild(wrap);
   });
   if(!any)cont.innerHTML='<div class="text-muted text-sm text-center">Nenhuma aula cadastrada ainda.</div>';
+}
+function adminCopySemana(rKey,i){
+  const s=DATABASE.semanas[rKey][i];
+  const dest=pickTurma(`Copiar a aula "${s.title}" para qual turma?`,rKey);
+  if(!dest)return;
+  if(!DATABASE.semanas[dest])DATABASE.semanas[dest]=[];
+  DATABASE.semanas[dest].push(JSON.parse(JSON.stringify(s)));
+  saveCloudDB();renderAdminSemanas();
+  alert(`✅ Aula copiada para ${DATABASE.turmas[dest].name}!`);
+}
+function adminToggleLockSemana(rKey,i){
+  DATABASE.semanas[rKey][i].locked=!DATABASE.semanas[rKey][i].locked;
+  saveCloudDB();renderAdminSemanas();
 }
 
 /* ══════════════════════════════════════════════
