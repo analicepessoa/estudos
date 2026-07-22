@@ -3590,6 +3590,103 @@ function updateGameProgress(){
   document.getElementById('game-score-label').textContent=`✓ ${activeGame.score}`;
 }
 
+function cleanGameText(value){
+  return typeof value==='string'?value.trim().replace(/\s+/g,' '):'';
+}
+
+function gameWords(value){
+  const text=cleanGameText(value);
+  return text?text.split(' '):[];
+}
+
+function cleanGameWord(value){
+  return cleanGameText(value).replace(/^[^A-Za-z0-9'’-]+|[^A-Za-z0-9'’-]+$/g,'');
+}
+
+function uniqueGameValues(values){
+  const seen=new Set();
+  return values.filter(value=>{
+    const text=cleanGameText(value);
+    const key=text.toLocaleLowerCase();
+    if(!text||seen.has(key))return false;
+    seen.add(key);
+    return true;
+  }).map(cleanGameText);
+}
+
+function buildWordOrderQueue(fase){
+  const sources=[
+    ...(fase.teoria||[]).map(item=>({en:cleanGameText(item.en),pt:cleanGameText(item.pt)})),
+    ...(fase.pratica||[]).filter(item=>!(/_{2,}/.test(item.p||''))).map(item=>({en:cleanGameText(item.c),pt:cleanGameText(item.p)}))
+  ];
+  const seen=new Set();
+  return sources.filter(item=>{
+    const key=item.en.toLocaleLowerCase();
+    if(gameWords(item.en).length<2||seen.has(key))return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function buildFillBlankQueue(fase){
+  const pratica=fase.pratica||[];
+  const ready=pratica.filter(item=>/_{2,}/.test(item.p||'')&&cleanGameText(item.c)).map(item=>({
+    p:cleanGameText(item.p),
+    c:cleanGameText(item.c),
+    o:uniqueGameValues([item.c,...(item.o||[])])
+  }));
+
+  const sources=[
+    ...(fase.teoria||[]).map(item=>({text:cleanGameText(item.en),hint:cleanGameText(item.pt)})),
+    ...pratica.filter(item=>!(/_{2,}/.test(item.p||''))).map(item=>({text:cleanGameText(item.c),hint:cleanGameText(item.p)}))
+  ];
+  const optionPool=uniqueGameValues([
+    ...(fase.teoria||[]).flatMap(item=>gameWords(item.en).map(cleanGameWord)),
+    ...pratica.flatMap(item=>[item.c,...(item.o||[])].flatMap(gameWords).map(cleanGameWord))
+  ]);
+  const seenSentences=new Set();
+  const generated=[];
+
+  sources.forEach(source=>{
+    const words=gameWords(source.text);
+    const sentenceKey=source.text.toLocaleLowerCase();
+    if(!words.length||seenSentences.has(sentenceKey))return;
+    seenSentences.add(sentenceKey);
+
+    if(words.length===1){
+      const answer=cleanGameWord(words[0]);
+      if(!answer||!source.hint)return;
+      const distractors=optionPool.filter(option=>option.toLocaleLowerCase()!==answer.toLocaleLowerCase()).slice(0,3);
+      generated.push({
+        p:`Complete: “${source.hint}” → ___`,
+        c:answer,
+        o:uniqueGameValues([answer,...distractors])
+      });
+      return;
+    }
+
+    const candidates=words.map((word,index)=>({index,answer:cleanGameWord(word)})).filter(x=>x.answer.length>1);
+    if(!candidates.length)return;
+    const chosen=candidates[Math.floor(candidates.length/2)];
+    const blankWords=[...words];
+    blankWords[chosen.index]=words[chosen.index].replace(chosen.answer,'___');
+    const distractors=optionPool.filter(option=>option.toLocaleLowerCase()!==chosen.answer.toLocaleLowerCase()).slice(0,3);
+    generated.push({
+      p:`Complete: ${blankWords.join(' ')}`,
+      c:chosen.answer,
+      o:uniqueGameValues([chosen.answer,...distractors])
+    });
+  });
+
+  const seenQuestions=new Set();
+  return [...ready,...generated].filter(item=>{
+    const key=item.p.toLocaleLowerCase();
+    if(seenQuestions.has(key))return false;
+    seenQuestions.add(key);
+    return true;
+  });
+}
+
 function startTrilhaGame(faseId,mode,turmaKey){
   const fase=(DATABASE.trilhas[turmaKey]||[]).find(f=>f.id===faseId);
   if(!fase)return;
@@ -3597,7 +3694,9 @@ function startTrilhaGame(faseId,mode,turmaKey){
   if(mode==='teoria') queue=(fase.teoria||[]).filter(x=>x.exp);
   else if(mode==='vocab') queue=(fase.teoria||[]).filter(x=>x.en||x.pt);
   else if(mode==='pratica'||mode==='quiz') queue=fase.pratica;
-  else queue=fase.teoria;
+  else if(mode==='wordorder') queue=buildWordOrderQueue(fase);
+  else if(mode==='fillblank') queue=buildFillBlankQueue(fase);
+  else queue=(fase.teoria||[]).filter(x=>x.en&&x.pt);
   if(!queue||queue.length===0)return alert("Esta fase ainda não tem conteúdo para este modo.");
   activeGame={type:'trilha_'+mode,queue:[...queue].sort(()=>Math.random()-.5),index:0,score:0,total:queue.length,context:faseId,titleName:fase.title};
   openGame(fase.title+' — '+(mode==='teoria'?'Teoria':mode==='vocab'?'Vocabulário':mode==='pratica'?'Teste':mode==='wordorder'?'Organizar':mode==='fillblank'?'Complete':mode==='memoria'?'Memória':'Quiz'));
@@ -3850,10 +3949,14 @@ function flipMem(el){
 let wordOrderAnswer=[];
 let wordOrderCorrect=[];
 function engineWordOrder(){
-  // Generate from teoria items
   const item=activeGame.queue[activeGame.index];
   const words=item.en.split(' ');
-  const shuffled=[...words].sort(()=>Math.random()-.5);
+  const shuffled=[...words];
+  for(let i=shuffled.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
+  }
+  if(shuffled.every((word,index)=>word===words[index]))shuffled.push(shuffled.shift());
   wordOrderAnswer=[];
   wordOrderCorrect=words;
   const body=document.getElementById('game-body');
