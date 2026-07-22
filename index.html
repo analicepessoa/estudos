@@ -3614,31 +3614,57 @@ function uniqueGameValues(values){
   }).map(cleanGameText);
 }
 
+const MAX_AUTOMATIC_GAME_ITEMS=50;
+
+function automaticContentScore(value){
+  const text=cleanGameText(value);
+  const count=gameWords(text).length;
+  let score=Math.min(count,12);
+  if(count>=3&&count<=12)score+=20;
+  if(/[.!?]$/.test(text))score+=5;
+  return score;
+}
+
+function selectMainGameItems(items){
+  return [...items]
+    .sort((a,b)=>(b._priority||0)-(a._priority||0)||(a._order||0)-(b._order||0))
+    .slice(0,MAX_AUTOMATIC_GAME_ITEMS)
+    .map(({_priority,_order,...item})=>item);
+}
+
 function buildWordOrderQueue(fase){
   const sources=[
-    ...(fase.teoria||[]).map(item=>({en:cleanGameText(item.en),pt:cleanGameText(item.pt)})),
-    ...(fase.pratica||[]).filter(item=>!(/_{2,}/.test(item.p||''))).map(item=>({en:cleanGameText(item.c),pt:cleanGameText(item.p)}))
+    ...(fase.teoria||[]).map((item,index)=>({en:cleanGameText(item.en),pt:cleanGameText(item.pt),sourcePriority:200,sourceOrder:index})),
+    ...(fase.pratica||[]).filter(item=>!(/_{2,}/.test(item.p||''))).map((item,index)=>({en:cleanGameText(item.c),pt:cleanGameText(item.p),sourcePriority:100,sourceOrder:index}))
   ];
   const seen=new Set();
-  return sources.filter(item=>{
+  const valid=sources.filter(item=>{
     const key=item.en.toLocaleLowerCase();
     if(gameWords(item.en).length<2||seen.has(key))return false;
     seen.add(key);
     return true;
-  });
+  }).map(item=>({
+    en:item.en,
+    pt:item.pt,
+    _priority:item.sourcePriority+automaticContentScore(item.en),
+    _order:item.sourceOrder
+  }));
+  return selectMainGameItems(valid);
 }
 
 function buildFillBlankQueue(fase){
   const pratica=fase.pratica||[];
-  const ready=pratica.filter(item=>/_{2,}/.test(item.p||'')&&cleanGameText(item.c)).map(item=>({
+  const ready=pratica.filter(item=>/_{2,}/.test(item.p||'')&&cleanGameText(item.c)).map((item,index)=>({
     p:cleanGameText(item.p),
     c:cleanGameText(item.c),
-    o:uniqueGameValues([item.c,...(item.o||[])])
+    o:uniqueGameValues([item.c,...(item.o||[])]),
+    _priority:300+automaticContentScore(item.p),
+    _order:index
   }));
 
   const sources=[
-    ...(fase.teoria||[]).map(item=>({text:cleanGameText(item.en),hint:cleanGameText(item.pt)})),
-    ...pratica.filter(item=>!(/_{2,}/.test(item.p||''))).map(item=>({text:cleanGameText(item.c),hint:cleanGameText(item.p)}))
+    ...(fase.teoria||[]).map((item,index)=>({text:cleanGameText(item.en),hint:cleanGameText(item.pt),sourcePriority:200,sourceOrder:index})),
+    ...pratica.filter(item=>!(/_{2,}/.test(item.p||''))).map((item,index)=>({text:cleanGameText(item.c),hint:cleanGameText(item.p),sourcePriority:100,sourceOrder:index}))
   ];
   const optionPool=uniqueGameValues([
     ...(fase.teoria||[]).flatMap(item=>gameWords(item.en).map(cleanGameWord)),
@@ -3660,7 +3686,9 @@ function buildFillBlankQueue(fase){
       generated.push({
         p:`Complete: “${source.hint}” → ___`,
         c:answer,
-        o:uniqueGameValues([answer,...distractors])
+        o:uniqueGameValues([answer,...distractors]),
+        _priority:source.sourcePriority+automaticContentScore(source.text)-20,
+        _order:source.sourceOrder
       });
       return;
     }
@@ -3674,17 +3702,20 @@ function buildFillBlankQueue(fase){
     generated.push({
       p:`Complete: ${blankWords.join(' ')}`,
       c:chosen.answer,
-      o:uniqueGameValues([chosen.answer,...distractors])
+      o:uniqueGameValues([chosen.answer,...distractors]),
+      _priority:source.sourcePriority+automaticContentScore(source.text),
+      _order:source.sourceOrder
     });
   });
 
   const seenQuestions=new Set();
-  return [...ready,...generated].filter(item=>{
+  const unique=[...ready,...generated].filter(item=>{
     const key=item.p.toLocaleLowerCase();
     if(seenQuestions.has(key))return false;
     seenQuestions.add(key);
     return true;
   });
+  return selectMainGameItems(unique);
 }
 
 function startTrilhaGame(faseId,mode,turmaKey){
