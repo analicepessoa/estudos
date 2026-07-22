@@ -3561,13 +3561,47 @@ function renderStudentSemanas(){
 /* ══════════════════════════════════════════════
    GAME ENGINE
 ══════════════════════════════════════════════ */
-function playTTS(text,rate=0.8){
+function speechLanguageScores(value){
+  const text=String(value||'').toLocaleLowerCase();
+  const words=text.match(/[a-záàâãéêíóôõúçü'’-]+/g)||[];
+  const portugueseWords=new Set(['ainda','aluno','aluna','aqui','bom','boa','como','com','correto','da','das','de','dia','do','dos','ela','ele','eles','elas','em','então','esta','este','está','estão','eu','frase','inglês','isso','meu','minha','não','nós','obrigado','obrigada','onde','para','palavra','por','porque','português','qual','que','seu','sua','sim','também','tradução','um','uma','você','vocês']);
+  const englishWords=new Set(['a','an','are','can','correct','did','do','does','english','for','from','has','have','he','her','here','how','i','in','is','it','me','my','not','of','on','or','sentence','she','that','the','they','this','to','translate','we','what','when','where','which','will','with','word','you','your']);
+  let pt=/[áàâãéêíóôõúç]/.test(text)?4:0;
+  let en=/\b\w+(?:n't|'re|'ll|'ve|'d)\b/.test(text)?3:0;
+  words.forEach(word=>{
+    if(portugueseWords.has(word))pt++;
+    if(englishWords.has(word))en++;
+  });
+  return {pt,en};
+}
+
+function detectSpeechLanguage(text,context=''){
+  const scores=speechLanguageScores(text);
+  const hint=String(context||'').toLocaleLowerCase();
+  if(/(?:em|para) ingl[eê]s|(?:in|to) english/.test(hint))scores.en+=8;
+  if(/(?:em|para) portugu[eê]s|(?:in|to) portuguese|o que significa/.test(hint))scores.pt+=8;
+  if(/como (?:se )?diz.*ingl[eê]s|traduz.*(?:em|para) ingl[eê]s/.test(hint))scores.en+=8;
+  if(/what does .* mean/.test(hint))scores.pt+=6;
+  if(/^translate\b/.test(hint)&&!/(?:in|to) (?:english|portuguese)/.test(hint)){
+    const quoted=hint.match(/[“"']([^”"']+)[”"']/)?.[1]||'';
+    const sourceScores=speechLanguageScores(quoted);
+    if(sourceScores.en>sourceScores.pt)scores.pt+=5;
+    else if(sourceScores.pt>sourceScores.en)scores.en+=5;
+  }
+  return scores.pt>scores.en?'pt-BR':'en-US';
+}
+
+function playTTS(text,rate=0.8,language='auto',context=''){
   if(!('speechSynthesis' in window))return;
   window.speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);
-  u.lang='en-US'; u.rate=rate;
+  const targetLanguage=language==='auto'?detectSpeechLanguage(text,context):language;
+  u.lang=targetLanguage; u.rate=rate;
   const voices=window.speechSynthesis.getVoices();
-  const v=voices.find(v=>v.lang==='en-US'&&v.name.includes('Female'))||voices.find(v=>v.lang.startsWith('en'));
+  const normalizedTarget=targetLanguage.replace('_','-').toLocaleLowerCase();
+  const baseLanguage=normalizedTarget.split('-')[0];
+  const v=voices.find(voice=>voice.lang.replace('_','-').toLocaleLowerCase()===normalizedTarget)
+    ||voices.find(voice=>voice.lang.replace('_','-').toLocaleLowerCase().startsWith(baseLanguage));
   if(v)u.voice=v;
   window.speechSynthesis.speak(u);
 }
@@ -3745,8 +3779,8 @@ function startSemanaGame(rKey,idx,type){
   else if(type==='memoria') q=[...(sem.vocab||[]),...(sem.chunks||[])].sort(()=>Math.random()-.5).slice(0,8);
   else if(type==='quiz'){
     // Build quiz from vocab+chunks
-    const all=[...(sem.vocab||[]).map(v=>({p:`O que significa "${v.en}"?`,c:v.pt,o:[(sem.vocab||[]).filter(x=>x.en!==v.en).slice(0,3).map(x=>x.pt),v.pt].flat().sort(()=>Math.random()-.5)})),
-               ...(sem.chunks||[]).map(c=>({p:`Como diz em inglês: "${c.pt}"?`,c:c.en,o:[(sem.chunks||[]).filter(x=>x.en!==c.en).slice(0,2).map(x=>x.en),c.en].flat().sort(()=>Math.random()-.5)}))
+    const all=[...(sem.vocab||[]).map(v=>({p:`O que significa "${v.en}"?`,c:v.pt,o:[(sem.vocab||[]).filter(x=>x.en!==v.en).slice(0,3).map(x=>x.pt),v.pt].flat().sort(()=>Math.random()-.5),lang:'pt-BR'})),
+               ...(sem.chunks||[]).map(c=>({p:`Como diz em inglês: "${c.pt}"?`,c:c.en,o:[(sem.chunks||[]).filter(x=>x.en!==c.en).slice(0,2).map(x=>x.en),c.en].flat().sort(()=>Math.random()-.5),lang:'en-US'}))
     ];
     q=all.sort(()=>Math.random()-.5).slice(0,8);
   }
@@ -3810,12 +3844,12 @@ function engineFlashcard(){
           Entendi, próximo <i class="fa-solid fa-arrow-right"></i>
         </button>
       </div>`;
-    setTimeout(()=>playTTS(item.en,0.75),300);
+    setTimeout(()=>playTTS(item.en,0.75,'en-US'),300);
   }
 }
 function handleListen(btn,text){
   btn.classList.add('playing');
-  playTTS(text,0.7);
+  playTTS(text,0.7,'en-US');
   setTimeout(()=>btn.classList.remove('playing'),2000);
 }
 
@@ -3823,21 +3857,22 @@ function handleListen(btn,text){
 function engineQuiz(){
   const q=activeGame.queue[activeGame.index];
   const body=document.getElementById('game-body');
+  const answerLanguage=q.lang||detectSpeechLanguage(q.c,q.p);
   const opts=[...(q.o||[])].sort(()=>Math.random()-.5).slice(0,4);
   if(!opts.includes(q.c))opts[0]=q.c;
   const shuffled=opts.sort(()=>Math.random()-.5);
   body.innerHTML=`
     <div class="anim-fade-up" style="flex:1">
       <div class="quiz-question">${q.p}</div>
-      ${shuffled.map(o=>`<button class="quiz-option" onclick="handleQuiz(this,'${esc(o)}','${esc(q.c)}')">${o}</button>`).join('')}
+      ${shuffled.map(o=>`<button class="quiz-option" onclick="handleQuiz(this,'${esc(o)}','${esc(q.c)}','${answerLanguage}')">${o}</button>`).join('')}
     </div>`;
 }
-function handleQuiz(btn,ans,correct){
+function handleQuiz(btn,ans,correct,language='auto'){
   document.querySelectorAll('.quiz-option').forEach(b=>{b.disabled=true;});
   if(ans===correct){
     btn.classList.add('correct');
     activeGame.score++;
-    playTTS(correct,0.8);
+    playTTS(correct,0.8,language);
     setTimeout(nextStep,900);
   } else {
     btn.classList.add('wrong');
@@ -3869,14 +3904,14 @@ function engineDictation(){
         Verificar <i class="fa-solid fa-check"></i>
       </button>
     </div>`;
-  setTimeout(()=>playTTS(frase,0.65),400);
+  setTimeout(()=>playTTS(frase,0.65,'en-US'),400);
 }
 function handleDictPlay(text){
   dictPlayCount++;
   const btn=document.getElementById('dict-play-btn');
   const counter=document.getElementById('dict-count');
   btn.classList.toggle('playing',true);
-  playTTS(text,0.65);
+  playTTS(text,0.65,'en-US');
   counter.textContent=`Ouvido ${dictPlayCount}x (pode ouvir quantas vezes quiser)`;
   setTimeout(()=>btn&&btn.classList.remove('playing'),2500);
 }
@@ -3924,7 +3959,7 @@ function handleGrammar(btn,isCorrect,exp){
     btn.classList.add('correct');
     activeGame.score++;
     fb.innerHTML=`✅ <strong>Correto!</strong><br>${exp}`;
-    playTTS(btn.textContent,0.8);
+    playTTS(btn.textContent,0.8,'en-US');
   } else {
     btn.classList.add('wrong');
     document.querySelectorAll('.grammar-option').forEach(b=>{if(!b.classList.contains('wrong'))b.classList.add('correct');});
@@ -3953,7 +3988,7 @@ function flipMem(el){
   if(memState.lock||el.classList.contains('matched')||memState.flipped.includes(el))return;
   el.classList.add('flip');
   el.textContent=el.dataset.txt;
-  if(el.dataset.t==='en')playTTS(el.dataset.txt,0.8);
+  if(el.dataset.t==='en')playTTS(el.dataset.txt,0.8,'en-US');
   memState.flipped.push(el);
   if(memState.flipped.length===2){
     memState.lock=true;
@@ -4039,7 +4074,7 @@ function checkWordOrder(){
   const fb=document.getElementById('word-fb');fb.style.display='block';
   if(ans===correct){
     fb.style.background='var(--teal-light)';fb.style.color='var(--teal)';
-    fb.innerHTML='✅ Correto!';activeGame.score++;playTTS(correct,0.8);setTimeout(nextStep,1000);
+    fb.innerHTML='✅ Correto!';activeGame.score++;playTTS(correct,0.8,'en-US');setTimeout(nextStep,1000);
   } else {
     fb.style.background='var(--rose-light)';fb.style.color='var(--rose)';
     fb.innerHTML=`❌ Correto: <em>${correct}</em>`;setTimeout(nextStep,2000);
