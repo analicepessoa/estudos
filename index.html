@@ -1868,9 +1868,130 @@ let activeGame = { type:'', queue:[], index:0, score:0, total:0, context:null };
 const withTimeout = (p, ms=5000) => Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
 
 /* ══ DATABASE ══ */
+const TRAITOR_MUSIC = {
+  title: "Traitor",
+  artist: "Olivia Rodrigo",
+  audioUrl: "https://github.com/analicepessoa/estudos/raw/refs/heads/main/olivia%20traitor.mp3",
+  letraRaw: `Ooh, ooh | u, u | Ooh, ooh
+Ah, ah, ah, ah, ah | ah, ah, ah, ah, ah | Ah, ah, ah, ah, ah
+Brown guilty eyes and | bráun guílti áiz én | Olhos castanhos cheios de culpa e
+Little white lies, yeah | lírou uáit láiz, ié | Pequenas mentiras inocentes, sim
+I played dumb but I always knew | ai plêid dâm bãr ai ól-uêiz nú | Eu me fiz de boba, mas sempre soube
+That you talked to her | détchu tókt tchãr | Que você falava com ela
+Maybe did even worse | mêibi did íven uârs | Talvez tenha feito coisas ainda piores
+I kept quiet, so I could keep you | ai képt quáiet, sou ai cud kípiu | Eu fiquei calada para poder manter você comigo
+And ain't it funny how you ran to her | en êinit fãni ráu iu rén tchãr | E não é engraçado como você correu para ela
+The second that we called it quits? | dã sékând dét uí cóldit cuíts | No segundo em que nós terminamos?
+And ain't it funny how you said you were friends? | en êinit fãni ráu iu séd iu uâr fréndz | E não é engraçado como você dizia que vocês eram amigos?
+Now it sure as hell don't look like it | náu it chúr az rél dôunt luc láikit | Agora com certeza não parece que eram só amigos
+You betrayed me | iu bitrêid mi | Você me traiu
+And I know that you'll never feel sorry | en ai nôu dét iul néver fíl sóri | E eu sei que você nunca vai se arrepender
+For the way I hurt, yeah | fór dã uêi ai rârt, ié | Pela forma como eu sofro, sim
+You talked to her when we were together | iu tókt tchãr uén uí uâr tugéder | Você falava com ela quando estávamos juntos
+Loved you at your worst but that didn't matter | lâvd iu ét iór uârst bãt dét dídânt méter | Amei você no seu pior, mas isso não importou
+It took you two weeks to go off and date her | it tuc iu tú uíks tã gôu óf en dêitãr | Você levou duas semanas para sair e começar a namorá-la
+Guess you didn't cheat, but you're still a traitor | guéss iu dídânt tchít, bãt iór stíl ã trêitor | Acho que você não me enganou, mas ainda é um traidor
+Now you bring her around | náu iu bringãr aráund | Agora você a traz por perto
+Just to shut me down | djâst tã chât mi dáun | Só para me calar e me derrubar
+Show her off like she's a new trophy | chôuãr óf láik chíz ã nú trôufi | Exibe ela como se fosse um troféu novo
+And I know if you were true | en ai nôu if iu uâr trú | E eu sei que, se você fosse sincero
+There's no damn way that you | dérz nôu dém uêi détchu | Não haveria nenhuma possibilidade de você
+Could fall in love with somebody that quickly | cud fól in lâv uíf sâmbódi dét cuíkli | Se apaixonar por alguém tão rapidamente
+And ain't it funny, all the twisted games | en êinit fãni, ól dã tuístid gêimz | E não são engraçados todos esses jogos distorcidos
+All the questions you used to avoid? | ól dã cuéstchânz iu iúst tã avóid | Todas as perguntas que você costumava evitar?
+Ain't it funny, remember I brought her up? | êinit fãni, rimémber ai brótãr âp | Não é engraçado? Lembra quando falei sobre ela?
+And you told me I was paranoid | en iu tôuld mi ai uâz péranóid | E você me disse que eu estava paranoica
+You betrayed me | iu bitrêid mi | Você me traiu
+And I know that you'll never feel sorry | en ai nôu dét iul néver fíl sóri | E eu sei que você nunca vai se arrepender
+For the way I hurt, yeah | fór dã uêi ai rârt, ié | Pela forma como eu sofro, sim
+You talked to her when we were together | iu tókt tchãr uén uí uâr tugéder | Você falava com ela quando estávamos juntos
+Loved you at your worst but that didn't matter | lâvd iu ét iór uârst bãt dét dídânt méter | Amei você no seu pior, mas isso não importou
+It took you two weeks to go off and date her | it tuc iu tú uíks tã gôu óf en dêitãr | Você levou duas semanas para sair e começar a namorá-la
+Guess you didn't cheat, but you're still a traitor | guéss iu dídânt tchít, bãt iór stíl ã trêitor | Acho que você não me enganou, mas ainda é um traidor
+Ah-ah-ah | ah-ah-ah | Ah-ah-ah
+God, I wish that you had thought this through | gód, ai uích détchu réd thót dis thrú | Deus, eu queria que você tivesse pensado bem nisso
+Before I went and fell in love with you | bifór ai uént en fél in lâv uíf iu | Antes que eu me apaixonasse por você
+Ah-ah-ah | ah-ah-ah | Ah-ah-ah
+When she's sleepin' in the bed we made | uén chíz slípin in dã béd uí mêid | Quando ela estiver dormindo na cama que fizemos
+Don't you dare forget about the way you | dôuntchu dér fargét abáut dã uêi iu | Não ouse se esquecer da maneira como você
+Betrayed me | bitrêid mi | Me traiu
+'Cause I know that you'll never feel sorry | cóz ai nôu dét iul néver fíl sóri | Porque eu sei que você nunca vai se arrepender
+For the way I hurt, yeah | fór dã uêi ai rârt, ié | Pela forma como eu sofro, sim
+You talked to her when we were together | iu tókt tchãr uén uí uâr tugéder | Você falava com ela quando estávamos juntos
+You gave me your word but that didn't matter | iu gêiv mi iór uârd bãt dét dídânt méter | Você me deu a sua palavra, mas isso não importou
+It took you two weeks to go off and date her | it tuc iu tú uíks tã gôu óf en dêitãr | Você levou duas semanas para sair e começar a namorá-la
+Guess you didn't cheat, but you're still, you're still a traitor | guéss iu dídânt tchít, bãt iór stíl, iór stíl ã trêitor | Acho que você não me enganou, mas ainda é, ainda é um traidor
+Yeah, you're still a traitor | ié, iór stíl ã trêitor | Sim, você ainda é um traidor
+Ooh, ooh, ooh | u, u, u | Ooh, ooh, ooh
+God, I wish that you had thought this through | gód, ai uích détchu réd thót dis thrú | Deus, eu queria que você tivesse pensado bem nisso
+Before I went and fell in love with you | bifór ai uént en fél in lâv uíf iu | Antes que eu me apaixonasse por você`,
+  vocabRaw: `📚 VOCABULÁRIO PRINCIPAL
+
+guilty eyes = olhos culpados / olhar de culpa
+little white lies = pequenas mentiras consideradas inofensivas
+play dumb = fingir que não sabe ou não entende
+keep quiet = ficar calado, não falar sobre algo
+call it quits = terminar uma relação ou parar de fazer algo
+run to someone = correr para alguém / procurar alguém imediatamente
+betray = trair a confiança de alguém
+at your worst = no seu pior momento
+matter = importar, fazer diferença
+go off and date someone = sair e começar a namorar alguém
+cheat = trair romanticamente
+traitor = traidor, pessoa que quebra a confiança
+bring someone around = trazer alguém para perto ou para o mesmo ambiente
+shut someone down = calar, rejeitar ou derrubar emocionalmente alguém
+show someone off = exibir alguém com orgulho
+fall in love = apaixonar-se
+quickly = rapidamente
+twisted games = jogos distorcidos ou manipulações
+avoid = evitar
+bring something up = mencionar ou iniciar um assunto
+paranoid = paranoico, desconfiado sem prova aparente
+think something through = pensar cuidadosamente antes de agir
+give someone your word = dar sua palavra, fazer uma promessa
+
+🧩 GRAMÁTICA E CONNECTED SPEECH
+
+I wish that you had thought this through = exemplo de wish + Past Perfect para expressar arrependimento sobre o passado.
+You used to avoid = used to indica um hábito ou comportamento que acontecia no passado.
+If you were true = estrutura condicional; were é muito usado em situações hipotéticas.
+Ain't it funny? = forma muito informal de Isn't it funny?
+You'll = contração de you will.
+Didn't = contração de did not; depois dela o verbo fica na forma base: didn't cheat.
+Sleepin' e thinkin' = na fala e no canto, a terminação -ing perde o som final de g.
+Talked to her = no connected speech, as palavras se juntam e soam próximas de tókt-tchãr.
+Don't you = na fala rápida, pode soar como dôuntchu.`,
+  dicasRaw: `Passo 1: Escute a História
+Ouça a música uma vez sem parar. Perceba a mudança de emoção entre as estrofes suaves e o refrão, no qual aparece a palavra principal traitor.
+
+Passo 2: Entenda a Tradução
+Leia a tradução completa e identifique a sequência dos acontecimentos: as mentiras, o término, o novo relacionamento e o sentimento de traição mesmo sem uma traição oficialmente admitida.
+
+Passo 3: Treine os Chunks
+Repita em voz alta as expressões play dumb, call it quits, at your worst, fall in love, bring it up e give me your word. Tente criar uma frase pessoal com pelo menos três delas.
+
+Passo 4: Foco no Connected Speech
+Pratique pequenos trechos como talked to her, don't you dare e thought this through. Comece devagar usando a pronúncia aportuguesada e aumente a velocidade até acompanhar a cantora.
+
+Passo 5: Observe a Gramática do Arrependimento
+Estude a frase I wish that you had thought this through. Ela usa wish + had + particípio para falar de algo que a pessoa gostaria que tivesse acontecido de outra maneira no passado.
+
+Passo 6: Shadowing no Refrão
+Toque o refrão e cante exatamente por cima da voz da Olivia Rodrigo. Primeiro acompanhe a pronúncia, depois tente cantar olhando apenas para a letra em inglês.
+
+BLOCO 4 — RESUMO
+Nível: Intermediário
+Temas Principais: sentimentos e relacionamentos, phrasal verbs, Past Perfect com wish, used to e connected speech.
+Por que é boa: A dicção clara e a repetição do refrão ajudam a treinar compreensão auditiva, expressões naturais e a comunicação de sentimentos em inglês.`
+};
+
 let DATABASE = {
   musicas: {
-    "iq15": [], "iq1904": [], "is08": [], "iq1907": []
+    "iq15": [],
+    "iq1904": [{ id:"music_traitor_iq1904", ...TRAITOR_MUSIC }],
+    "is08": [{ id:"music_traitor_is08", ...TRAITOR_MUSIC }],
+    "iq1907": [{ id:"music_traitor_iq1907", ...TRAITOR_MUSIC }]
   },
   turmas: {
     "iq15":   { name:"Turma IQ15/0003", pass:"iq15" },
@@ -4335,7 +4456,11 @@ async function loadCloudDB(){
         });
       }
       if(cloud.musicas) {
-        Object.keys(cloud.musicas).forEach(k => DATABASE.musicas[k] = cloud.musicas[k]);
+        Object.keys(cloud.musicas).forEach(k => {
+          const merged = new Map((DATABASE.musicas[k]||[]).map(m => [m.id, m]));
+          (cloud.musicas[k]||[]).forEach(m => merged.set(m.id, m));
+          DATABASE.musicas[k] = Array.from(merged.values());
+        });
       }
       // Update local cache with cloud data
       saveLocalDB();
