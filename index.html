@@ -4404,10 +4404,15 @@ async function saveCloudDB(){
     if (error) {
       console.error('❌ Erro Supabase ao salvar:', error);
       alert('Erro ao salvar na nuvem: ' + error.message);
+      return false;
     } else {
       console.log('☁️ Salvo na nuvem!');
+      return true;
     }
-  } catch(e) { console.warn('Erro fatal ao salvar na nuvem:', e); }
+  } catch(e) {
+    console.warn('Erro fatal ao salvar na nuvem:', e);
+    return false;
+  }
 }
 
 async function loadCloudDB(){
@@ -4456,11 +4461,8 @@ async function loadCloudDB(){
         });
       }
       if(cloud.musicas) {
-        Object.keys(cloud.musicas).forEach(k => {
-          const merged = new Map((DATABASE.musicas[k]||[]).map(m => [m.id, m]));
-          (cloud.musicas[k]||[]).forEach(m => merged.set(m.id, m));
-          DATABASE.musicas[k] = Array.from(merged.values());
-        });
+        // A nuvem é a fonte oficial do catálogo. Isso mantém exclusões persistentes.
+        Object.keys(cloud.musicas).forEach(k => DATABASE.musicas[k] = cloud.musicas[k]);
       }
       // Update local cache with cloud data
       saveLocalDB();
@@ -4874,10 +4876,25 @@ function adminCancelEditMusica() {
   ['admin-musica-idx','admin-musica-title','admin-musica-artist','admin-musica-audio','admin-musica-letra','admin-musica-vocab','admin-musica-dicas'].forEach(id => document.getElementById(id).value='');
 }
 
-function adminDeleteMusica(rKey, idx) {
-  if(!confirm("Remover esta música?")) return;
-  DATABASE.musicas[rKey].splice(idx, 1);
-  saveCloudDB(); renderAdminMusicas();
+async function adminDeleteMusica(rKey, idx) {
+  const musica = DATABASE.musicas[rKey]?.[idx];
+  if(!musica) return;
+  const turma = DATABASE.turmas[rKey]?.name || rKey;
+  if(!confirm(`Remover "${musica.title}" da ${turma}?`)) return;
+
+  const [removida] = DATABASE.musicas[rKey].splice(idx, 1);
+  renderAdminMusicas();
+
+  const saved = await saveCloudDB();
+  if(!saved) {
+    DATABASE.musicas[rKey].splice(idx, 0, removida);
+    saveLocalDB();
+    renderAdminMusicas();
+    alert("A música não foi removida porque não foi possível salvar na nuvem. Tente novamente.");
+    return;
+  }
+
+  alert(`✅ "${musica.title}" removida da ${turma}.`);
 }
 
 function renderAdminMusicas() {
