@@ -1,6 +1,7 @@
 {
   "name": "Analice Pessoa · English",
   "short_name": "AP English",
+  "id": "./",
   "description": "Sua jornada no inglês com a Prof. Analice Pessoa — trilhas, aulas e prática guiada.",
   "start_url": "./",
   "scope": "./",

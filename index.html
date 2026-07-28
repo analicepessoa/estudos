@@ -171,6 +171,132 @@ h1,h2,h3,h4 {
 .btn-icon { width: 40px; height: 40px; padding: 0; border-radius: 50%; }
 
 /* ══════════════════════════════════════════
+   INSTALL APP — PWA
+══════════════════════════════════════════ */
+.install-app-btn {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  z-index: 90;
+  min-height: 48px;
+  padding: 12px 18px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  color: white;
+  box-shadow: 0 10px 30px rgba(245,124,0,.32);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: transform .25s var(--ease-out), box-shadow .25s var(--ease-out);
+}
+.install-app-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(245,124,0,.4); }
+.install-app-btn:active { transform: scale(.97); }
+.install-app-btn i { font-size: 16px; }
+#view-auth:not(.hidden) ~ .install-app-btn { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+
+.install-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  padding: 20px;
+  background: rgba(6,14,42,.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.install-modal-card {
+  width: min(100%, 430px);
+  max-height: min(86vh, 680px);
+  overflow-y: auto;
+  background: white;
+  border-radius: 26px;
+  box-shadow: var(--shadow-xl);
+  padding: 26px;
+  animation: scaleIn .3s var(--ease-spring);
+}
+.install-modal-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.install-modal-icon {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  border-radius: 17px;
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  box-shadow: 0 8px 20px var(--orange-glow);
+}
+.install-modal-title { font-size: 22px; color: var(--ink); margin-bottom: 5px; }
+.install-modal-sub { color: var(--slate); font-size: 13px; line-height: 1.5; }
+.install-close {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface2);
+  color: var(--slate);
+  cursor: pointer;
+  font-size: 16px;
+}
+.install-steps { display: grid; gap: 11px; margin: 18px 0 22px; }
+.install-step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 11px;
+  align-items: center;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface);
+  color: var(--ink2);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.install-step-num {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+.install-note {
+  padding: 12px 14px;
+  border-radius: 13px;
+  background: var(--teal-light);
+  color: var(--teal-dark);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 390px) {
+  .install-app-btn { right: 10px; padding: 12px 15px; }
+  .install-modal { padding: 12px; }
+  .install-modal-card { padding: 21px; border-radius: 22px; }
+}
+
+/* ══════════════════════════════════════════
    CARD — ELEVATED
 ══════════════════════════════════════════ */
 .card {
@@ -1569,6 +1695,30 @@ select.input { appearance: none; cursor: pointer; }
         <i class="fa-solid fa-chalkboard-user"></i> Acesso Administrativo
       </button>
     </div>
+  </div>
+</div>
+
+<!-- ══ INSTALAÇÃO DO APLICATIVO ══ -->
+<button id="install-app-btn" class="install-app-btn hidden" type="button" onclick="requestInstallApp()" aria-label="Instalar este portal como aplicativo">
+  <i class="fa-solid fa-mobile-screen-button"></i>
+  <span>Instalar aplicativo</span>
+</button>
+
+<div id="install-help-modal" class="install-modal hidden" role="dialog" aria-modal="true" aria-labelledby="install-modal-title" onclick="closeInstallHelp(event)">
+  <div class="install-modal-card" onclick="event.stopPropagation()">
+    <div class="install-modal-top">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div class="install-modal-icon"><i class="fa-solid fa-download"></i></div>
+        <div>
+          <h2 id="install-modal-title" class="install-modal-title">Instalar aplicativo</h2>
+          <p id="install-modal-sub" class="install-modal-sub">Siga os passos abaixo neste celular.</p>
+        </div>
+      </div>
+      <button class="install-close" type="button" onclick="closeInstallHelp()" aria-label="Fechar instruções"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="install-modal-steps" class="install-steps"></div>
+    <div class="install-note"><i class="fa-solid fa-circle-check"></i> Depois de instalado, o ícone “AP English” aparecerá junto com os outros aplicativos do celular.</div>
+    <button class="btn btn-primary w-full" type="button" onclick="closeInstallHelp()">Entendi</button>
   </div>
 </div>
 
@@ -5103,6 +5253,126 @@ function switchMusicTab(tab) {
 function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
 </script>
 <script>
+  let deferredInstallPrompt = null;
+
+  function isAppInstalled() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+  }
+
+  function updateInstallButton() {
+    const btn = document.getElementById('install-app-btn');
+    if(!btn) return;
+    btn.classList.toggle('hidden', isAppInstalled());
+  }
+
+  function installInstructions() {
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPad|iPhone|iPod/i.test(ua);
+    const isAndroid = /Android/i.test(ua);
+    const isSamsung = /SamsungBrowser/i.test(ua);
+
+    if(isIOS) {
+      return {
+        subtitle: 'No iPhone ou iPad, a instalação é feita pelo Safari.',
+        steps: [
+          'Abra este portal no <strong>Safari</strong>.',
+          'Toque no botão <strong>Compartilhar</strong> <i class="fa-solid fa-arrow-up-from-bracket"></i>.',
+          'Deslize as opções e toque em <strong>Adicionar à Tela de Início</strong>.',
+          'Toque em <strong>Adicionar</strong> no canto superior.'
+        ]
+      };
+    }
+
+    if(isSamsung) {
+      return {
+        subtitle: 'No Samsung Internet, use o menu do navegador.',
+        steps: [
+          'Toque no menu <strong>☰</strong> na parte inferior do navegador.',
+          'Toque em <strong>Adicionar página a</strong>.',
+          'Escolha <strong>Tela inicial</strong> e confirme.'
+        ]
+      };
+    }
+
+    if(isAndroid) {
+      return {
+        subtitle: 'No Android, use o menu do Chrome caso a instalação automática não abra.',
+        steps: [
+          'Abra este portal no <strong>Google Chrome</strong>.',
+          'Toque nos três pontinhos <strong>⋮</strong>.',
+          'Toque em <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>.',
+          'Confirme tocando em <strong>Instalar</strong>.'
+        ]
+      };
+    }
+
+    return {
+      subtitle: 'Use o menu do navegador para instalar este portal.',
+      steps: [
+        'Abra o menu do navegador.',
+        'Procure <strong>Instalar aplicativo</strong> ou <strong>Adicionar à tela inicial</strong>.',
+        'Confirme a instalação.'
+      ]
+    };
+  }
+
+  function openInstallHelp() {
+    const modal = document.getElementById('install-help-modal');
+    const sub = document.getElementById('install-modal-sub');
+    const steps = document.getElementById('install-modal-steps');
+    const info = installInstructions();
+    sub.textContent = info.subtitle;
+    steps.innerHTML = info.steps.map((step, index) =>
+      `<div class="install-step"><span class="install-step-num">${index + 1}</span><span>${step}</span></div>`
+    ).join('');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeInstallHelp(event) {
+    if(event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('install-help-modal');
+    if(modal) modal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  async function requestInstallApp() {
+    if(isAppInstalled()) {
+      document.getElementById('install-app-btn')?.classList.add('hidden');
+      return;
+    }
+
+    if(deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      if(choice.outcome === 'accepted') {
+        document.getElementById('install-app-btn')?.classList.add('hidden');
+      }
+      return;
+    }
+
+    openInstallHelp();
+  }
+
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    updateInstallButton();
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    document.getElementById('install-app-btn')?.classList.add('hidden');
+  });
+
+  window.matchMedia('(display-mode: standalone)').addEventListener?.('change', updateInstallButton);
+  document.addEventListener('DOMContentLoaded', updateInstallButton);
+  document.addEventListener('keydown', (event) => {
+    if(event.key === 'Escape') closeInstallHelp();
+  });
+
   // Registra o app instalável (PWA). Funciona apenas em hospedagem HTTPS.
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
