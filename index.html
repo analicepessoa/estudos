@@ -3857,8 +3857,8 @@ function renderStudentSemanas(){
         </div>
         <div class="game-tile quiz" onclick="startSemanaGame('${sem.rKey}',${sem.realIdx},'quiz')">
           <div class="tile-icon">⚡</div>
-          <div class="tile-label">Quiz Rápido</div>
-          <div class="tile-sub">Revisão do conteúdo</div>
+          <div class="tile-label">Quiz da Aula</div>
+          <div class="tile-sub">Até 25 perguntas</div>
         </div>
       </div>`;
     cont.appendChild(div);
@@ -4075,6 +4075,72 @@ function startTrilhaGame(faseId,mode,turmaKey){
   dispatchGameStep();
 }
 
+const WEEKLY_QUIZ_ITEMS=25;
+
+function buildSemanaQuizOptions(correct,primaryPool,fallbackPool){
+  const distractors=uniqueGameValues([...(primaryPool||[]),...(fallbackPool||[])])
+    .filter(value=>value.toLocaleLowerCase()!==cleanGameText(correct).toLocaleLowerCase())
+    .sort(()=>Math.random()-.5)
+    .slice(0,3);
+  return [correct,...distractors].sort(()=>Math.random()-.5);
+}
+
+function buildSemanaQuizQueue(sem){
+  const vocab=(sem.vocab||[]).filter(item=>cleanGameText(item.en)&&cleanGameText(item.pt));
+  const chunks=(sem.chunks||[]).filter(item=>cleanGameText(item.en)&&cleanGameText(item.pt));
+  const vocabEn=vocab.map(item=>cleanGameText(item.en));
+  const vocabPt=vocab.map(item=>cleanGameText(item.pt));
+  const chunksEn=chunks.map(item=>cleanGameText(item.en));
+  const chunksPt=chunks.map(item=>cleanGameText(item.pt));
+  const allEn=uniqueGameValues([...vocabEn,...chunksEn]);
+  const allPt=uniqueGameValues([...vocabPt,...chunksPt]);
+  const questions=[];
+
+  vocab.forEach(item=>{
+    const en=cleanGameText(item.en);
+    const pt=cleanGameText(item.pt);
+    questions.push(
+      {p:`O que significa "${en}"?`,c:pt,o:buildSemanaQuizOptions(pt,vocabPt,allPt),lang:'pt-BR'},
+      {p:`Como se diz "${pt}" em inglês?`,c:en,o:buildSemanaQuizOptions(en,vocabEn,allEn),lang:'en-US'},
+      {p:`Escolha a tradução correta de "${en}".`,c:pt,o:buildSemanaQuizOptions(pt,vocabPt,allPt),lang:'pt-BR'},
+      {p:`Complete a associação: "${pt}" = ...`,c:en,o:buildSemanaQuizOptions(en,vocabEn,allEn),lang:'en-US'}
+    );
+  });
+
+  chunks.forEach(item=>{
+    const en=cleanGameText(item.en);
+    const pt=cleanGameText(item.pt);
+    questions.push(
+      {p:`Como dizemos em inglês: "${pt}"?`,c:en,o:buildSemanaQuizOptions(en,chunksEn,allEn),lang:'en-US'},
+      {p:`O que significa a expressão "${en}"?`,c:pt,o:buildSemanaQuizOptions(pt,chunksPt,allPt),lang:'pt-BR'},
+      {p:`Qual expressão em inglês corresponde a "${pt}"?`,c:en,o:buildSemanaQuizOptions(en,chunksEn,allEn),lang:'en-US'},
+      {p:`Escolha a tradução correta de "${en}".`,c:pt,o:buildSemanaQuizOptions(pt,chunksPt,allPt),lang:'pt-BR'}
+    );
+  });
+
+  const seen=new Set();
+  const uniqueQuestions=questions
+    .filter(question=>{
+      const key=`${question.p}|${question.c}`.toLocaleLowerCase();
+      if(seen.has(key))return false;
+      seen.add(key);
+      return true;
+    });
+
+  if(!uniqueQuestions.length)return [];
+
+  const queue=[...uniqueQuestions];
+  let reviewIndex=0;
+  while(queue.length<WEEKLY_QUIZ_ITEMS){
+    const source=uniqueQuestions[reviewIndex%uniqueQuestions.length];
+    const round=Math.floor(reviewIndex/uniqueQuestions.length)+2;
+    queue.push({...source,p:`Revisão ${round}: ${source.p}`});
+    reviewIndex++;
+  }
+
+  return queue.sort(()=>Math.random()-.5).slice(0,WEEKLY_QUIZ_ITEMS);
+}
+
 function startSemanaGame(rKey,idx,type){
   const sem=DATABASE.semanas[rKey][idx];
   if(!sem)return;
@@ -4085,14 +4151,10 @@ function startSemanaGame(rKey,idx,type){
   else if(type==='erros') q=[...sem.erros];
   else if(type==='memoria') q=[...(sem.vocab||[]),...(sem.chunks||[])].sort(()=>Math.random()-.5).slice(0,8);
   else if(type==='quiz'){
-    // Build quiz from vocab+chunks
-    const all=[...(sem.vocab||[]).map(v=>({p:`O que significa "${v.en}"?`,c:v.pt,o:[(sem.vocab||[]).filter(x=>x.en!==v.en).slice(0,3).map(x=>x.pt),v.pt].flat().sort(()=>Math.random()-.5),lang:'pt-BR'})),
-               ...(sem.chunks||[]).map(c=>({p:`Como diz em inglês: "${c.pt}"?`,c:c.en,o:[(sem.chunks||[]).filter(x=>x.en!==c.en).slice(0,2).map(x=>x.en),c.en].flat().sort(()=>Math.random()-.5),lang:'en-US'}))
-    ];
-    q=all.sort(()=>Math.random()-.5).slice(0,8);
+    q=buildSemanaQuizQueue(sem);
   }
   if(q.length===0)return alert("Sem conteúdo nesta seção.");
-  const typeLabel={vocab:'Vocabulário',chunks:'Chunks',ditado:'Ditado',erros:'Ache o Erro',memoria:'Memória',quiz:'Quiz Rápido'};
+  const typeLabel={vocab:'Vocabulário',chunks:'Chunks',ditado:'Ditado',erros:'Ache o Erro',memoria:'Memória',quiz:'Quiz da Aula'};
   activeGame={type:'semana_'+type,queue:q,index:0,score:0,total:q.length,context:sem.title};
   openGame(sem.title+' — '+typeLabel[type]);
   dispatchGameStep();
