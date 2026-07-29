@@ -954,6 +954,42 @@ select.input { appearance: none; cursor: pointer; }
 }
 .quiz-option.wrong::before { background: var(--rose); }
 .quiz-option:disabled { cursor: default; }
+.answer-feedback {
+  display: none;
+  padding: 14px 16px;
+  margin-top: 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+.answer-feedback.ok {
+  display: block;
+  background: var(--teal-light);
+  color: var(--teal-dark);
+  border: 1px solid rgba(13,148,136,.18);
+}
+.answer-feedback.err {
+  display: block;
+  background: var(--rose-light);
+  color: var(--rose);
+  border: 1px solid rgba(220,38,38,.14);
+}
+.answer-listen-btn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  background: rgba(255,255,255,.62);
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.manual-next-wrap {
+  padding: 18px 0 2px;
+  animation: fadeUp .25s var(--ease-out);
+}
 
 /* ── Game: Dictation ── */
 .dictation-play {
@@ -4129,6 +4165,7 @@ function engineQuiz(){
   const q=activeGame.queue[activeGame.index];
   const body=document.getElementById('game-body');
   const answerLanguage=q.lang||detectSpeechLanguage(q.c,q.p);
+  const advanceLabel=activeGame.index>=activeGame.total-1?'Ver resultado':'Próxima pergunta';
   const opts=[...(q.o||[])].sort(()=>Math.random()-.5).slice(0,4);
   if(!opts.includes(q.c))opts[0]=q.c;
   const shuffled=opts.sort(()=>Math.random()-.5);
@@ -4136,20 +4173,33 @@ function engineQuiz(){
     <div class="anim-fade-up" style="flex:1">
       <div class="quiz-question">${q.p}</div>
       ${shuffled.map(o=>`<button class="quiz-option" onclick="handleQuiz(this,'${esc(o)}','${esc(q.c)}','${answerLanguage}')">${o}</button>`).join('')}
+      <div id="quiz-fb" class="answer-feedback" aria-live="polite"></div>
+      <div id="quiz-next-wrap" class="manual-next-wrap hidden">
+        <button class="btn btn-primary w-full btn-lg" onclick="nextStep()">
+          ${advanceLabel} <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
     </div>`;
 }
 function handleQuiz(btn,ans,correct,language='auto'){
   document.querySelectorAll('.quiz-option').forEach(b=>{b.disabled=true;});
+  const fb=document.getElementById('quiz-fb');
   if(ans===correct){
     btn.classList.add('correct');
     activeGame.score++;
+    fb.className='answer-feedback ok';
+    fb.innerHTML=`✅ <strong>Correto!</strong><br>A resposta é: ${correct}
+      <br><button class="answer-listen-btn" onclick="playTTS('${esc(correct)}',0.8,'${language}')"><i class="fa-solid fa-volume-high"></i> Ouvir resposta novamente</button>`;
     playTTS(correct,0.8,language);
-    setTimeout(nextStep,900);
   } else {
     btn.classList.add('wrong');
     document.querySelectorAll('.quiz-option').forEach(b=>{if(b.textContent===correct)b.classList.add('correct');});
-    setTimeout(nextStep,1500);
+    fb.className='answer-feedback err';
+    fb.innerHTML=`❌ <strong>Resposta incorreta.</strong><br>A resposta correta é: ${correct}
+      <br><button class="answer-listen-btn" onclick="playTTS('${esc(correct)}',0.8,'${language}')"><i class="fa-solid fa-volume-high"></i> Ouvir resposta correta</button>`;
+    playTTS(correct,0.8,language);
   }
+  document.getElementById('quiz-next-wrap').classList.remove('hidden');
 }
 
 /* ══ ENGINE: DICTATION ══ */
@@ -4213,30 +4263,36 @@ function checkDictation(correct){
 function engineGrammar(){
   const err=activeGame.queue[activeGame.index];
   const body=document.getElementById('game-body');
+  const advanceLabel=activeGame.index>=activeGame.total-1?'Ver resultado':'Próxima pergunta';
   const opts=[err.errado,err.certo].sort(()=>Math.random()-.5);
   body.innerHTML=`
     <div class="anim-fade-up" style="flex:1">
       <div class="grammar-question">Qual frase está correta?</div>
       <div class="grammar-instruction">Identifique o erro gramatical</div>
-      ${opts.map(o=>`<button class="grammar-option" onclick="handleGrammar(this,${o===err.certo},'${esc(err.exp)}')">${o}</button>`).join('')}
+      ${opts.map(o=>`<button class="grammar-option" onclick="handleGrammar(this,${o===err.certo},'${esc(err.exp)}','${esc(err.certo)}')">${o}</button>`).join('')}
       <div id="gram-fb" style="display:none" class="grammar-explanation"></div>
+      <div id="grammar-next-wrap" class="manual-next-wrap hidden">
+        <button class="btn btn-primary w-full btn-lg" onclick="nextStep()">
+          ${advanceLabel} <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
     </div>`;
 }
-function handleGrammar(btn,isCorrect,exp){
+function handleGrammar(btn,isCorrect,exp,correct){
   document.querySelectorAll('.grammar-option').forEach(b=>b.disabled=true);
   const fb=document.getElementById('gram-fb');
   fb.style.display='block';
   if(isCorrect){
     btn.classList.add('correct');
     activeGame.score++;
-    fb.innerHTML=`✅ <strong>Correto!</strong><br>${exp}`;
-    playTTS(btn.textContent,0.8,'en-US');
+    fb.innerHTML=`✅ <strong>Correto!</strong><br><strong>${correct}</strong><br>${exp}`;
   } else {
     btn.classList.add('wrong');
     document.querySelectorAll('.grammar-option').forEach(b=>{if(!b.classList.contains('wrong'))b.classList.add('correct');});
-    fb.innerHTML=`❌ <strong>Atenção!</strong><br>${exp}`;
+    fb.innerHTML=`❌ <strong>Atenção!</strong><br>A frase correta é: <strong>${correct}</strong><br>${exp}`;
   }
-  setTimeout(nextStep,2500);
+  playTTS(correct,0.8,'en-US');
+  document.getElementById('grammar-next-wrap').classList.remove('hidden');
 }
 
 /* ══ ENGINE: MEMORY ══ */
