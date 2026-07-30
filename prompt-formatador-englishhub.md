@@ -16,7 +16,7 @@ REGRAS GERAIS (valem para tudo):
 - Se uma seção não tiver conteúdo, escreva "(vazio)" embaixo do cabeçalho dela.
 
 PRIMEIRO, identifique qual é o tipo de conteúdo e formate só o que se aplica:
-→ TRILHA (fase da jornada: teoria + vocabulário + teste)
+→ TRILHA (fase da jornada: teoria + vocabulário + teste + ache o erro)
 → AULA (semana: vocabulário + chunks + erros + ditado)
 → MÚSICA (letra + vocabulário + passo a passo)
 
@@ -35,7 +35,7 @@ SUGESTÃO EMOJI:
 (um único emoji que combine com o tema)
 
 JOGOS HABILITADOS:
-(liste quais marcar, separados por vírgula, dentre: Teoria, Vocabulário, Teste, Memória, Ordem, Complete. Marque Teoria só se houver explicação; sempre inclua Vocabulário e Teste quando houver conteúdo deles.)
+(liste quais marcar, separados por vírgula, dentre: Teoria, Vocabulário, Teste, Ache o Erro, Memória, Ordem, Complete. Marque Teoria só se houver explicação; sempre inclua Vocabulário e Teste quando houver conteúdo deles; marque Ache o Erro quando preencher a seção correspondente.)
 
 💡 TEORIA (explicação):
 (uma frase curta de explicação por linha — é o que vira a tela "Preste Atenção!". 1 a 3 linhas no máximo, linguagem simples.)
@@ -52,6 +52,13 @@ IMPORTANTE: o 2º campo é a resposta CERTA. O 3º campo são só as opções ER
 Exemplo:
 Qual letra vem depois de B? | C | D,A,E
 Como se diz "maçã"? | Apple | Book,Car,House
+
+❌ ACHE O ERRO:
+(uma por linha, no formato: forma_errada | forma_certa | regra/explicação)
+IMPORTANTE: explique claramente por que a primeira forma está errada e qual regra torna a segunda forma correta.
+Exemplo:
+He have a car. | He has a car. | Com he, she e it usamos has.
+She don't study. | She doesn't study. | No Simple Present, she usa doesn't.
 
 ═══════════════════════════════
 FORMATO — AULA (Fábrica de Aulas / Semana)

@@ -1073,6 +1073,25 @@ select.input { appearance: none; cursor: pointer; }
   border-radius: var(--radius); font-size: 13px; font-weight: 500; margin-top: 10px;
   line-height: 1.6; box-shadow: var(--shadow-md);
 }
+.grammar-comparison {
+  display: grid;
+  gap: 9px;
+  margin-top: 11px;
+}
+.grammar-comparison-row {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.1);
+}
+.grammar-comparison-row.wrong { color: #FCA5A5; }
+.grammar-comparison-row.correct { color: #99F6E4; }
+.grammar-reason {
+  padding-top: 11px;
+  margin-top: 11px;
+  border-top: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.9);
+}
 
 /* ── Game: Memory ── */
 .memory-grid {
@@ -1234,14 +1253,23 @@ select.input { appearance: none; cursor: pointer; }
 
 /* Edit form extras (Emoji & Game Types) */
 .emoji-picker {
-  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  max-height: 190px;
+  overflow-y: auto;
+  padding: 4px 4px 10px;
+  border-radius: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--slate-light) transparent;
 }
-.emoji-picker::-webkit-scrollbar { display: none; }
+.emoji-picker::-webkit-scrollbar { width: 6px; }
+.emoji-picker::-webkit-scrollbar-thumb { background: var(--slate-light); border-radius: 10px; }
 .emoji-chip {
-  flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px;
+  flex-shrink: 0; width: 44px; height: 44px; padding: 0; border-radius: 12px;
   background: var(--surface); border: 1.5px solid var(--border-light);
   display: flex; align-items: center; justify-content: center; font-size: 22px;
-  cursor: pointer; transition: all .2s var(--ease-out);
+  cursor: pointer; transition: all .2s var(--ease-out); line-height: 1;
 }
 .emoji-chip:hover { border-color: var(--slate-light); transform: translateY(-2px); }
 .emoji-chip.selected {
@@ -1885,6 +1913,7 @@ select.input { appearance: none; cursor: pointer; }
           <div><label class="label">💡 Teoria — Explicação rápida (uma frase por linha)</label><textarea id="admin-trilha-explicacao" class="input" placeholder="O alfabeto inglês tem 26 letras.&#10;As vogais têm sons diferentes do português."></textarea></div>
           <div><label class="label">📖 Vocabulário (inglês | pt)</label><textarea id="admin-trilha-teoria" class="input" placeholder="A is for Apple | A de Maçã&#10;B is for Book | B de Livro"></textarea></div>
           <div><label class="label">🎯 Teste — Perguntas (pergunta | certa | op2,op3,op4)</label><textarea id="admin-trilha-pratica" class="input" placeholder="Eu irei é... | I will go | I go, I will, I going"></textarea></div>
+          <div><label class="label" style="color:#B91C1C">❌ Ache o Erro (errado | certo | explicação)</label><textarea id="admin-trilha-erros" class="input" placeholder="He have a car. | He has a car. | Com he, she e it usamos has.&#10;She don't study. | She doesn't study. | No Simple Present, she usa doesn't."></textarea></div>
           
           <div style="display:flex;gap:10px">
             <button onclick="adminSaveTrilha()" id="btn-save-trilha" class="btn btn-orange w-full" style="background:linear-gradient(135deg,var(--orange),var(--orange-light));color:white;border:none">Salvar Fase <i class="fa-solid fa-save"></i></button>
@@ -3759,11 +3788,12 @@ function buildFaseButtons(fase){
     teoria:{icon:'💡',bg:'#FFF7ED',color:'#C2410C',label:'Teoria',desc:'Explicação rápida do conteúdo',action:`startTrilhaGame('${fase.id}','teoria','${fase.rKey||currentUser.turma}')`},
     flashcard:{icon:'📖',bg:'#EEF2FF',color:'#4F46E5',label:'Vocabulário',desc:'Estude as palavras com áudio',action:`startTrilhaGame('${fase.id}','vocab','${fase.rKey||currentUser.turma}')`},
     quiz:{icon:'🎯',bg:'#FFF4EC',color:'#C2410C',label:'Teste',desc:'Nota mínima 8.0 para avançar',action:`startTrilhaGame('${fase.id}','pratica','${fase.rKey||currentUser.turma}')`},
+    erros:{icon:'❌',bg:'#FEF2F2',color:'#B91C1C',label:'Ache o Erro',desc:'Compare, entenda a correção e avance',action:`startTrilhaGame('${fase.id}','erros','${fase.rKey||currentUser.turma}')`},
     wordorder:{icon:'✏️',bg:'#F0FDF4',color:'#065F46',label:'Organizar Frases',desc:'Monte a frase na ordem certa',action:`startTrilhaGame('${fase.id}','wordorder','${fase.rKey||currentUser.turma}')`},
     fillblank:{icon:'🔡',bg:'#F5F3FF',color:'#5B21B6',label:'Complete a Frase',desc:'Escolha a palavra que falta',action:`startTrilhaGame('${fase.id}','fillblank','${fase.rKey||currentUser.turma}')`},
     memoria:{icon:'🃏',bg:'#FEF2F2',color:'#991B1B',label:'Jogo da Memória',desc:'Encontre os pares',action:`startTrilhaGame('${fase.id}','memoria','${fase.rKey||currentUser.turma}')`},
   };
-  const order=['teoria','flashcard','quiz','wordorder','fillblank','memoria'];
+  const order=['teoria','flashcard','quiz','erros','wordorder','fillblank','memoria'];
   return order.filter(p=>parts.includes(p)&&configs[p]).map(p=>{
     const c=configs[p];
     return`<button class="fase-game-btn" onclick="${c.action}">
@@ -4066,12 +4096,13 @@ function startTrilhaGame(faseId,mode,turmaKey){
   if(mode==='teoria') queue=(fase.teoria||[]).filter(x=>x.exp);
   else if(mode==='vocab') queue=(fase.teoria||[]).filter(x=>x.en||x.pt);
   else if(mode==='pratica'||mode==='quiz') queue=fase.pratica;
+  else if(mode==='erros') queue=(fase.erros||[]);
   else if(mode==='wordorder') queue=buildWordOrderQueue(fase);
   else if(mode==='fillblank') queue=buildFillBlankQueue(fase);
   else queue=(fase.teoria||[]).filter(x=>x.en&&x.pt);
   if(!queue||queue.length===0)return alert("Esta fase ainda não tem conteúdo para este modo.");
   activeGame={type:'trilha_'+mode,queue:[...queue].sort(()=>Math.random()-.5),index:0,score:0,total:queue.length,context:faseId,titleName:fase.title};
-  openGame(fase.title+' — '+(mode==='teoria'?'Teoria':mode==='vocab'?'Vocabulário':mode==='pratica'?'Teste':mode==='wordorder'?'Organizar':mode==='fillblank'?'Complete':mode==='memoria'?'Memória':'Quiz'));
+  openGame(fase.title+' — '+(mode==='teoria'?'Teoria':mode==='vocab'?'Vocabulário':mode==='pratica'?'Teste':mode==='erros'?'Ache o Erro':mode==='wordorder'?'Organizar':mode==='fillblank'?'Complete':mode==='memoria'?'Memória':'Quiz'));
   dispatchGameStep();
 }
 
@@ -4331,7 +4362,7 @@ function engineGrammar(){
     <div class="anim-fade-up" style="flex:1">
       <div class="grammar-question">Qual frase está correta?</div>
       <div class="grammar-instruction">Identifique o erro gramatical</div>
-      ${opts.map(o=>`<button class="grammar-option" onclick="handleGrammar(this,${o===err.certo},'${esc(err.exp)}','${esc(err.certo)}')">${o}</button>`).join('')}
+      ${opts.map(o=>`<button class="grammar-option" onclick="handleGrammar(this,${o===err.certo},'${esc(err.exp)}','${esc(err.certo)}','${esc(err.errado)}')">${o}</button>`).join('')}
       <div id="gram-fb" style="display:none" class="grammar-explanation"></div>
       <div id="grammar-next-wrap" class="manual-next-wrap hidden">
         <button class="btn btn-primary w-full btn-lg" onclick="nextStep()">
@@ -4340,19 +4371,25 @@ function engineGrammar(){
       </div>
     </div>`;
 }
-function handleGrammar(btn,isCorrect,exp,correct){
+function handleGrammar(btn,isCorrect,exp,correct,wrong){
   document.querySelectorAll('.grammar-option').forEach(b=>b.disabled=true);
   const fb=document.getElementById('gram-fb');
   fb.style.display='block';
+  const explanation=exp||`A forma correta é "${correct}". Compare a estrutura das duas frases.`;
   if(isCorrect){
     btn.classList.add('correct');
     activeGame.score++;
-    fb.innerHTML=`✅ <strong>Correto!</strong><br><strong>${correct}</strong><br>${exp}`;
   } else {
     btn.classList.add('wrong');
     document.querySelectorAll('.grammar-option').forEach(b=>{if(!b.classList.contains('wrong'))b.classList.add('correct');});
-    fb.innerHTML=`❌ <strong>Atenção!</strong><br>A frase correta é: <strong>${correct}</strong><br>${exp}`;
   }
+  fb.innerHTML=`
+    <strong>${isCorrect?'✅ Você identificou a frase correta!':'❌ Esta opção está incorreta.'}</strong>
+    <div class="grammar-comparison">
+      <div class="grammar-comparison-row wrong">❌ <strong>Forma errada:</strong><br>${wrong}</div>
+      <div class="grammar-comparison-row correct">✅ <strong>Forma correta:</strong><br>${correct}</div>
+    </div>
+    <div class="grammar-reason">💡 <strong>Por quê?</strong><br>${explanation}</div>`;
   playTTS(correct,0.8,'en-US');
   document.getElementById('grammar-next-wrap').classList.remove('hidden');
 }
@@ -4775,11 +4812,20 @@ function updateAdminSelects(){
 
 function initTrilhaFormExtras(){
   // Setup Emoji Picker
-  const emojis = ['📚','🔤','🔢','📅','🎨','🔗','🔄','👗','🛋️','❤️','⏰','🌍','🍕','🚗','🎵','🏆','🌟'];
+  const emojis = [
+    '📚','📖','📝','✏️','🖊️','📓','📒','📕','📗','📘','📙','📔',
+    '🔤','🔡','🔢','🧠','💡','🎓','🏫','🏆','🥇','🎯','⭐','🌟','✨',
+    '📅','🗓️','⏰','⌛','🔄','✅','❓','⚡','🔒','🔓',
+    '💬','🗣️','👂','🎧','🎤','📢','🤝','👏','🙌','💪','❤️','🔥','🚀',
+    '🌍','🌎','🌏','✈️','🧳','🗺️','🏖️','🏙️','🏠','🌳','🌈','☀️','🌙',
+    '🍎','🍕','🍔','☕','🍰','🐶','🐱','🦁','🐼',
+    '🎵','🎬','🎨','⚽','🏀','🎮','🎲','🃏','🧩',
+    '🚗','🛋️','👗','💼','💻','📱','🛒','💰','🎁','🔗'
+  ];
   const pEmoji = document.getElementById('admin-trilha-emoji-picker');
   const inputEmoji = document.getElementById('admin-trilha-emoji');
   if(pEmoji) {
-    pEmoji.innerHTML = emojis.map(e => `<div class="emoji-chip ${e===inputEmoji.value?'selected':''}" onclick="setTrilhaEmoji(this, '${e}')">${e}</div>`).join('');
+    pEmoji.innerHTML = emojis.map(e => `<button type="button" class="emoji-chip ${e===inputEmoji.value?'selected':''}" onclick="setTrilhaEmoji(this, '${e}')" aria-label="Usar emoji ${e}">${e}</button>`).join('');
   }
   
   // Setup Game Types Picker
@@ -4787,6 +4833,7 @@ function initTrilhaFormExtras(){
     {id:'teoria', icon:'💡', label:'Teoria'},
     {id:'flashcard', icon:'📖', label:'Vocabulário'},
     {id:'quiz', icon:'🎯', label:'Teste'},
+    {id:'erros', icon:'❌', label:'Ache o Erro'},
     {id:'memoria', icon:'🃏', label:'Memória'},
     {id:'wordorder', icon:'✏️', label:'Ordem'},
     {id:'fillblank', icon:'🔡', label:'Complete'}
@@ -4829,6 +4876,7 @@ function adminSaveTrilha(){
   const explicacaoRaw = document.getElementById('admin-trilha-explicacao').value.trim();
   const vocabRaw = document.getElementById('admin-trilha-teoria').value.trim();
   const praticaRaw = document.getElementById('admin-trilha-pratica').value.trim();
+  const errosRaw = document.getElementById('admin-trilha-erros').value.trim();
   if(!title) return alert("Informe o título da fase.");
 
   const explicacao = explicacaoRaw.split('\n').filter(Boolean).map(l => ({ exp: l.trim() }));
@@ -4840,17 +4888,27 @@ function adminSaveTrilha(){
     const p = l.split('|');
     return { p:(p[0]||'').trim(), c:(p[1]||'').trim(), o:[(p[1]||'').trim(), ...(p[2]||'').split(',').map(x=>x.trim())] };
   });
+  const erros = errosRaw.split('\n').filter(Boolean).map(l => {
+    const p = l.split('|');
+    const errado=(p[0]||'').trim();
+    const certo=(p[1]||'').trim();
+    const exp=(p[2]||'').trim()||`A forma correta é "${certo}". Compare a estrutura das duas frases.`;
+    return { errado, certo, exp };
+  }).filter(item=>item.errado&&item.certo);
+  const tipos=tipo.split('+').filter(Boolean);
+  if(erros.length&&!tipos.includes('erros'))tipos.push('erros');
+  const tipoFinal=tipos.join('+')||'quiz';
 
   if(!DATABASE.trilhas[rKey]) DATABASE.trilhas[rKey] = [];
 
   if (editId) {
     const idx = DATABASE.trilhas[rKey].findIndex(t => t.id === editId);
     if(idx >= 0) {
-      DATABASE.trilhas[rKey][idx] = { ...DATABASE.trilhas[rKey][idx], nivel, title, emoji, tipo, teoria, pratica };
+      DATABASE.trilhas[rKey][idx] = { ...DATABASE.trilhas[rKey][idx], nivel, title, emoji, tipo:tipoFinal, teoria, pratica, erros };
     }
     alert("Fase atualizada!");
   } else {
-    DATABASE.trilhas[rKey].push({ id:'fase_'+Date.now(), nivel, title, emoji, tipo, teoria, pratica });
+    DATABASE.trilhas[rKey].push({ id:'fase_'+Date.now(), nivel, title, emoji, tipo:tipoFinal, teoria, pratica, erros });
     alert("Fase criada!");
   }
 
@@ -4878,7 +4936,8 @@ function adminEditTrilha(rKey, idx){
   
   // Set types
   const typeArr = (t.tipo || 'flashcard+quiz').split('+');
-  document.getElementById('admin-trilha-types-val').value = t.tipo || 'flashcard+quiz';
+  if((t.erros||[]).length&&!typeArr.includes('erros'))typeArr.push('erros');
+  document.getElementById('admin-trilha-types-val').value = typeArr.join('+');
   document.querySelectorAll('.game-type-pill').forEach(el => {
     const isSel = typeArr.includes(el.dataset.id);
     el.classList.toggle('selected', isSel);
@@ -4891,6 +4950,7 @@ function adminEditTrilha(rKey, idx){
   document.getElementById('admin-trilha-explicacao').value = (t.teoria||[]).filter(x=>x.exp).map(x => x.exp).join('\n');
   document.getElementById('admin-trilha-teoria').value = (t.teoria||[]).filter(x=>x.en||x.pt).map(x => `${x.en} | ${x.pt}`).join('\n');
   document.getElementById('admin-trilha-pratica').value = (t.pratica||[]).map(x => `${x.p} | ${x.c} | ${x.o.filter(o=>o!==x.c).join(',')}`).join('\n');
+  document.getElementById('admin-trilha-erros').value = (t.erros||[]).map(x => `${x.errado} | ${x.certo} | ${x.exp}`).join('\n');
   
   // Scroll to top of tab
   document.getElementById('ttab-trilha-admin').scrollIntoView({behavior: 'smooth'});
@@ -4906,6 +4966,7 @@ function adminCancelEditTrilha(){
   document.getElementById('admin-trilha-explicacao').value = '';
   document.getElementById('admin-trilha-teoria').value = '';
   document.getElementById('admin-trilha-pratica').value = '';
+  document.getElementById('admin-trilha-erros').value = '';
   
   // Reset emoji to default
   const eVal = '📚';
@@ -5493,6 +5554,12 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
 
   // Registra o app instalável (PWA). Funciona apenas em hospedagem HTTPS.
   if ('serviceWorker' in navigator) {
+    let reloadingForAppUpdate = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if(reloadingForAppUpdate) return;
+      reloadingForAppUpdate = true;
+      window.location.reload();
+    });
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
         .then(() => console.log('✅ App instalável pronto.'))
