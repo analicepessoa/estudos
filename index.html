@@ -1150,6 +1150,20 @@ select.input { appearance: none; cursor: pointer; }
   border-color: var(--orange); color: var(--white);
   cursor: pointer; box-shadow: 0 2px 8px rgba(245,124,0,.2);
 }
+.word-order-locked .word-chip { pointer-events: none; }
+.word-order-detail {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.word-order-detail-row {
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.65);
+  border: 1px solid rgba(15,23,42,.08);
+  color: var(--ink2);
+  line-height: 1.5;
+}
 
 /* ── Game: Fill Blank ── */
 .fill-sentence {
@@ -4440,8 +4454,10 @@ function flipMem(el){
 /* ══ ENGINE: WORD ORDER ══ */
 let wordOrderAnswer=[];
 let wordOrderCorrect=[];
+let wordOrderLocked=false;
 function engineWordOrder(){
   const item=activeGame.queue[activeGame.index];
+  const advanceLabel=activeGame.index>=activeGame.total-1?'Ver resultado':'Próxima pergunta';
   const words=item.en.split(' ');
   const shuffled=[...words];
   for(let i=shuffled.length-1;i>0;i--){
@@ -4451,6 +4467,7 @@ function engineWordOrder(){
   if(shuffled.every((word,index)=>word===words[index]))shuffled.push(shuffled.shift());
   wordOrderAnswer=[];
   wordOrderCorrect=words;
+  wordOrderLocked=false;
   const body=document.getElementById('game-body');
   body.innerHTML=`
     <div class="anim-fade-up" style="flex:1">
@@ -4462,15 +4479,20 @@ function engineWordOrder(){
       <div class="word-chips" id="chips-area">
         ${shuffled.map((w,i)=>`<div class="word-chip" id="chip-${i}" onclick="addWord(this,'${esc(w)}')">${w}</div>`).join('')}
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="resetWordOrder()">Limpar</button>
+      <button id="word-reset-btn" class="btn btn-ghost btn-sm" onclick="resetWordOrder()">Limpar</button>
     </div>
     <div style="padding:0 24px 20px">
       <div id="word-fb" style="display:none;padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;margin-bottom:12px"></div>
-      <button class="btn btn-primary w-full btn-lg" onclick="checkWordOrder()">Verificar <i class="fa-solid fa-check"></i></button>
+      <button id="word-check-btn" class="btn btn-primary w-full btn-lg" onclick="checkWordOrder()">Verificar <i class="fa-solid fa-check"></i></button>
+      <div id="word-next-wrap" class="manual-next-wrap hidden">
+        <button class="btn btn-primary w-full btn-lg" onclick="nextStep()">
+          ${advanceLabel} <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
     </div>`;
 }
 function addWord(el,word){
-  if(el.classList.contains('used'))return;
+  if(wordOrderLocked||el.classList.contains('used'))return;
   el.classList.add('used');
   wordOrderAnswer.push({el,word});
   const drop=document.getElementById('drop-area');
@@ -4488,23 +4510,61 @@ function addWord(el,word){
   drop.appendChild(chip);
 }
 function resetWordOrder(){
+  if(wordOrderLocked)return;
   wordOrderAnswer=[];
   document.querySelectorAll('.word-chip.used').forEach(el=>el.classList.remove('used'));
   const drop=document.getElementById('drop-area');
   drop.innerHTML='<span style="color:var(--orange);font-size:12px;font-weight:700;opacity:.6">Toque nas palavras abaixo →</span>';
 }
 
+function wordOrderExplanation(sentence){
+  const text=cleanGameText(sentence);
+  if(/\?$/.test(text)){
+    return 'Em perguntas, o auxiliar ou o verbo to be normalmente aparece antes do sujeito. Observe a posição de cada palavra.';
+  }
+  if(/\b(?:don't|doesn't|didn't|won't|can't|isn't|aren't|wasn't|weren't|not)\b/i.test(text)){
+    return 'Em frases negativas, a palavra de negação e o auxiliar ficam junto do verbo. Depois de do, does ou did, o verbo principal permanece na forma base.';
+  }
+  return 'Em frases afirmativas, a ordem mais comum em inglês é sujeito + verbo + complemento. Observe como cada palavra ocupa essa sequência.';
+}
+
 function checkWordOrder(){
+  if(wordOrderLocked)return;
   const ans=wordOrderAnswer.map(x=>x.word).join(' ');
   const correct=wordOrderCorrect.join(' ');
+  const item=activeGame.queue[activeGame.index]||{};
   const fb=document.getElementById('word-fb');fb.style.display='block';
-  if(ans===correct){
+  if(wordOrderAnswer.length!==wordOrderCorrect.length){
+    fb.style.background='var(--orange-pale)';
+    fb.style.color='var(--orange-dark)';
+    fb.innerHTML='⚠️ Use todas as palavras antes de verificar.';
+    return;
+  }
+  wordOrderLocked=true;
+  document.getElementById('chips-area')?.classList.add('word-order-locked');
+  document.getElementById('drop-area')?.classList.add('word-order-locked');
+  const checkBtn=document.getElementById('word-check-btn');
+  const resetBtn=document.getElementById('word-reset-btn');
+  if(checkBtn)checkBtn.classList.add('hidden');
+  if(resetBtn)resetBtn.disabled=true;
+  const isCorrect=ans===correct;
+  if(isCorrect){
     fb.style.background='var(--teal-light)';fb.style.color='var(--teal)';
-    fb.innerHTML='✅ Correto!';activeGame.score++;playTTS(correct,0.8,'en-US');setTimeout(nextStep,1000);
+    activeGame.score++;
   } else {
     fb.style.background='var(--rose-light)';fb.style.color='var(--rose)';
-    fb.innerHTML=`❌ Correto: <em>${correct}</em>`;setTimeout(nextStep,2000);
   }
+  fb.innerHTML=`
+    <strong>${isCorrect?'✅ Ordem correta!':'❌ A ordem ainda não está correta.'}</strong>
+    <div class="word-order-detail">
+      ${isCorrect?'':`<div class="word-order-detail-row"><strong>Sua resposta:</strong><br>${ans}</div>`}
+      <div class="word-order-detail-row"><strong>✅ Frase correta:</strong><br>${correct}</div>
+      ${item.pt?`<div class="word-order-detail-row"><strong>🇧🇷 Tradução:</strong><br>${item.pt}</div>`:''}
+      <div class="word-order-detail-row"><strong>💡 Explicação:</strong><br>${wordOrderExplanation(correct)}</div>
+    </div>
+    <button class="answer-listen-btn" onclick="playTTS('${esc(correct)}',0.8,'en-US')"><i class="fa-solid fa-volume-high"></i> Ouvir frase correta</button>`;
+  playTTS(correct,0.8,'en-US');
+  document.getElementById('word-next-wrap').classList.remove('hidden');
 }
 
 /* ══ END GAME ══ */
