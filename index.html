@@ -1030,6 +1030,14 @@ select.input { appearance: none; cursor: pointer; }
   background: var(--rose-light); color: var(--rose);
   border: 1px solid rgba(220,38,38,.1);
 }
+.dictation-choice-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 390px) {
+  .dictation-choice-actions { grid-template-columns: 1fr; }
+}
 
 /* ── Game: Grammar / Ache o Erro ── */
 .grammar-question {
@@ -4311,9 +4319,11 @@ function handleQuiz(btn,ans,correct,language='auto'){
 
 /* ══ ENGINE: DICTATION ══ */
 let dictPlayCount=0;
+let dictationLocked=false;
 function engineDictation(){
   const frase=activeGame.queue[activeGame.index];
   dictPlayCount=0;
+  dictationLocked=false;
   const body=document.getElementById('game-body');
   body.innerHTML=`
     <div class="anim-fade-up" style="flex:1;display:flex;flex-direction:column;gap:16px">
@@ -4325,12 +4335,13 @@ function engineDictation(){
         <label class="label">Escreva o que ouviu:</label>
         <textarea class="input" id="dict-input" rows="2" placeholder="Digite aqui..." style="font-size:16px"></textarea>
       </div>
-      <div id="dict-fb" style="display:none"></div>
+      <div id="dict-fb" style="display:none" aria-live="polite"></div>
     </div>
     <div style="padding:0 24px 20px">
-      <button class="btn btn-teal w-full btn-lg" onclick="checkDictation('${esc(frase)}')">
+      <button id="dict-check-btn" class="btn btn-teal w-full btn-lg" onclick="checkDictation('${esc(frase)}')">
         Verificar <i class="fa-solid fa-check"></i>
       </button>
+      <div id="dict-actions" class="manual-next-wrap hidden"></div>
     </div>`;
   setTimeout(()=>playTTS(frase,0.65,'en-US'),400);
 }
@@ -4343,27 +4354,59 @@ function handleDictPlay(text){
   counter.textContent=`Ouvido ${dictPlayCount}x (pode ouvir quantas vezes quiser)`;
   setTimeout(()=>btn&&btn.classList.remove('playing'),2500);
 }
+function retryDictation(text){
+  dictationLocked=false;
+  const input=document.getElementById('dict-input');
+  const fb=document.getElementById('dict-fb');
+  const actions=document.getElementById('dict-actions');
+  const checkBtn=document.getElementById('dict-check-btn');
+  input.disabled=false;
+  input.focus();
+  input.select();
+  fb.style.display='none';
+  fb.innerHTML='';
+  actions.classList.add('hidden');
+  actions.innerHTML='';
+  checkBtn.classList.remove('hidden');
+  handleDictPlay(text);
+}
 function checkDictation(correct){
-  const input=document.getElementById('dict-input').value.trim().toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
+  if(dictationLocked)return;
+  const inputEl=document.getElementById('dict-input');
+  const rawInput=inputEl.value.trim();
+  const input=rawInput.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
   const clean=correct.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
   const fb=document.getElementById('dict-fb');
   fb.style.display='block';
+  if(!input){
+    fb.className='dictation-feedback err';
+    fb.innerHTML='⚠️ Escreva a frase que você ouviu antes de verificar.';
+    return;
+  }
+  dictationLocked=true;
+  inputEl.disabled=true;
+  document.getElementById('dict-check-btn').classList.add('hidden');
+  const actions=document.getElementById('dict-actions');
+  const advanceLabel=activeGame.index>=activeGame.total-1?'Ver resultado':'Próxima frase';
   if(input===clean){
     fb.className='dictation-feedback ok';
-    fb.innerHTML='<i class="fa-solid fa-check-circle"></i> Perfeito!';
+    fb.innerHTML=`<i class="fa-solid fa-check-circle"></i> <strong>Perfeito, você acertou!</strong><br><br><strong>Frase correta:</strong><br>${correct}`;
     activeGame.score++;
-    setTimeout(nextStep,1000);
+    actions.innerHTML=`
+      <button class="btn btn-primary w-full btn-lg" onclick="nextStep()">
+        ${advanceLabel} <i class="fa-solid fa-arrow-right"></i>
+      </button>`;
+    playTTS(correct,0.75,'en-US');
   } else {
-    // Partial credit: word overlap
-    const inputWords=input.split(' ');
-    const correctWords=clean.split(' ');
-    const overlap=inputWords.filter(w=>correctWords.includes(w)).length;
-    const pct=Math.round((overlap/correctWords.length)*100);
     fb.className='dictation-feedback err';
-    fb.innerHTML=`<strong>Correto:</strong> "${correct}"<br><span style="font-size:12px;opacity:.8">${pct}% das palavras corretas</span>`;
-    if(pct>=70)activeGame.score++;
-    setTimeout(nextStep,2500);
+    fb.innerHTML='<strong>❌ Ainda não está correto.</strong><br>Você pode escutar e tentar novamente ou seguir para a próxima frase.';
+    actions.innerHTML=`
+      <div class="dictation-choice-actions">
+        <button class="btn btn-teal btn-lg" onclick="retryDictation('${esc(correct)}')"><i class="fa-solid fa-rotate-left"></i> Tentar novamente</button>
+        <button class="btn btn-primary btn-lg" onclick="nextStep()">${advanceLabel} <i class="fa-solid fa-arrow-right"></i></button>
+      </div>`;
   }
+  actions.classList.remove('hidden');
 }
 
 /* ══ ENGINE: GRAMMAR (Ache o Erro) ══ */
