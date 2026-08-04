@@ -1789,6 +1789,9 @@ select.input { appearance: none; cursor: pointer; }
         <div><label class="label" style="color:rgba(255,255,255,.4)">Senha</label><input id="login-pass" type="password" class="input" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
         <button onclick="doLogin()" class="btn btn-orange btn-lg w-full" style="margin-top:6px">Entrar <i class="fa-solid fa-arrow-right"></i></button>
       </div>
+      <div style="text-align:center;margin-top:16px">
+        <button onclick="openForgotPassword()" class="auth-link"><i class="fa-solid fa-key"></i> Esqueci minha senha</button>
+      </div>
       <div class="auth-footer">
         Primeiro acesso? <button onclick="toggleAuth()" class="auth-link">Criar conta</button>
       </div>
@@ -1806,6 +1809,30 @@ select.input { appearance: none; cursor: pointer; }
       </div>
       <div class="auth-footer">
         Já tem conta? <button onclick="toggleAuth()" class="auth-link">Entrar</button>
+      </div>
+    </div>
+
+    <div id="form-forgot-password" class="auth-card hidden">
+      <h2>Recuperar senha</h2>
+      <p style="color:rgba(255,255,255,.55);font-size:13px;line-height:1.6;margin:-8px 0 18px">Digite o e-mail usado no cadastro. Você receberá um link seguro para criar uma nova senha.</p>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div><label class="label" style="color:rgba(255,255,255,.4)">E-mail da conta</label><input id="forgot-email" type="email" class="input" placeholder="seu@email.com" onkeydown="if(event.key==='Enter')sendPasswordRecovery()"></div>
+        <button id="forgot-send-btn" onclick="sendPasswordRecovery()" class="btn btn-orange btn-lg w-full">Enviar link <i class="fa-solid fa-envelope"></i></button>
+        <div id="forgot-status" style="min-height:18px;color:#8EE8D8;font-size:12px;font-weight:700;line-height:1.5;text-align:center" aria-live="polite"></div>
+      </div>
+      <div class="auth-footer">
+        <button onclick="showAuthForm('form-login')" class="auth-link"><i class="fa-solid fa-arrow-left"></i> Voltar para entrar</button>
+      </div>
+    </div>
+
+    <div id="form-reset-password" class="auth-card hidden">
+      <h2>Criar nova senha</h2>
+      <p style="color:rgba(255,255,255,.55);font-size:13px;line-height:1.6;margin:-8px 0 18px">Apenas a senha será alterada. Seu progresso e seus dados continuarão iguais.</p>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div><label class="label" style="color:rgba(255,255,255,.4)">Nova senha</label><input id="reset-pass" type="password" class="input" placeholder="Mínimo 6 caracteres"></div>
+        <div><label class="label" style="color:rgba(255,255,255,.4)">Confirmar nova senha</label><input id="reset-pass-confirm" type="password" class="input" placeholder="Digite novamente" onkeydown="if(event.key==='Enter')saveNewPassword()"></div>
+        <button id="reset-save-btn" onclick="saveNewPassword()" class="btn btn-teal btn-lg w-full">Salvar nova senha <i class="fa-solid fa-check"></i></button>
+        <div id="reset-status" style="min-height:18px;color:#8EE8D8;font-size:12px;font-weight:700;line-height:1.5;text-align:center" aria-live="polite"></div>
       </div>
     </div>
 
@@ -3645,6 +3672,22 @@ let DATABASE = {
 window.onload = async () => {
   await loadCloudDB();
   populateRegTurmas();
+  const recoveryLink = isPasswordRecoveryLink();
+  if(recoveryLink && window.supabase){
+    if(!sbClient) sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    try {
+      const {data:{session}}=await withTimeout(sbClient.auth.getSession(),8000);
+      if(session){
+        showPasswordResetForm();
+        return;
+      }
+    } catch(e){console.warn('Link de recuperação ainda não disponível:',e);}
+    alert('Este link de recuperação expirou ou já foi utilizado. Solicite um novo link.');
+    clearPasswordRecoveryUrl();
+    showView('auth');
+    showAuthForm('form-forgot-password');
+    return;
+  }
   if(localStorage.getItem('teacher_unlocked')==='true'){
     currentUser={role:'teacher',name:'Prof. Analice'};
     initTeacherPanel(); return;
@@ -3669,8 +3712,113 @@ function showView(v){
 }
 
 function toggleAuth(){
-  document.getElementById('form-login').classList.toggle('hidden');
-  document.getElementById('form-register').classList.toggle('hidden');
+  const loginVisible=!document.getElementById('form-login').classList.contains('hidden');
+  showAuthForm(loginVisible?'form-register':'form-login');
+}
+
+function showAuthForm(formId){
+  ['form-login','form-register','form-forgot-password','form-reset-password'].forEach(id=>{
+    document.getElementById(id)?.classList.toggle('hidden',id!==formId);
+  });
+  showView('auth');
+}
+
+function openForgotPassword(){
+  const loginEmail=document.getElementById('login-email').value.trim();
+  document.getElementById('forgot-email').value=loginEmail;
+  document.getElementById('forgot-status').textContent='';
+  showAuthForm('form-forgot-password');
+  setTimeout(()=>document.getElementById('forgot-email').focus(),50);
+}
+
+function passwordRecoveryRedirectUrl(){
+  const url=new URL(window.location.href);
+  url.search='';
+  url.hash='';
+  url.searchParams.set('recuperar-senha','1');
+  return url.href;
+}
+
+function isPasswordRecoveryLink(){
+  const params=new URLSearchParams(window.location.search);
+  const hash=new URLSearchParams(window.location.hash.replace(/^#/,''));
+  return params.get('recuperar-senha')==='1' || hash.get('type')==='recovery';
+}
+
+function clearPasswordRecoveryUrl(){
+  window.history.replaceState({},document.title,window.location.pathname);
+}
+
+async function sendPasswordRecovery(){
+  const email=document.getElementById('forgot-email').value.trim().toLowerCase();
+  const status=document.getElementById('forgot-status');
+  const btn=document.getElementById('forgot-send-btn');
+  if(!email || !email.includes('@')){
+    status.style.color='#FFB4B4';
+    status.textContent='Digite um e-mail válido.';
+    return;
+  }
+  if(!sbClient) sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  btn.disabled=true;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+  status.textContent='';
+  try {
+    const {error}=await withTimeout(sbClient.auth.resetPasswordForEmail(email,{redirectTo:passwordRecoveryRedirectUrl()}),10000);
+    if(error) throw error;
+    status.style.color='#8EE8D8';
+    status.innerHTML='✓ Link enviado! Verifique também a pasta de spam ou lixo eletrônico.';
+  } catch(error) {
+    console.warn('Erro ao enviar recuperação:',error);
+    status.style.color='#FFB4B4';
+    status.textContent='Não foi possível enviar agora. Confira o e-mail e tente novamente em alguns minutos.';
+  } finally {
+    btn.disabled=false;
+    btn.innerHTML='Enviar link <i class="fa-solid fa-envelope"></i>';
+  }
+}
+
+function showPasswordResetForm(){
+  document.getElementById('reset-pass').value='';
+  document.getElementById('reset-pass-confirm').value='';
+  document.getElementById('reset-status').textContent='';
+  showAuthForm('form-reset-password');
+  setTimeout(()=>document.getElementById('reset-pass').focus(),50);
+}
+
+async function saveNewPassword(){
+  const password=document.getElementById('reset-pass').value;
+  const confirmation=document.getElementById('reset-pass-confirm').value;
+  const status=document.getElementById('reset-status');
+  const btn=document.getElementById('reset-save-btn');
+  if(password.length<6){
+    status.style.color='#FFB4B4';
+    status.textContent='A senha precisa ter pelo menos 6 caracteres.';
+    return;
+  }
+  if(password!==confirmation){
+    status.style.color='#FFB4B4';
+    status.textContent='As duas senhas estão diferentes.';
+    return;
+  }
+  if(!sbClient) sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  btn.disabled=true;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+  try {
+    const {error}=await withTimeout(sbClient.auth.updateUser({password}),10000);
+    if(error) throw error;
+    await sbClient.auth.signOut();
+    clearPasswordRecoveryUrl();
+    document.getElementById('login-pass').value='';
+    showAuthForm('form-login');
+    alert('Senha alterada com sucesso! Entre usando a nova senha. Seu progresso foi mantido.');
+  } catch(error) {
+    console.warn('Erro ao alterar senha:',error);
+    status.style.color='#FFB4B4';
+    status.textContent='Não foi possível alterar. O link pode ter expirado; solicite outro.';
+  } finally {
+    btn.disabled=false;
+    btn.innerHTML='Salvar nova senha <i class="fa-solid fa-check"></i>';
+  }
 }
 
 function teacherQuickAccess(){
