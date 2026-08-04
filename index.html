@@ -289,11 +289,44 @@ h1,h2,h3,h4 {
   line-height: 1.5;
   margin-bottom: 18px;
 }
+.install-fallback {
+  padding: 15px;
+  margin-bottom: 18px;
+  border: 1px solid rgba(245,124,0,.22);
+  border-radius: 15px;
+  background: var(--orange-pale);
+  color: var(--ink2);
+}
+.install-fallback-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+}
+.install-fallback-text { font-size: 12px; line-height: 1.5; color: var(--slate); }
+.install-fallback-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 12px;
+}
+.install-copy-status {
+  min-height: 18px;
+  margin-top: 8px;
+  color: var(--teal-dark);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
 
 @media (max-width: 390px) {
   .install-app-btn { right: 10px; padding: 12px 15px; }
   .install-modal { padding: 12px; }
   .install-modal-card { padding: 21px; border-radius: 22px; }
+  .install-fallback-actions { grid-template-columns: 1fr; }
 }
 
 /* ══════════════════════════════════════════
@@ -1803,6 +1836,15 @@ select.input { appearance: none; cursor: pointer; }
       <button class="install-close" type="button" onclick="closeInstallHelp()" aria-label="Fechar instruções"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div id="install-modal-steps" class="install-steps"></div>
+    <div class="install-fallback">
+      <div class="install-fallback-title"><i class="fa-solid fa-circle-exclamation"></i> Não apareceu essa opção?</div>
+      <p id="install-fallback-text" class="install-fallback-text">Alguns aplicativos escondem a instalação. Copie o link e abra diretamente no Chrome ou Safari.</p>
+      <div class="install-fallback-actions">
+        <button class="btn btn-ghost" type="button" onclick="copyPortalLink()"><i class="fa-solid fa-copy"></i> Copiar link</button>
+        <button id="install-open-chrome" class="btn btn-teal hidden" type="button" onclick="openPortalInChrome()"><i class="fa-brands fa-chrome"></i> Abrir no Chrome</button>
+      </div>
+      <div id="install-copy-status" class="install-copy-status" aria-live="polite"></div>
+    </div>
     <div class="install-note"><i class="fa-solid fa-circle-check"></i> Depois de instalado, o ícone “AP English” aparecerá junto com os outros aplicativos do celular.</div>
     <button class="btn btn-primary w-full" type="button" onclick="closeInstallHelp()">Entendi</button>
   </div>
@@ -5553,8 +5595,20 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
     const isIOS = /iPad|iPhone|iPod/i.test(ua);
     const isAndroid = /Android/i.test(ua);
     const isSamsung = /SamsungBrowser/i.test(ua);
+    const isInApp = /FBAN|FBAV|Instagram|Messenger|WhatsApp|Line|; wv\)|\bwv\b|WebView/i.test(ua);
 
     if(isIOS) {
+      if(isInApp || !/Safari/i.test(ua)) {
+        return {
+          subtitle: 'Este link está aberto dentro de outro aplicativo. Abra-o no Safari para instalar.',
+          steps: [
+            'Toque em <strong>Copiar link</strong> abaixo.',
+            'Feche este aplicativo e abra o <strong>Safari</strong>.',
+            'Cole o link na barra de endereço e abra o portal.',
+            'No Safari, toque em <strong>Compartilhar</strong> <i class="fa-solid fa-arrow-up-from-bracket"></i> e depois em <strong>Adicionar à Tela de Início</strong>.'
+          ]
+        };
+      }
       return {
         subtitle: 'No iPhone ou iPad, a instalação é feita pelo Safari.',
         steps: [
@@ -5578,6 +5632,17 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
     }
 
     if(isAndroid) {
+      if(isInApp) {
+        return {
+          subtitle: 'Este link está aberto dentro de outro aplicativo, que pode esconder a instalação.',
+          steps: [
+            'Toque em <strong>Abrir no Chrome</strong> abaixo.',
+            'Se não abrir, toque em <strong>Copiar link</strong> e cole o endereço no Chrome.',
+            'No Chrome, toque nos três pontinhos <strong>⋮</strong>.',
+            'Escolha <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>.'
+          ]
+        };
+      }
       return {
         subtitle: 'No Android, use o menu do Chrome caso a instalação automática não abra.',
         steps: [
@@ -5603,13 +5668,55 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
     const modal = document.getElementById('install-help-modal');
     const sub = document.getElementById('install-modal-sub');
     const steps = document.getElementById('install-modal-steps');
+    const fallbackText = document.getElementById('install-fallback-text');
+    const openChromeBtn = document.getElementById('install-open-chrome');
+    const copyStatus = document.getElementById('install-copy-status');
     const info = installInstructions();
     sub.textContent = info.subtitle;
     steps.innerHTML = info.steps.map((step, index) =>
       `<div class="install-step"><span class="install-step-num">${index + 1}</span><span>${step}</span></div>`
     ).join('');
+    const isAndroid = /Android/i.test(navigator.userAgent || '');
+    openChromeBtn.classList.toggle('hidden', !isAndroid);
+    fallbackText.textContent = isAndroid
+      ? 'Se o botão de instalar não existe, o portal pode estar aberto dentro do WhatsApp, Instagram ou outro aplicativo. Abra no Chrome para a opção aparecer.'
+      : 'Se o botão não existe, copie o link, abra o Safari e cole o endereço. A opção “Adicionar à Tela de Início” aparece no menu Compartilhar do Safari.';
+    copyStatus.textContent = '';
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+  }
+
+  function portalInstallUrl() {
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.hash = '';
+    return url.href;
+  }
+
+  async function copyPortalLink() {
+    const link = portalInstallUrl();
+    const status = document.getElementById('install-copy-status');
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch (error) {
+      const field = document.createElement('textarea');
+      field.value = link;
+      field.setAttribute('readonly', '');
+      field.style.position = 'fixed';
+      field.style.opacity = '0';
+      document.body.appendChild(field);
+      field.select();
+      document.execCommand('copy');
+      field.remove();
+    }
+    status.textContent = '✓ Link copiado! Agora cole no Chrome ou Safari.';
+  }
+
+  function openPortalInChrome() {
+    const link = portalInstallUrl();
+    const withoutScheme = link.replace(/^https?:\/\//, '');
+    const scheme = link.startsWith('http:') ? 'http' : 'https';
+    window.location.href = `intent://${withoutScheme}#Intent;scheme=${scheme};package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(link)};end`;
   }
 
   function closeInstallHelp(event) {
@@ -5626,12 +5733,19 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
     }
 
     if(deferredInstallPrompt) {
-      deferredInstallPrompt.prompt();
-      const choice = await deferredInstallPrompt.userChoice;
+      const installPrompt = deferredInstallPrompt;
       deferredInstallPrompt = null;
-      if(choice.outcome === 'accepted') {
-        document.getElementById('install-app-btn')?.classList.add('hidden');
+      try {
+        await installPrompt.prompt();
+        const choice = await installPrompt.userChoice;
+        if(choice.outcome === 'accepted') {
+          document.getElementById('install-app-btn')?.classList.add('hidden');
+          return;
+        }
+      } catch (error) {
+        console.warn('Instalação automática indisponível neste navegador:', error);
       }
+      openInstallHelp();
       return;
     }
 
