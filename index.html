@@ -2170,6 +2170,9 @@ const SHEET_WEB_API = "https://script.google.com/macros/s/AKfycbyixLasg-0TGX8vae
 let sbClient = null;
 let currentUser = null;
 let activeGame = { type:'', queue:[], index:0, score:0, total:0, context:null };
+let progressSaveChain = Promise.resolve();
+let progressRetryTimer = null;
+let progressRetryAttempts = 0;
 
 const withTimeout = (p, ms=5000) => Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
 
@@ -3873,6 +3876,8 @@ async function doRegister(){
 }
 
 function doLogout(){
+  if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
+  progressRetryAttempts=0;
   currentUser=null;
   localStorage.removeItem('teacher_unlocked');
   if(sbClient)sbClient.auth.signOut();
@@ -3881,11 +3886,14 @@ function doLogout(){
 }
 
 async function setupUserSession(user){
+  if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
+  progressRetryAttempts=0;
+  progressSaveChain=Promise.resolve();
   const m=user.user_metadata||{};
   currentUser={id:user.id,email:user.email,role:'student',name:m.name||"Aluno",
     turma:m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{}};
+  await saveStudentProgress({silent:true});
   document.getElementById('student-xp').textContent=currentUser.xp;
-  saveStudentProgress();
   document.getElementById('xp-num').textContent=currentUser.xp;
   updateXpLevel();
   document.getElementById('btn-back-admin').classList.add('hidden');
@@ -4008,15 +4016,21 @@ function buildFaseButtons(fase){
   const order=['teoria','flashcard','quiz','erros','wordorder','fillblank','memoria'];
   return order.filter(p=>parts.includes(p)&&configs[p]).map(p=>{
     const c=configs[p];
+    const activityDone=(currentUser.unlockedFases||[]).includes(trailActivityMarker(fase.id,p));
     return`<button class="fase-game-btn" onclick="${c.action}">
       <div class="icon" style="background:${c.bg};color:${c.color}">${c.icon}</div>
       <div style="flex:1">
-        <div>${c.label}</div>
+        <div>${c.label}${activityDone?' <span class="badge badge-teal" style="font-size:9px;margin-left:6px">✓ Realizado</span>':''}</div>
         <div class="desc">${c.desc}</div>
       </div>
       <i class="fa-solid fa-chevron-right" style="color:var(--border)"></i>
     </button>`;
   }).join('');
+}
+
+function trailActivityMarker(faseId,mode){
+  const normalized=mode==='pratica'?'quiz':mode==='vocab'?'flashcard':mode;
+  return `${faseId}__atividade_${normalized}_done`;
 }
 
 function toggleFase(id){
@@ -4821,7 +4835,6 @@ async function endGame(){
         if(fIdx>=0){
           const nextId=arr[fIdx+1]?.id||(activeGame.context+'_done');
           if(!currentUser.unlockedFases.includes(nextId))currentUser.unlockedFases.push(nextId);
-          if(sbClient)await sbClient.auth.updateUser({data:{unlockedFases:currentUser.unlockedFases,notas:currentUser.notas}}).catch(()=>{});
         }
       }
       unlockMsg='🌟 Fase desbloqueada!';
@@ -4829,29 +4842,32 @@ async function endGame(){
       unlockMsg=`Sua nota: ${nota} — Para desbloquear a próxima fase é necessário tirar no mínimo 8.0. Revise a teoria!`;
       xpGain=0;
     }
-    if(currentUser.role!=='teacher'){
-      if(sbClient)sbClient.auth.updateUser({data:{notas:currentUser.notas}}).catch(()=>{});
-      saveStudentProgress();
-    }
   }
 
-  if(xpGain>0&&currentUser.role!=='teacher'){
-    currentUser.xp+=xpGain;
-    document.getElementById('student-xp').textContent=currentUser.xp;
-    const xpEl=document.getElementById('xp-num');if(xpEl)xpEl.textContent=currentUser.xp;
-    updateXpLevel();
-    if(sbClient)sbClient.auth.updateUser({data:{xp:currentUser.xp}}).catch(()=>{});
+  if(activeGame.type.startsWith('trilha_')&&currentUser.role!=='teacher'){
+    const mode=activeGame.type.replace('trilha_','');
+    const marker=trailActivityMarker(activeGame.context,mode);
+    if(!currentUser.unlockedFases.includes(marker))currentUser.unlockedFases.push(marker);
   }
-
-  dispatchReport(activeGame.type,`Nota: ${nota} (${activeGame.score}/${activeGame.total})`);
 
   const overlay=document.getElementById('result-overlay');
   document.getElementById('result-emoji').textContent=pct>=80?'🏆':pct>=50?'👍':'💪';
   document.getElementById('result-title').textContent=pct>=80?'Excelente!':pct>=50?'Bom trabalho!':'Continue praticando!';
   document.getElementById('result-score').textContent=`${activeGame.score}/${activeGame.total}`;
   document.getElementById('result-label').textContent=`acertos (nota ${nota})`;
-  document.getElementById('result-subtitle').textContent=unlockMsg||`+${xpGain} XP ganhos`;
+  const finalMessage=unlockMsg||`+${xpGain} XP ganhos`;
+  document.getElementById('result-subtitle').textContent=currentUser.role==='teacher'?finalMessage:'Salvando seu progresso...';
   overlay.classList.remove('hidden');
+
+  let progressSaved=true;
+  if(currentUser.role!=='teacher'){
+    progressSaved=await saveStudentProgress({xpGain,silent:true});
+    document.getElementById('result-subtitle').textContent=progressSaved
+      ? `${finalMessage} · ✓ Progresso salvo`
+      : `${finalMessage} · Salvo neste aparelho. Enviaremos quando a internet voltar.`;
+  }
+
+  dispatchReport(activeGame.type,`Nota: ${nota} (${activeGame.score}/${activeGame.total})`);
 
   // Spawn confetti for good scores
   if(pct>=80) spawnConfetti();
@@ -4905,21 +4921,158 @@ function showTeacherTab(tab){
   if(tab==='dashboard')renderDashboard();
 }
 
-// Grava o progresso do aluno numa tabela que a professora consegue ler no dashboard
-async function saveStudentProgress(){
-  if(!currentUser||currentUser.role==='teacher'||!currentUser.id)return;
-  try{
-    if(!sbClient)sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-    await sbClient.from('student_progress').upsert({
-      id: currentUser.id,
-      name: currentUser.name||'Aluno',
-      turma: currentUser.turma||'',
-      xp: currentUser.xp||0,
-      notas: currentUser.notas||{},
-      unlocked: currentUser.unlockedFases||[],
-      updated_at: new Date().toISOString()
+// Mantém uma cópia local e combina os dados com a nuvem antes de salvar.
+// Assim uma sessão antiga ou uma conexão instável não apaga o progresso mais novo.
+function progressPendingKey(userId=currentUser?.id){
+  return userId?`ap_student_progress_${userId}`:'';
+}
+
+function normalizeProgressSnapshot(source){
+  const data=source&&typeof source==='object'?source:{};
+  const xp=Number(data.xp||0);
+  const notas=data.notas&&typeof data.notas==='object'&&!Array.isArray(data.notas)?data.notas:{};
+  const unlocked=Array.isArray(data.unlockedFases)?data.unlockedFases:Array.isArray(data.unlocked)?data.unlocked:[];
+  return {
+    xp:Number.isFinite(xp)?Math.max(0,xp):0,
+    notas:{...notas},
+    unlockedFases:[...new Set(unlocked.filter(value=>typeof value==='string'&&value))]
+  };
+}
+
+function mergeProgressSnapshots(...sources){
+  const merged={xp:0,notas:{},unlockedFases:[]};
+  const unlocked=new Set();
+  sources.filter(Boolean).forEach(source=>{
+    const item=normalizeProgressSnapshot(source);
+    merged.xp=Math.max(merged.xp,item.xp);
+    Object.entries(item.notas).forEach(([faseId,value])=>{
+      const nota=Number(value);
+      if(!Number.isFinite(nota))return;
+      const anterior=Number(merged.notas[faseId]||0);
+      merged.notas[faseId]=Math.max(anterior,nota);
     });
-  }catch(e){console.warn('Progresso não salvo:',e);}
+    item.unlockedFases.forEach(value=>unlocked.add(value));
+  });
+  merged.unlockedFases=[...unlocked];
+  return merged;
+}
+
+function readPendingProgress(userId=currentUser?.id){
+  const key=progressPendingKey(userId);
+  if(!key)return null;
+  try{return JSON.parse(localStorage.getItem(key)||'null');}catch(e){return null;}
+}
+
+function storePendingProgress(snapshot,userId=currentUser?.id){
+  const key=progressPendingKey(userId);
+  if(!key)return;
+  try{localStorage.setItem(key,JSON.stringify(snapshot));}catch(e){console.warn('Cópia local do progresso indisponível:',e);}
+}
+
+function clearPendingProgress(userId=currentUser?.id){
+  const key=progressPendingKey(userId);
+  if(key)localStorage.removeItem(key);
+}
+
+function applyProgressSnapshot(snapshot,userId=currentUser?.id){
+  if(!currentUser||currentUser.id!==userId)return;
+  const normalized=normalizeProgressSnapshot(snapshot);
+  currentUser.xp=normalized.xp;
+  currentUser.notas=normalized.notas;
+  currentUser.unlockedFases=normalized.unlockedFases;
+  const headerXp=document.getElementById('student-xp');
+  const profileXp=document.getElementById('xp-num');
+  if(headerXp)headerXp.textContent=currentUser.xp;
+  if(profileXp)profileXp.textContent=currentUser.xp;
+  updateXpLevel();
+}
+
+function scheduleProgressRetry(){
+  if(progressRetryTimer||progressRetryAttempts>=3||!currentUser||currentUser.role==='teacher')return;
+  const delays=[5000,15000,30000];
+  const delay=delays[progressRetryAttempts]||30000;
+  progressRetryAttempts++;
+  progressRetryTimer=setTimeout(()=>{
+    progressRetryTimer=null;
+    saveStudentProgress({silent:true});
+  },delay);
+}
+
+function saveStudentProgress(options={}){
+  const task=()=>saveStudentProgressNow(options);
+  const result=progressSaveChain.then(task,task);
+  progressSaveChain=result.catch(()=>false);
+  return result;
+}
+
+async function saveStudentProgressNow({xpGain=0,silent=false}={}){
+  if(!currentUser||currentUser.role==='teacher'||!currentUser.id)return true;
+  if(!sbClient)sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const studentId=currentUser.id;
+  const studentName=currentUser.name||'Aluno';
+  const studentRoom=currentUser.turma||'';
+
+  const localBefore=mergeProgressSnapshots(currentUser,readPendingProgress(studentId));
+  const safeXpGain=Math.max(0,Number(xpGain)||0);
+  const provisional={...localBefore,xp:localBefore.xp+safeXpGain};
+  applyProgressSnapshot(provisional,studentId);
+  storePendingProgress(provisional,studentId);
+
+  let remote=null;
+  try{
+    const {data,error}=await withTimeout(
+      sbClient.from('student_progress').select('xp,notas,unlocked').eq('id',studentId).maybeSingle(),
+      5000
+    );
+    if(error)throw error;
+    remote=data;
+  }catch(error){
+    console.warn('Não foi possível consultar o progresso mais recente:',error);
+  }
+
+  const merged=mergeProgressSnapshots(provisional,remote);
+  merged.xp=Math.max(localBefore.xp,Number(remote?.xp||0))+safeXpGain;
+  applyProgressSnapshot(merged,studentId);
+  storePendingProgress(merged,studentId);
+
+  // Se outra conta entrou enquanto a gravação estava em andamento, preserva a
+  // cópia local do aluno anterior sem correr o risco de gravá-la na conta nova.
+  if(!currentUser||currentUser.id!==studentId)return false;
+
+  const payload={
+    id:studentId,
+    name:studentName,
+    turma:studentRoom,
+    xp:merged.xp,
+    notas:merged.notas,
+    unlocked:merged.unlockedFases,
+    updated_at:new Date().toISOString()
+  };
+
+  const [tableResult,authResult]=await Promise.allSettled([
+    withTimeout(sbClient.from('student_progress').upsert(payload),7000),
+    withTimeout(sbClient.auth.updateUser({data:{
+      xp:merged.xp,
+      notas:merged.notas,
+      unlockedFases:merged.unlockedFases
+    }}),7000)
+  ]);
+  const tableOk=tableResult.status==='fulfilled'&&!tableResult.value.error;
+  const authOk=authResult.status==='fulfilled'&&!authResult.value.error;
+
+  if(tableOk&&authOk){
+    clearPendingProgress(studentId);
+    progressRetryAttempts=0;
+    if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
+  }else{
+    console.warn('Progresso aguardando nova tentativa:',{
+      tabela:tableOk?'ok':tableResult.status==='fulfilled'?tableResult.value.error:tableResult.reason,
+      conta:authOk?'ok':authResult.status==='fulfilled'?authResult.value.error:authResult.reason
+    });
+    scheduleProgressRetry();
+    if(!silent)alert('Seu progresso ficou salvo neste aparelho e será enviado quando a conexão melhorar.');
+  }
+  return tableOk||authOk;
 }
 
 async function renderDashboard(){
@@ -4964,6 +5117,7 @@ async function renderDashboard(){
       alunos.forEach(a=>{
         const notas=a.notas&&typeof a.notas==='object'?Object.values(a.notas):[];
         const numNotas=notas.length;
+        const atividades=(Array.isArray(a.unlocked)?a.unlocked:[]).filter(value=>String(value).includes('__atividade_')).length;
         const media=numNotas?(notas.reduce((s,n)=>s+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
         const nivel=Math.floor((a.xp||0)/200)+1;
         const dd=diasDesde(a.updated_at);
@@ -4974,7 +5128,7 @@ async function renderDashboard(){
         <div class="admin-item" style="margin-bottom:8px">
           <div style="flex:1">
             <div class="admin-item-name">${ativo?'🟢':'⚪'} ${a.name||'Aluno'}</div>
-            <div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · visto ${quando}</div>
+            <div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · visto ${quando}</div>
           </div>
           <div style="text-align:center;min-width:54px">
             <div style="font-size:20px;font-weight:900;color:${mediaColor}">${media}</div>
