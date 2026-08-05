@@ -776,6 +776,14 @@ select.input { appearance: none; cursor: pointer; }
 }
 .fase-emoji { font-size: 32px; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,.08)); }
 .fase-info { flex: 1; }
+.fase-sequence-label {
+  color: var(--orange-dark);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
 .fase-title { font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: -.01em; }
 .fase-subtitle { font-size: 12px; color: var(--slate); margin-top: 2px; font-weight: 500; }
 .fase-chevron { color: var(--slate-light); transition: transform .3s var(--ease-spring); }
@@ -1340,6 +1348,35 @@ select.input { appearance: none; cursor: pointer; }
   padding: 8px; border-radius: 10px; transition: all .2s var(--ease-out);
 }
 .admin-edit:hover { background: var(--teal-light); color: var(--teal); transform: scale(1.1); }
+.admin-trail-item { align-items: flex-start; }
+.admin-phase-main { display: flex; align-items: center; gap: 11px; min-width: 0; flex: 1; }
+.admin-phase-sequence {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid rgba(245,124,0,.25);
+  border-radius: 12px;
+  background: var(--orange-pale);
+  color: var(--orange-dark);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all .2s var(--ease-out);
+}
+.admin-phase-sequence:hover { background: var(--orange); color: white; transform: translateY(-1px); }
+.admin-trail-actions { display: flex; align-items: center; justify-content: flex-end; gap: 3px; flex-wrap: wrap; }
+.admin-order-controls {
+  display: inline-flex;
+  padding-right: 4px;
+  margin-right: 2px;
+  border-right: 1px solid var(--border);
+}
+.admin-order-controls button:disabled { opacity: .25; cursor: not-allowed; transform: none; }
+@media (max-width: 520px) {
+  .admin-trail-item { flex-direction: column; }
+  .admin-trail-actions { width: 100%; justify-content: flex-end; }
+}
 
 /* Edit form extras (Emoji & Game Types) */
 .emoji-picker {
@@ -4019,7 +4056,8 @@ function renderStudentTrilha(){
 
     const lockedByTeacher = fase.locked && currentUser.role!=='teacher';
     const isUnlocked=!lockedByTeacher && (unlocked.includes(fase.id)||i===0||currentUser.role==='teacher');
-    const isDone=!lockedByTeacher && (unlocked.includes(fase.id+"_done")||(trilhasToRender[i+1]&&unlocked.includes(trilhasToRender[i+1].id)));
+    const passedPhase=Number(currentUser.notas?.[fase.id]||0)>=8;
+    const isDone=!lockedByTeacher && (unlocked.includes(fase.id+"_done")||passedPhase);
     const dotCls=lockedByTeacher?'locked':isDone?'done':isUnlocked?'unlocked':'locked';
     const dotIcon=lockedByTeacher?'<i class="fa-solid fa-lock"></i>':isDone?'<i class="fa-solid fa-check"></i>':isUnlocked?'<i class="fa-solid fa-star"></i>':'<i class="fa-solid fa-lock"></i>';
     const cardCls=lockedByTeacher?'locked':isDone?'done':isUnlocked?'unlocked':'locked';
@@ -4029,6 +4067,10 @@ function renderStudentTrilha(){
     const gameButtons=isUnlocked?buildFaseButtons(fase):'';
     const teacherLockTag = currentUser.role==='teacher'&&fase.locked ? '<span class="badge" style="background:#FEF2F2;color:#991B1B;font-size:10px;margin-left:6px">🔒 travada</span>' : '';
     const badge = currentUser.role === 'teacher' ? `<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${fase.turmaName||''}</span>${teacherLockTag}` : '';
+    const sequence=currentUser.role==='teacher'
+      ? Math.max(1,(DATABASE.trilhas[fase.rKey]||[]).findIndex(item=>item.id===fase.id)+1)
+      : i+1;
+    const sequenceTotal=currentUser.role==='teacher'?(DATABASE.trilhas[fase.rKey]||[]).length:trilhasToRender.length;
 
     const node=document.createElement('div');
     node.className='fase-node';
@@ -4038,6 +4080,7 @@ function renderStudentTrilha(){
         <div class="fase-header" onclick="toggleFase('${fase.id}')">
           <div class="fase-emoji">${fase.emoji||'📚'}</div>
           <div class="fase-info">
+            <div class="fase-sequence-label">Fase ${String(sequence).padStart(2,'0')} de ${sequenceTotal}</div>
             <div class="fase-title">${fase.title}${badge}</div>
             <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
               <div class="stars-row">${starsHtml}</div>
@@ -5535,7 +5578,43 @@ function adminCancelEditTrilha(){
   });
 }
 
+let adminTrailOrderBusy=false;
+
 function adminDeleteTrilha(rKey, i){DATABASE.trilhas[rKey].splice(i,1);saveCloudDB();renderAdminTrilhas();}
+
+async function adminMoveTrilha(rKey,fromIndex,toIndex){
+  const arr=DATABASE.trilhas[rKey]||[];
+  const target=Math.max(0,Math.min(arr.length-1,toIndex));
+  if(adminTrailOrderBusy||fromIndex<0||fromIndex>=arr.length||target===fromIndex)return;
+  adminTrailOrderBusy=true;
+  const previous=[...arr];
+  const [fase]=arr.splice(fromIndex,1);
+  arr.splice(target,0,fase);
+  renderAdminTrilhas();
+  const saved=await saveCloudDB();
+  if(!saved){
+    DATABASE.trilhas[rKey]=previous;
+    saveLocalDB();
+    renderAdminTrilhas();
+    alert('A ordem anterior foi restaurada porque não foi possível salvar a alteração.');
+  }
+  adminTrailOrderBusy=false;
+}
+
+function adminMoveTrilhaTo(rKey,fromIndex){
+  const arr=DATABASE.trilhas[rKey]||[];
+  const fase=arr[fromIndex];
+  if(!fase)return;
+  const answer=prompt(`Mover "${fase.title}" para qual posição?\n\nDigite um número de 1 a ${arr.length}:`,String(fromIndex+1));
+  if(answer===null)return;
+  const position=parseInt(String(answer).trim(),10);
+  if(!Number.isInteger(position)||position<1||position>arr.length){
+    alert(`Digite uma posição entre 1 e ${arr.length}.`);
+    return;
+  }
+  adminMoveTrilha(rKey,fromIndex,position-1);
+}
+
 function renderAdminTrilhas(){
   const cont=document.getElementById('admin-trilhas-list');
   cont.innerHTML='';
@@ -5549,13 +5628,20 @@ function renderAdminTrilhas(){
     cont.innerHTML='<div class="text-muted text-sm text-center">Nenhuma fase cadastrada para esta turma.</div>';
     return;
   }
-  let bloco=`<div class="label" style="margin-top:12px;margin-bottom:8px">${DATABASE.turmas[rKey].name} · ${arr.length} fase(s)</div>`;
+  let bloco=`<div class="label" style="margin-top:12px;margin-bottom:8px">${DATABASE.turmas[rKey].name} · ${arr.length} fase(s) · use ↑ e ↓ para organizar</div>`;
   arr.forEach((t,i) => {
       const lock = t.locked;
       bloco += `
-      <div class="admin-item"${lock?' style="opacity:.65"':''}>
-        <div><div class="admin-item-name">${lock?'🔒 ':''}${t.nivel?'['+t.nivel+'] ':''}${t.emoji||'📚'} ${t.title}</div><div class="admin-item-sub">${(t.tipo||'flashcard+quiz').split('+').join(', ')}${lock?' · TRAVADA':''}</div></div>
-        <div style="display:flex;gap:4px">
+      <div class="admin-item admin-trail-item"${lock?' style="opacity:.65"':''}>
+        <div class="admin-phase-main">
+          <button class="admin-phase-sequence" title="Mover para outra posição" onclick="adminMoveTrilhaTo('${rKey}',${i})">${String(i+1).padStart(2,'0')}</button>
+          <div style="min-width:0"><div class="admin-item-name">${lock?'🔒 ':''}${t.emoji||'📚'} ${t.title}</div><div class="admin-item-sub">${t.nivel?'<strong>'+t.nivel+'</strong> · ':''}${(t.tipo||'flashcard+quiz').split('+').join(', ')}${lock?' · TRAVADA':''}</div></div>
+        </div>
+        <div class="admin-trail-actions">
+          <div class="admin-order-controls">
+            <button class="admin-edit" title="Subir uma posição" onclick="adminMoveTrilha('${rKey}',${i},${i-1})" ${i===0?'disabled':''}><i class="fa-solid fa-arrow-up"></i></button>
+            <button class="admin-edit" title="Descer uma posição" onclick="adminMoveTrilha('${rKey}',${i},${i+1})" ${i===arr.length-1?'disabled':''}><i class="fa-solid fa-arrow-down"></i></button>
+          </div>
           <button class="admin-edit" title="${lock?'Liberar para os alunos':'Travar (esconder dos alunos)'}" onclick="adminToggleLockTrilha('${rKey}', ${i})"><i class="fa-solid fa-${lock?'lock':'lock-open'}"></i></button>
           <button class="admin-edit" title="Copiar para outra turma" onclick="adminCopyTrilha('${rKey}', ${i})"><i class="fa-solid fa-copy"></i></button>
           <button class="admin-edit" onclick="adminEditTrilha('${rKey}', ${i})"><i class="fa-solid fa-pen"></i></button>
