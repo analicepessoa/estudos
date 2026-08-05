@@ -1282,6 +1282,41 @@ select.input { appearance: none; cursor: pointer; }
 .admin-section .card-body { display: flex; flex-direction: column; gap: 16px; }
 .admin-section-title { font-size: 17px; margin-bottom: 4px; letter-spacing: -.01em; }
 .admin-section-sub { font-size: 12px; color: var(--slate); font-weight: 500; }
+.admin-room-focus {
+  position: sticky;
+  top: 68px;
+  z-index: 70;
+  margin: 0 16px 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(245,124,0,.24);
+  border-radius: 16px;
+  background: rgba(255,255,255,.96);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.admin-room-focus-inner {
+  display: grid;
+  grid-template-columns: auto minmax(150px,1fr);
+  align-items: center;
+  gap: 12px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.admin-room-focus-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--orange-dark);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.admin-room-focus .input { padding: 10px 14px; font-weight: 800; border-color: rgba(245,124,0,.3); }
+@media (max-width: 430px) {
+  .admin-room-focus { top: 62px; margin: 0 10px 12px; }
+  .admin-room-focus-inner { grid-template-columns: 1fr; gap: 6px; }
+}
 
 .admin-item {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -1959,6 +1994,13 @@ select.input { appearance: none; cursor: pointer; }
     </div>
   </div>
 
+  <div id="admin-room-focus" class="admin-room-focus hidden">
+    <div class="admin-room-focus-inner">
+      <label class="admin-room-focus-label" for="admin-room-filter"><i class="fa-solid fa-users-rectangle"></i> Turma que estou administrando</label>
+      <select id="admin-room-filter" class="input" onchange="changeAdminRoom(this.value)"></select>
+    </div>
+  </div>
+
   <main class="app-main" style="padding-top:0">
     <!-- SALAS -->
     <div id="ttab-salas">
@@ -1979,7 +2021,10 @@ select.input { appearance: none; cursor: pointer; }
     <div id="ttab-trilha-admin" class="hidden">
       <div class="card admin-section">
         <div class="card-body">
-          <div><div class="admin-section-title" id="trilha-form-title">Fábrica de Trilhas</div><div class="admin-section-sub">Adicione ou edite fases da jornada de aprendizado</div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+            <div><div class="admin-section-title" id="trilha-form-title">Fábrica de Trilhas</div><div class="admin-section-sub">Adicione ou edite fases da turma selecionada</div></div>
+            <button class="btn btn-ghost btn-sm" type="button" onclick="scrollToAdminList('admin-trilhas-list')"><i class="fa-solid fa-list"></i> Ver fases</button>
+          </div>
           
           <input type="hidden" id="admin-trilha-id" value="">
           
@@ -1989,7 +2034,7 @@ select.input { appearance: none; cursor: pointer; }
             <input type="hidden" id="admin-trilha-emoji" value="📚">
           </div>
           
-          <div><label class="label">Turma</label><select id="admin-trilha-room" class="input"></select></div>
+          <div><label class="label">Turma</label><select id="admin-trilha-room" class="input" onchange="changeAdminRoom(this.value)"></select></div>
 
           <div><label class="label">Nível do Curso</label><input type="text" id="admin-trilha-nivel" class="input" placeholder="Ex: Basic 01 MID TERM"></div>
 
@@ -2022,12 +2067,15 @@ select.input { appearance: none; cursor: pointer; }
     <div id="ttab-aulas-admin" class="hidden">
       <div class="card admin-section">
         <div class="card-body">
-          <div><div class="admin-section-title" id="aulas-form-title">Fábrica de Aulas</div><div class="admin-section-sub">Adicione ou edite os jogos semanais</div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+            <div><div class="admin-section-title" id="aulas-form-title">Fábrica de Aulas</div><div class="admin-section-sub">Adicione ou edite os jogos da turma selecionada</div></div>
+            <button class="btn btn-ghost btn-sm" type="button" onclick="showTeacherTab('semanas-lista')"><i class="fa-solid fa-list"></i> Ver conteúdo</button>
+          </div>
           
           <input type="hidden" id="admin-semana-idx" value="">
           
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div><label class="label">Turma</label><select id="admin-semana-room" class="input"></select></div>
+            <div><label class="label">Turma</label><select id="admin-semana-room" class="input" onchange="changeAdminRoom(this.value)"></select></div>
             <div><label class="label">Título</label><input type="text" id="admin-semana-title" class="input" placeholder="Semana 12"></div>
           </div>
           <div><label class="label" style="color:#4F46E5">📖 Vocabulário (inglês | pt | pronúncia)</label><textarea id="admin-semana-vocab" class="input" placeholder="apple | maçã | /æp.əl/&#10;car | carro | /kɑːr/"></textarea></div>
@@ -2045,7 +2093,7 @@ select.input { appearance: none; cursor: pointer; }
 
     <!-- CONTEÚDO LISTA -->
     <div id="ttab-semanas-lista" class="hidden">
-      <div class="section-header"><h2>Conteúdo Cadastrado</h2></div>
+      <div class="section-header"><h2>Conteúdo da turma selecionada</h2></div>
       <div id="admin-semanas-list"></div>
     </div>
 
@@ -2063,12 +2111,15 @@ select.input { appearance: none; cursor: pointer; }
     <div id="ttab-musicas-admin" class="hidden">
       <div class="card admin-section">
         <div class="card-body">
-          <div><div class="admin-section-title" id="musicas-form-title">Fábrica de Hits</div><div class="admin-section-sub">Adicione ou edite músicas no catálogo</div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+            <div><div class="admin-section-title" id="musicas-form-title">Fábrica de Hits</div><div class="admin-section-sub">Adicione ou edite músicas da turma selecionada</div></div>
+            <button class="btn btn-ghost btn-sm" type="button" onclick="scrollToAdminList('admin-musicas-list')"><i class="fa-solid fa-list"></i> Ver músicas</button>
+          </div>
           
           <input type="hidden" id="admin-musica-idx" value="">
           
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div><label class="label">Turma</label><select id="admin-musica-room" class="input"></select></div>
+            <div><label class="label">Turma</label><select id="admin-musica-room" class="input" onchange="changeAdminRoom(this.value)"></select></div>
             <div><label class="label">Título da Música</label><input type="text" id="admin-musica-title" class="input" placeholder="Ex: Shape of You"></div>
           </div>
           <div><label class="label">Artista</label><input type="text" id="admin-musica-artist" class="input" placeholder="Ex: Ed Sheeran"></div>
@@ -2170,6 +2221,7 @@ const SHEET_WEB_API = "https://script.google.com/macros/s/AKfycbyixLasg-0TGX8vae
 let sbClient = null;
 let currentUser = null;
 let activeGame = { type:'', queue:[], index:0, score:0, total:0, context:null };
+let adminSelectedRoom = localStorage.getItem('ap_admin_selected_room') || '';
 let progressSaveChain = Promise.resolve();
 let progressRetryTimer = null;
 let progressRetryAttempts = 0;
@@ -4918,7 +4970,48 @@ function showTeacherTab(tab){
     const btn=document.getElementById('tnav-'+t);
     if(btn)btn.classList.toggle('active',t===tab);
   });
+  const roomFocus=document.getElementById('admin-room-focus');
+  if(roomFocus)roomFocus.classList.toggle('hidden',tab==='salas');
+  if(tab==='trilha-admin')renderAdminTrilhas();
+  if(tab==='semanas-lista')renderAdminSemanas();
+  if(tab==='musicas-admin')renderAdminMusicas();
   if(tab==='dashboard')renderDashboard();
+}
+
+function scrollToAdminList(id){
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function syncAdminRoomControls(){
+  ['admin-room-filter','admin-semana-room','admin-musica-room','admin-trilha-room'].forEach(id=>{
+    const select=document.getElementById(id);
+    if(select&&adminSelectedRoom&&select.value!==adminSelectedRoom)select.value=adminSelectedRoom;
+  });
+}
+
+function changeAdminRoom(roomKey){
+  if(!roomKey||!DATABASE.turmas[roomKey])return;
+  const previous=adminSelectedRoom;
+  if(roomKey===previous){syncAdminRoomControls();return;}
+  const editing=Boolean(
+    document.getElementById('admin-trilha-id')?.value ||
+    document.getElementById('admin-semana-idx')?.value ||
+    document.getElementById('admin-musica-idx')?.value
+  );
+  if(editing&&!confirm('Você está editando um conteúdo. Trocar de turma cancelará essa edição. Deseja continuar?')){
+    const filter=document.getElementById('admin-room-filter');
+    if(filter)filter.value=previous;
+    syncAdminRoomControls();
+    return;
+  }
+  adminSelectedRoom=roomKey;
+  localStorage.setItem('ap_admin_selected_room',roomKey);
+  if(editing){adminCancelEditTrilha();adminCancelEditSemana();adminCancelEditMusica();}
+  syncAdminRoomControls();
+  renderAdminTrilhas();
+  renderAdminSemanas();
+  renderAdminMusicas();
+  if(!document.getElementById('ttab-dashboard')?.classList.contains('hidden'))renderDashboard();
 }
 
 // Mantém uma cópia local e combina os dados com a nuvem antes de salvar.
@@ -5082,13 +5175,15 @@ async function renderDashboard(){
   summary.innerHTML='';
   try{
     if(!sbClient)sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-    const {data,error}=await withTimeout(sbClient.from('student_progress').select('*'),8000);
+    const selectedRoom=adminSelectedRoom;
+    const {data:allData,error}=await withTimeout(sbClient.from('student_progress').select('*'),8000);
     if(error){
       cont.innerHTML=`<div class="card card-body" style="text-align:center;color:var(--slate)">Não consegui carregar os dados.<br>Verifique se a tabela <b>student_progress</b> existe no Supabase.<br><br><span style="font-size:11px;opacity:.7">${error.message}</span></div>`;
       return;
     }
-    if(!data||data.length===0){
-      cont.innerHTML='<div class="card card-body" style="text-align:center;color:var(--slate)">Nenhum aluno registrou atividade ainda.<br><span style="font-size:12px">Os dados aparecem aqui assim que os alunos começarem a estudar.</span></div>';
+    const data=(allData||[]).filter(student=>!selectedRoom||student.turma===selectedRoom);
+    if(data.length===0){
+      cont.innerHTML='<div class="card card-body" style="text-align:center;color:var(--slate)">Nenhum aluno desta turma registrou atividade ainda.<br><span style="font-size:12px">Os dados aparecem aqui assim que os alunos começarem a estudar.</span></div>';
       return;
     }
 
@@ -5229,6 +5324,8 @@ function adminAddRoom(){
   if(!name||!pass)return alert("Preencha nome e senha.");
   const key='room_'+Date.now();
   DATABASE.turmas[key]={name,pass};DATABASE.semanas[key]=[];
+  adminSelectedRoom=key;
+  localStorage.setItem('ap_admin_selected_room',key);
   saveCloudDB();renderAdminRooms();updateAdminSelects();
   document.getElementById('admin-room-name').value='';document.getElementById('admin-room-pass').value='';
 }
@@ -5250,10 +5347,16 @@ function updateAdminSelects(){
   const s1=document.getElementById('admin-semana-room');
   const s2=document.getElementById('admin-musica-room');
   const s3=document.getElementById('admin-trilha-room');
+  const s4=document.getElementById('admin-room-filter');
+  const roomKeys=Object.keys(DATABASE.turmas);
+  if(!adminSelectedRoom||!DATABASE.turmas[adminSelectedRoom])adminSelectedRoom=roomKeys[0]||'';
+  if(adminSelectedRoom)localStorage.setItem('ap_admin_selected_room',adminSelectedRoom);
   const opts = Object.keys(DATABASE.turmas).map(k=>`<option value="${k}">${DATABASE.turmas[k].name}</option>`).join('');
   if(s1) s1.innerHTML=opts;
   if(s2) s2.innerHTML=opts;
   if(s3) s3.innerHTML=opts;
+  if(s4) s4.innerHTML=opts;
+  syncAdminRoomControls();
   populateRegTurmas();
 }
 
@@ -5400,7 +5503,7 @@ function adminEditTrilha(rKey, idx){
   document.getElementById('admin-trilha-erros').value = (t.erros||[]).map(x => `${x.errado} | ${x.certo} | ${x.exp}`).join('\n');
   
   // Scroll to top of tab
-  document.getElementById('ttab-trilha-admin').scrollIntoView({behavior: 'smooth'});
+  document.getElementById('trilha-form-title').scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 function adminCancelEditTrilha(){
@@ -5436,11 +5539,18 @@ function adminDeleteTrilha(rKey, i){DATABASE.trilhas[rKey].splice(i,1);saveCloud
 function renderAdminTrilhas(){
   const cont=document.getElementById('admin-trilhas-list');
   cont.innerHTML='';
-  Object.keys(DATABASE.trilhas).forEach(rKey => {
-    const arr = DATABASE.trilhas[rKey];
-    if(!arr || !arr.length || !DATABASE.turmas[rKey]) return;
-    let bloco = `<div class="label" style="margin-top:12px;margin-bottom:8px">${DATABASE.turmas[rKey].name}</div>`;
-    arr.forEach((t,i) => {
+  const rKey=adminSelectedRoom;
+  const arr=DATABASE.trilhas[rKey]||[];
+  if(!rKey||!DATABASE.turmas[rKey]){
+    cont.innerHTML='<div class="text-muted text-sm text-center">Selecione uma turma.</div>';
+    return;
+  }
+  if(!arr.length){
+    cont.innerHTML='<div class="text-muted text-sm text-center">Nenhuma fase cadastrada para esta turma.</div>';
+    return;
+  }
+  let bloco=`<div class="label" style="margin-top:12px;margin-bottom:8px">${DATABASE.turmas[rKey].name} · ${arr.length} fase(s)</div>`;
+  arr.forEach((t,i) => {
       const lock = t.locked;
       bloco += `
       <div class="admin-item"${lock?' style="opacity:.65"':''}>
@@ -5452,9 +5562,8 @@ function renderAdminTrilhas(){
           <button class="admin-delete" onclick="adminDeleteTrilha('${rKey}', ${i})"><i class="fa-solid fa-trash"></i></button>
         </div>
       </div>`;
-    });
-    cont.innerHTML += bloco;
   });
+  cont.innerHTML=bloco;
 }
 
 // Escolhe uma turma de destino (para copiar conteúdo entre salas)
@@ -5515,6 +5624,7 @@ function adminSaveSemana(){
 function adminEditSemana(rKey, idx) {
   const sem = DATABASE.semanas[rKey][idx];
   if(!sem) return;
+  showTeacherTab('aulas-admin');
   document.getElementById('aulas-form-title').textContent = "Editar Aula";
   document.getElementById('btn-save-semana').innerHTML = 'Atualizar Aula ✨';
   document.getElementById('btn-cancel-semana').classList.remove('hidden');
@@ -5528,7 +5638,7 @@ function adminEditSemana(rKey, idx) {
   document.getElementById('admin-semana-erros').value = (sem.erros||[]).map(x => `${x.errado} | ${x.certo} | ${x.exp}`).join('\n');
   document.getElementById('admin-semana-ditado').value = (sem.ditado||[]).join('\n');
   
-  document.getElementById('ttab-aulas-admin').scrollIntoView({behavior: 'smooth'});
+  document.getElementById('aulas-form-title').scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 function adminCancelEditSemana() {
@@ -5547,14 +5657,13 @@ function adminDeleteSemana(rKey,idx){DATABASE.semanas[rKey].splice(idx,1);saveCl
 function renderAdminSemanas(){
   const cont=document.getElementById('admin-semanas-list');
   cont.innerHTML='';
-  let any=false;
-  Object.keys(DATABASE.semanas).forEach(k=>{
-    if(!DATABASE.turmas[k]||!DATABASE.semanas[k].length)return;
-    any=true;
+  const k=adminSelectedRoom;
+  const aulas=DATABASE.semanas[k]||[];
+  if(k&&DATABASE.turmas[k]&&aulas.length){
     const wrap=document.createElement('div');
     wrap.style.marginBottom='16px';
-    wrap.innerHTML=`<div class="label" style="margin-bottom:8px">${DATABASE.turmas[k].name}</div>`+
-      DATABASE.semanas[k].map((s,i)=>{
+    wrap.innerHTML=`<div class="label" style="margin-bottom:8px">${DATABASE.turmas[k].name} · ${aulas.length} aula(s)</div>`+
+      aulas.map((s,i)=>{
         const lock=s.locked;
         return `
         <div class="admin-item" style="margin-bottom:8px${lock?';opacity:.65':''}">
@@ -5567,8 +5676,7 @@ function renderAdminSemanas(){
           </div>
         </div>`;}).join('');
     cont.appendChild(wrap);
-  });
-  if(!any)cont.innerHTML='<div class="text-muted text-sm text-center">Nenhuma aula cadastrada ainda.</div>';
+  }else cont.innerHTML='<div class="text-muted text-sm text-center">Nenhuma aula cadastrada para esta turma.</div>';
 }
 function adminCopySemana(rKey,i){
   const s=DATABASE.semanas[rKey][i];
@@ -5642,7 +5750,7 @@ function adminEditMusica(rKey, idx) {
   document.getElementById('admin-musica-vocab').value = m.vocabRaw || '';
   document.getElementById('admin-musica-dicas').value = m.dicasRaw || '';
   
-  document.getElementById('ttab-musicas-admin').scrollIntoView({behavior:'smooth'});
+  document.getElementById('musicas-form-title').scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 function adminCancelEditMusica() {
@@ -5677,15 +5785,13 @@ function renderAdminMusicas() {
   const cont = document.getElementById('admin-musicas-list');
   if(!cont) return;
   cont.innerHTML = '';
-  let any = false;
-  
-  Object.keys(DATABASE.musicas).forEach(k => {
-    if(!DATABASE.turmas[k] || !DATABASE.musicas[k] || !DATABASE.musicas[k].length) return;
-    any = true;
+  const k=adminSelectedRoom;
+  const musicas=DATABASE.musicas[k]||[];
+  if(k&&DATABASE.turmas[k]&&musicas.length){
     const wrap = document.createElement('div');
     wrap.style.marginBottom = '16px';
-    wrap.innerHTML = `<div class="label" style="margin-bottom:8px">${DATABASE.turmas[k].name}</div>` +
-      DATABASE.musicas[k].map((m, i) => `
+    wrap.innerHTML = `<div class="label" style="margin-bottom:8px">${DATABASE.turmas[k].name} · ${musicas.length} música(s)</div>` +
+      musicas.map((m, i) => `
         <div class="admin-item" style="margin-bottom:8px">
           <div><div class="admin-item-name">${m.title}</div><div class="admin-item-sub">${m.artist||'Desconhecido'}</div></div>
           <div style="display:flex;gap:4px">
@@ -5695,9 +5801,7 @@ function renderAdminMusicas() {
         </div>
       `).join('');
     cont.appendChild(wrap);
-  });
-  
-  if(!any) cont.innerHTML = '<div class="text-muted text-sm text-center">Nenhuma música no catálogo.</div>';
+  }else cont.innerHTML = '<div class="text-muted text-sm text-center">Nenhuma música cadastrada para esta turma.</div>';
 }
 
 // -- STUDENT MUSICAS --
