@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Basic 1 - Guia Preparatório + Flashcards</title>
+<style>
+:root{
+  --azul:#1a3c8c;
+  --azul-claro:#eaf0fb;
+  --laranja:#f5821f;
+  --laranja-claro:#fff1e2;
+  --cinza:#f7f7f9;
+  --verde:#1f9d55;
+  --vermelho:#d6334c;
+}
+*{box-sizing:border-box;}
+body{
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:var(--cinza);
+  color:#222;
+  margin:0;
+  padding:0;
+  line-height:1.55;
+}
+.container{max-width:880px;margin:0 auto;padding:24px 20px 80px;}
+header.top{
+  background:linear-gradient(120deg,var(--azul) 60%,var(--laranja) 100%);
+  color:#fff;padding:36px 24px;border-radius:0 0 18px 18px;text-align:center;
+}
+header.top h1{margin:0 0 8px;font-size:1.8em;}
+header.top p{margin:0;font-size:1.05em;opacity:.95;}
+
+nav.indice{background:#fff;border-radius:12px;padding:18px 22px;margin:24px 0;border:1px solid #e2e2e8;}
+nav.indice h3{color:var(--azul);margin-top:0;}
+nav.indice a{color:var(--laranja);text-decoration:none;font-weight:600;}
+nav.indice a:hover{text-decoration:underline;}
+nav.indice ul{margin:0;padding-left:20px;}
+nav.indice li{margin:4px 0;}
+
+.motivacional{
+  background:var(--laranja-claro);border-left:6px solid var(--laranja);
+  padding:18px 22px;border-radius:10px;margin:28px 0;font-size:1.05em;
+}
+.checklist{background:#fff;border:1px solid #e2e2e8;border-radius:12px;padding:20px 24px;margin:20px 0;}
+.checklist h3{color:var(--azul);margin-top:0;}
+.checklist ul{list-style:none;padding-left:0;}
+.checklist li{padding:6px 0;border-bottom:1px dashed #ddd;}
+.checklist li:last-child{border-bottom:none;}
+.checklist li::before{content:"☐ ";color:var(--laranja);font-weight:bold;margin-right:6px;}
+
+.modulo{background:#fff;border-radius:14px;padding:26px 26px 20px;margin:30px 0;box-shadow:0 2px 10px rgba(0,0,0,.04);border-top:5px solid var(--azul);}
+.badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:50%;background:var(--azul);color:#fff;
+  font-weight:bold;margin-right:10px;flex-shrink:0;
+}
+.modulo h2{display:flex;align-items:center;color:var(--azul);font-size:1.3em;margin-top:0;}
+.modulo h4{color:var(--laranja);margin-bottom:6px;}
+table.vocab{width:100%;border-collapse:collapse;margin:14px 0;}
+table.vocab th{background:var(--azul);color:#fff;padding:8px 10px;text-align:left;font-size:.95em;}
+table.vocab td{padding:8px 10px;border-bottom:1px solid #eee;font-size:.95em;}
+table.vocab tr:nth-child(even){background:var(--azul-claro);}
+.pronuncia{color:var(--laranja);font-style:italic;}
+.alerta{background:#fff5f5;border-left:5px solid var(--vermelho);padding:12px 16px;border-radius:8px;margin:14px 0;font-size:.95em;}
+.regra{background:#f0f7ff;border-left:5px solid var(--azul);padding:12px 16px;border-radius:8px;margin:14px 0;font-size:.95em;}
+.exemplo{background:var(--azul-claro);border-radius:10px;padding:14px 18px;margin:14px 0;}
+.exemplo b{color:var(--azul);}
+
+.click-target{
+  cursor:pointer;background:#fff;border:2px dashed var(--laranja);border-radius:8px;
+  padding:10px 14px;margin:8px 0;transition:.2s;
+}
+.click-target:hover{background:var(--laranja-claro);}
+.click-target .pergunta{font-weight:600;}
+.click-target .resposta{display:none;margin-top:8px;padding-top:8px;border-top:1px solid #f0c98a;}
+.click-target.revelado{border-style:solid;border-color:var(--verde);}
+.click-target.revelado .resposta{display:block;}
+
+.text-danger-huge{color:var(--vermelho);font-weight:bold;font-size:1.05em;}
+.text-success-medium{color:var(--verde);font-weight:600;}
+
+.simulado-item{background:#fff;border-radius:10px;padding:16px 20px;margin:14px 0;border:1px solid #e2e2e8;}
+.simulado-item .num{color:var(--laranja);font-weight:bold;}
+
+.gabarito{background:#f4fbf6;border-left:6px solid var(--verde);border-radius:10px;padding:16px 22px;margin:12px 0;}
+.dica-ouro{background:var(--laranja-claro);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:.92em;}
+.dica-ouro b{color:var(--laranja);}
+
+h2.parte{color:var(--azul);border-bottom:3px solid var(--laranja);padding-bottom:8px;margin-top:46px;}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:24px;}
+@media(max-width:700px){.grid{grid-template-columns:1fr;}}
+.card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden;border:1px solid #e5e5eb;}
+.card-id{background:var(--azul);color:#fff;padding:8px 16px;font-size:.85em;font-weight:600;}
+.frente{padding:20px 20px 14px;text-align:center;border-bottom:2px dashed var(--laranja);}
+.frente .rotulo{font-size:.75em;color:var(--laranja);font-weight:bold;letter-spacing:.5px;}
+.frente .gatilho{font-size:1.35em;font-weight:bold;color:var(--azul);margin-top:6px;}
+.verso{padding:16px 20px 20px;font-size:.92em;}
+.verso .rotulo{font-size:.75em;color:var(--verde);font-weight:bold;letter-spacing:.5px;margin-bottom:6px;}
+.verso p{margin:6px 0;}
+.verso b{color:var(--azul);}
+.dica{background:var(--laranja-claro);border-radius:8px;padding:8px 12px;margin-top:8px;}
+.dica b{color:var(--laranja);}
+.desafio{background:var(--azul-claro);border-radius:8px;padding:8px 12px;margin-top:8px;}
+.desafio b{color:var(--azul);}
+.atividade{background:#fff;border-radius:12px;padding:20px 24px;margin-top:16px;border-left:6px solid var(--verde);}
+
+footer{text-align:center;color:#999;font-size:.85em;margin-top:50px;}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="top">
+  <h1>🎓 Basic 1 — Guia Preparatório + Flashcards</h1>
+  <p>Final Written Exam · Material completo para a turma</p>
+</header>
+
+<nav class="indice">
+  <h3>📌 Índice</h3>
+  <ul>
+    <li><a href="#parte1">Parte 1 — Introdução e Checklist</a></li>
+    <li><a href="#parte2">Parte 2 — Módulos de Explicação Didática</a></li>
+    <li><a href="#parte3">Parte 3 — Simulado</a></li>
+    <li><a href="#parte4">Parte 4 — Gabarito Comentado</a></li>
+    <li><a href="#parte5">Parte 5 — Flashcards</a></li>
+  </ul>
+</nav>
+
+<div id="parte1"></div>
+<div class="motivacional">
+  <b>Você já chegou até aqui — e isso já é uma vitória! 🌟</b><br>
+  Aprender um novo idioma é como aprender a andar de bicicleta: no começo parece difícil,
+  mas cada aula, cada erro e cada acerto vão destravando o seu cérebro para o inglês.
+  Este guia foi feito para te mostrar, com calma e passo a passo, exatamente o que vai cair
+  na prova — sem enrolação, sem "decoreba" sem sentido. Respire fundo, revise um pouquinho
+  por dia, e confie no seu progresso. Você consegue! 💪
+</div>
+
+<div class="checklist">
+  <h3>📋 Mapa de Estudos — o que você precisa dominar antes da prova</h3>
+  <ul>
+    <li>There is / There are (afirmativo, negativo e pergunta)</li>
+    <li>Simple Present — afirmativo, negativo e pergunta (verbos comuns e o verbo "to be")</li>
+    <li>Preposições de lugar (in front of, under, beside, behind, on...)</li>
+    <li>Imperativo (ordens e avisos — afirmativo e negativo)</li>
+    <li>Vocabulário de rotina e advérbios de frequência (every day, always, once a week...)</li>
+    <li>Listening — vocabulário de direções (turn left, go straight, head north...)</li>
+  </ul>
+</div>
+
+<h2 class="parte" id="parte2">Parte 2 — Módulos de Explicação Didática</h2>
+
+<!-- MÓDULO 1 -->
+<div class="modulo">
+  <h2><span class="badge">1</span> There is / There are</h2>
+  <h4>O que é e para que serve</h4>
+  <p>Usamos <b>there is</b> e <b>there are</b> para dizer que <b>algo existe em um lugar</b> —
+  é como o "tem" ou "há" em português. Pense assim: se você está descrevendo o que existe
+  dentro de uma sala, de uma cidade ou de uma casa, você usa essa estrutura.</p>
+  <ul>
+    <li><b>There is</b> → usado com coisas <b>no singular</b> (uma coisa só). Ex: "tem uma mesa".</li>
+    <li><b>There are</b> → usado com coisas <b>no plural</b> (duas ou mais). Ex: "tem duas mesas".</li>
+  </ul>
+  <p>Para deixar negativo, é só colocar o <b>not</b>: <b>there isn't</b> / <b>there aren't</b>.
+  Para perguntar, o verbo "salta" para antes do "there": <b>Is there...?</b> / <b>Are there...?</b></p>
+
+  <h4>Tabela de Vocabulário &amp; Pronúncia</h4>
+  <table class="vocab">
+    <tr><th>Inglês</th><th>Pronúncia figurada</th><th>Tradução</th></tr>
+    <tr><td>There is</td><td class="pronuncia">dér iz</td><td>tem / há (singular)</td></tr>
+    <tr><td>There are</td><td class="pronuncia">dér ar</td><td>tem / há (plural)</td></tr>
+    <tr><td>There isn't</td><td class="pronuncia">dér izânt</td><td>não tem (singular)</td></tr>
+    <tr><td>There aren't</td><td class="pronuncia">dér arânt</td><td>não tem (plural)</td></tr>
+    <tr><td>Is there...?</td><td class="pronuncia">iz dér</td><td>tem...? (singular)</td></tr>
+    <tr><td>Are there...?</td><td class="pronuncia">ar dér</td><td>tem...? (plural)</td></tr>
+  </table>
+
+  <h4>Como o tema costuma cair na prova</h4>
+  <p>Normalmente aparece em <b>diálogos com lacunas</b>, onde você precisa escolher a forma
+  certa de acordo com o contexto (singular, plural, negativo ou pergunta).</p>
+  <div class="alerta">
+    <span class="text-danger-huge">⚠ Pegadinha comum:</span> muitos alunos esquecem de olhar
+    se a palavra depois é singular ou plural. "Coffee machine" é uma coisa só → <i>there is</i>.
+    "Types of coffee" são várias → <i>there are</i>. Sempre olhe a palavra logo depois do espaço!
+  </div>
+
+  <h4>Exemplo Prático Resolvido</h4>
+  <div class="exemplo">
+    <b>Situação:</b> Você está descrevendo uma sala de aula nova.<br>
+    "____________ a whiteboard on the wall." → a palavra <i>whiteboard</i> é singular →
+    resposta: <b>There is</b> a whiteboard on the wall.<br>
+    "____________ many students in this group." → <i>students</i> é plural →
+    resposta: <b>There are</b> many students in this group.
+  </div>
+</div>
+
+<!-- MÓDULO 2 -->
+<div class="modulo">
+  <h2><span class="badge">2</span> Simple Present</h2>
+  <h4>O que é e para que serve</h4>
+  <p>O Simple Present é o tempo verbal que usamos para falar de <b>rotinas, hábitos e verdades
+  gerais</b> — coisas que acontecem sempre ou com frequência. Em português seria como dizer
+  "eu trabalho", "ela estuda", "eles moram".</p>
+  <p><b>Regra de ouro:</b> quando o sujeito é <i>he / she / it</i> (terceira pessoa do singular),
+  o verbo ganha um final especial. Nas outras pessoas (I, you, we, they), o verbo fica no
+  "estado puro" (infinitivo sem "to").</p>
+
+  <div class="regra">
+    <b>📐 Regra do "-s" x "-es" na terceira pessoa (he/she/it)</b>
+    <p>Na maioria dos verbos, basta acrescentar <b>-s</b> (work → works). Mas quando o verbo
+    <b>termina</b> em certas letras, o "-s" sozinho fica difícil de pronunciar — por isso
+    acrescentamos <b>-es</b>:</p>
+    <table class="vocab">
+      <tr><th>Terminação do verbo</th><th>Exemplo</th><th>Forma com -es</th></tr>
+      <tr><td>-ch</td><td>watch (assistir)</td><td>watch<b>es</b></td></tr>
+      <tr><td>-sh</td><td>wash (lavar)</td><td>wash<b>es</b></td></tr>
+      <tr><td>-ss</td><td>kiss (beijar)</td><td>kiss<b>es</b></td></tr>
+      <tr><td>-x</td><td>fix (consertar)</td><td>fix<b>es</b></td></tr>
+      <tr><td>-z</td><td>buzz (zumbir)</td><td>buzz<b>es</b></td></tr>
+      <tr><td>-o</td><td>go (ir) / do (fazer)</td><td>go<b>es</b> / do<b>es</b></td></tr>
+    </table>
+    <p><b>📐 Regra do "Y" na terceira pessoa (he/she/it)</b></p>
+    <p>Quando o verbo termina em <b>"y"</b>, existem duas situações diferentes — o segredo é
+    olhar a letra que vem <b>antes</b> do "y":</p>
+    <table class="vocab">
+      <tr><th>Letra antes do "y"</th><th>O que fazer</th><th>Exemplo</th></tr>
+      <tr><td>Consoante (b,c,d,f... + y)</td><td>Troca o "y" por "i" e acrescenta "-es"</td>
+        <td>study → stud<b>ies</b> · cry → cr<b>ies</b> · fly → fl<b>ies</b></td></tr>
+      <tr><td>Vogal (a, e, i, o, u + y)</td><td>Mantém o "y" e acrescenta apenas "-s" (normal)</td>
+        <td>play → play<b>s</b> · buy → buy<b>s</b> · say → say<b>s</b></td></tr>
+    </table>
+    <div class="alerta" style="margin-top:6px;">
+      <span class="text-danger-huge">⚠ Pegadinha comum:</span> "study" e "play" parecem
+      parecidos, mas terminam de jeitos diferentes: study tem <b>"d" + y</b> (consoante) →
+      studies; play tem <b>"a" + y</b> (vogal) → plays. Sempre olhe a letrinha logo antes do "y"!
+    </div>
+  </div>
+
+  <p>Para o negativo, usamos <b>don't</b> (I/you/we/they) ou <b>doesn't</b> (he/she/it) antes do
+  verbo — e o verbo volta ao normal, sem "-s"/"-es". Para perguntar, usamos <b>Do</b> ou
+  <b>Does</b> no começo da frase.</p>
+
+  <h4>Tabela de Vocabulário &amp; Pronúncia</h4>
+  <table class="vocab">
+    <tr><th>Inglês</th><th>Pronúncia figurada</th><th>Tradução</th></tr>
+    <tr><td>I work</td><td class="pronuncia">ai uôrk</td><td>eu trabalho</td></tr>
+    <tr><td>She works</td><td class="pronuncia">chi uôrks</td><td>ela trabalha</td></tr>
+    <tr><td>He watches</td><td class="pronuncia">rri uótchiz</td><td>ele assiste</td></tr>
+    <tr><td>She goes</td><td class="pronuncia">chi gôuz</td><td>ela vai</td></tr>
+    <tr><td>She studies</td><td class="pronuncia">chi stádiz</td><td>ela estuda</td></tr>
+    <tr><td>He plays</td><td class="pronuncia">rri pléis</td><td>ele joga/toca</td></tr>
+    <tr><td>Do you...?</td><td class="pronuncia">du iú</td><td>você...? (pergunta)</td></tr>
+    <tr><td>Does he...?</td><td class="pronuncia">dâz rri</td><td>ele...? (pergunta)</td></tr>
+    <tr><td>I don't</td><td class="pronuncia">ai dôunt</td><td>eu não (negativo)</td></tr>
+    <tr><td>She doesn't</td><td class="pronuncia">chi dâzânt</td><td>ela não (negativo)</td></tr>
+  </table>
+
+  <h4>Como o tema costuma cair na prova</h4>
+  <p>Geralmente em diálogos, com o verbo entre parênteses para você conjugar corretamente
+  (afirmativo, negativo ou pergunta).</p>
+  <div class="alerta">
+    <span class="text-danger-huge">⚠ Pegadinha comum:</span> em perguntas e negativas com
+    <i>do/does</i>, o verbo principal <b>NUNCA</b> leva "-s"/"-es" — essa terminação já foi
+    "usada" no <i>does</i>. Errado: "Does she works?" · Certo: "Does she work?" E cuidado com
+    verbos terminados em -ch, -sh, -ss, -x, -z, -o: eles pedem "-es", não só "-s"! Verbos
+    terminados em "y" também merecem atenção: consoante + y vira "-ies" (study → studies),
+    mas vogal + y é normal, só "+s" (play → plays).
+  </div>
+
+  <h4>Exemplo Prático Resolvido</h4>
+  <div class="exemplo">
+    <b>Situação:</b> Falando sobre o chefe.<br>
+    "My boss ____________ (arrive) early every day." → sujeito é <i>he</i> (terceira pessoa),
+    verbo termina em vogal comum → resposta: <b>arrives</b>.<br>
+    "My boss ____________ (watch) the news every morning." → verbo termina em <b>-ch</b> →
+    resposta: <b>watches</b> (não "watchs").<br>
+    "She ____________ (study) every night." → verbo termina em <b>consoante + y</b> →
+    resposta: <b>studies</b> (o "y" virou "i" antes do "-es").<br>
+    "He ____________ (play) soccer on weekends." → verbo termina em <b>vogal + y</b> →
+    resposta: <b>plays</b> (o "y" continua normal, só "+s").<br>
+    "____________ (he – like) coffee?" → pergunta com terceira pessoa →
+    resposta: <b>Does he like</b> coffee?
+  </div>
+</div>
+
+<!-- MÓDULO 3 -->
+<div class="modulo">
+  <h2><span class="badge">3</span> Preposições de Lugar</h2>
+  <h4>O que é e para que serve</h4>
+  <p>As preposições de lugar dizem <b>onde</b> um objeto está em relação a outro — como se
+  você estivesse dando instruções para alguém achar algo em uma sala escura.</p>
+
+  <h4>Tabela de Vocabulário &amp; Pronúncia</h4>
+  <table class="vocab">
+    <tr><th>Inglês</th><th>Pronúncia figurada</th><th>Tradução</th></tr>
+    <tr><td>In front of</td><td class="pronuncia">in frânt óv</td><td>na frente de</td></tr>
+    <tr><td>Behind</td><td class="pronuncia">biráind</td><td>atrás de</td></tr>
+    <tr><td>Under</td><td class="pronuncia">ânder</td><td>embaixo de</td></tr>
+    <tr><td>On</td><td class="pronuncia">on</td><td>em cima de / sobre</td></tr>
+    <tr><td>Beside / Next to</td><td class="pronuncia">bissáid / nékst tu</td><td>ao lado de</td></tr>
+    <tr><td>Between</td><td class="pronuncia">bitüín</td><td>entre</td></tr>
+  </table>
+
+  <h4>Como o tema costuma cair na prova</h4>
+  <p>Costuma pedir para você <b>observar uma imagem</b> e escrever frases descrevendo onde
+  os objetos estão, usando "There is/are" + preposição.</p>
+  <div class="alerta">
+    <span class="text-danger-huge">⚠ Pegadinha comum:</span> "beside" e "next to" têm o
+    <b>mesmo significado</b> (ao lado de) — não confunda com "in front of" (na frente).
+  </div>
+
+  <h4>Exemplo Prático Resolvido</h4>
+  <div class="exemplo">
+    <b>Situação:</b> Descrevendo uma cozinha.<br>
+    "The fridge is ____________ the stove." (a geladeira está ao lado do fogão) →
+    resposta: <b>next to / beside</b>.<br>
+    "The clock is ____________ the wall." (o relógio está na parede) → resposta: <b>on</b>.
+  </div>
+</div>
+
+<!-- MÓDULO 4 -->
+<div class="modulo">
+  <h2><span class="badge">4</span> Imperativo</h2>
+  <h4>O que é e para que serve</h4>
+  <p>O imperativo é usado para dar <b>ordens, instruções e avisos</b> — como placas de
+  trânsito, manuais e regras de convivência. A boa notícia é que é a estrutura mais simples
+  do inglês: <b>o verbo vai sozinho</b>, sem sujeito e sem conjugação.</p>
+  <p>Para o negativo, basta colocar <b>Don't</b> antes do verbo.</p>
+
+  <h4>Tabela de Vocabulário &amp; Pronúncia</h4>
+  <table class="vocab">
+    <tr><th>Inglês</th><th>Pronúncia figurada</th><th>Tradução</th></tr>
+    <tr><td>Turn right/left</td><td class="pronuncia">turn ráit / léft</td><td>vire à direita/esquerda</td></tr>
+    <tr><td>Stop</td><td class="pronuncia">stóp</td><td>pare</td></tr>
+    <tr><td>Don't smoke</td><td class="pronuncia">dôunt smôuk</td><td>não fume</td></tr>
+    <tr><td>Be quiet</td><td class="pronuncia">bi cuáiet</td><td>fique quieto</td></tr>
+    <tr><td>Wear a helmet</td><td class="pronuncia">uér a rrélmet</td><td>use um capacete</td></tr>
+  </table>
+
+  <h4>Como o tema costuma cair na prova</h4>
+  <p>Normalmente aparece com <b>imagens de placas ou situações</b>, e você escreve a ordem
+  correspondente.</p>
+  <div class="alerta">
+    <span class="text-danger-huge">⚠ Pegadinha comum:</span> não coloque "You" antes do
+    verbo — no imperativo, o sujeito fica escondido/subentendido. Errado: "You stop."
+    Certo: "Stop."
+  </div>
+
+  <h4>Exemplo Prático Resolvido</h4>
+  <div class="exemplo">
+    <b>Situação:</b> Placa numa piscina.<br>
+    Imagem: pessoa correndo riscada (proibido) → resposta: <b>Don't run.</b><br>
+    Imagem: uma seta apontando para a direita → resposta: <b>Turn right.</b>
+  </div>
+</div>
+
+<!-- MÓDULO 5 -->
+<div class="modulo">
+  <h2><span class="badge">5</span> Rotina e Advérbios de Frequência</h2>
+  <h4>O que é e para que serve</h4>
+  <p>Para descrever sua rotina de trabalho, você combina o <b>Simple Present</b> (módulo 2)
+  com palavras que dizem <b>com que frequência</b> algo acontece.</p>
+
+  <h4>Tabela de Vocabulário &amp; Pronúncia</h4>
+  <table class="vocab">
+    <tr><th>Inglês</th><th>Pronúncia figurada</th><th>Tradução</th></tr>
+    <tr><td>Every day</td><td class="pronuncia">évri dei</td><td>todo dia</td></tr>
+    <tr><td>Always</td><td class="pronuncia">óuweis</td><td>sempre</td></tr>
+    <tr><td>Usually</td><td class="pronuncia">iúshuali</td><td>geralmente</td></tr>
+    <tr><td>Once a week</td><td class="pronuncia">uâns a uík</td><td>uma vez por semana</td></tr>
+    <tr><td>In the morning</td><td class="pronuncia">in dâ mórnin</td><td>de manhã</td></tr>
+    <tr><td>At 8 o'clock</td><td class="pronuncia">ét eit oclók</td><td>às 8 horas</td></tr>
+  </table>
+
+  <h4>Como o tema costuma cair na prova</h4>
+  <p>Costuma ser um <b>pequeno texto livre</b> onde você escreve sobre suas tarefas no
+  trabalho, o horário e a frequência.</p>
+  <div class="alerta">
+    <span class="text-danger-huge">⚠ Pegadinha comum:</span> lembre-se do "-s"/"-es" na
+    terceira pessoa mesmo em textos livres — "I fix" mas "He fixes" (verbo terminado em -x).
+    E use <b>at</b> para horários exatos ("at 8am") e <b>in the</b> para períodos do dia
+    ("in the morning").
+  </div>
+
+  <h4>Exemplo Prático Resolvido</h4>
+  <div class="exemplo">
+    <b>Situação:</b> Descrever a rotina de um cozinheiro.<br>
+    "He usually arrives at the restaurant at 6am. He washes the dishes every morning and
+    fixes small equipment problems once a week." — repare no "-es" em "washes" e "fixes"
+    (verbos terminados em -sh e -x).
+  </div>
+</div>
+
+<!-- MÓDULO 6 -->
+<div class="modulo">
+  <h2><span class="badge">6</span> Listening — Vocabulário de Direções</h2>
+  <h4>O que é e para que serve</h4>
+  <p>No listening, você vai ouvir alguém dando <b>instruções de direção</b> (como um GPS) e
+  precisa colocar os passos <b>na ordem certa</b>. O segredo aqui não é entender 100% da
+  frase, e sim reconhecer as <b>palavras-chave de direção</b>.</p>
+
+  <h4>Tabela de Vocabulário &amp; Pronúncia</h4>
+  <table class="vocab">
+    <tr><th>Inglês</th><th>Pronúncia figurada</th><th>Tradução</th></tr>
+    <tr><td>Turn right/left</td><td class="pronuncia">turn ráit/léft</td><td>vire à direita/esquerda</td></tr>
+    <tr><td>Go straight</td><td class="pronuncia">gôu stréit</td><td>siga em frente</td></tr>
+    <tr><td>Head north/south</td><td class="pronuncia">rréd nórf/sáuf</td><td>siga para o norte/sul</td></tr>
+    <tr><td>Continue on</td><td class="pronuncia">continiú on</td><td>continue em</td></tr>
+    <tr><td>Towards</td><td class="pronuncia">tóuords</td><td>em direção a</td></tr>
+  </table>
+
+  <h4>Como o tema costuma cair na prova</h4>
+  <p>Você ouve o áudio (geralmente <b>3 vezes</b>) e numera as frases na ordem em que
+  aparecem.</p>
+  <div class="alerta">
+    <span class="text-danger-huge">⚠ Pegadinha comum:</span> "right" pode significar
+    "direita" OU "certo" dependendo do contexto — em direções, é sempre "direita".
+    Fique atento também à diferença entre <i>street</i> (rua) e <i>avenue</i> (avenida),
+    que costumam aparecer juntas para confundir.
+  </div>
+
+  <h4>Exemplo Prático Resolvido</h4>
+  <div class="exemplo">
+    <b>Dica de escuta:</b> Ao ouvir "Head south on Main Street, then turn right onto
+    2nd Avenue", separe mentalmente em dois blocos: (1) direção inicial + rua, (2) a virada +
+    nova rua. Anote as palavras-chave (south, right) assim que ouvir, sem esperar entender a
+    frase inteira.
+  </div>
+</div>
+
+<h2 class="parte" id="parte3">Parte 3 — Simulado</h2>
+<p>Contextos e frases totalmente novos, no mesmo formato da prova. Clique em cada item para
+conferir a resposta depois de tentar responder!</p>
+
+<div class="simulado-item">
+  <p class="num">1. There is / There are</p>
+  <p>Complete o diálogo:</p>
+  <p>Rachel – Welcome to my house! ____________ (a) a garden behind the house, and
+  ____________ (b) many flowers in it. ____________ (c) a pool? No, ____________ (d)
+  (negative) a pool, but ____________ (e) a small lake near here.</p>
+  <div class="click-target" onclick="this.classList.toggle('revelado')">
+    <div class="pergunta">👉 Toque para ver o gabarito</div>
+    <div class="resposta">
+      (a) There is · (b) there are · (c) Is there · (d) there isn't · (e) there is
+    </div>
+  </div>
+</div>
+
+<div class="simulado-item">
+  <p class="num">2. Simple Present</p>
+  <p>Dialogue 1 — Sarah: My brother ____________ (travel) a lot for work, so right now
+  he ____________ (be) in Canada.</p>
+  <p>Dialogue 2 — Tom: ____________ (you – want) some tea? Ana: No, thanks. I
+  ____________ (drink – negative) hot beverages.</p>
+  <p>Dialogue 3 — ____________ (Paul – watch) TV every night? Yes! He also
+  ____________ (fix) his own computer sometimes.</p>
+  <div class="click-target" onclick="this.classList.toggle('revelado')">
+    <div class="pergunta">👉 Toque para ver o gabarito</div>
+    <div class="resposta">
+      travels / is · Do you want / don't drink · Does Paul watch / fixes
+    </div>
+  </div>
+</div>
+
+<div class="simulado-item">
+  <p class="num">3. Preposições de Lugar</p>
+  <p>Imagine uma sala de aula: há um quadro na parede, uma mesa na frente dos alunos, uma
+  mochila embaixo da cadeira, um relógio ao lado da porta e um cartaz atrás do professor.
+  Escreva 5 frases descrevendo essas posições usando "There is/are".</p>
+  <div class="click-target" onclick="this.classList.toggle('revelado')">
+    <div class="pergunta">👉 Toque para ver possíveis respostas</div>
+    <div class="resposta">
+      The board is on the wall. / The table is in front of the students. / The backpack is
+      under the chair. / The clock is next to the door. / The poster is behind the teacher.
+    </div>
+  </div>
+</div>
+
+<div class="simulado-item">
+  <p class="num">4. Imperativo</p>
+  <p>Escreva a ordem correspondente a cada situação:</p>
+  <p>a) Aviso de "proibido fotografar" &nbsp; b) Aviso de "use o capacete" &nbsp;
+  c) Aviso de "lave as mãos" &nbsp; d) Aviso de "desligue o celular" &nbsp;
+  e) Aviso de "recicle o lixo"</p>
+  <div class="click-target" onclick="this.classList.toggle('revelado')">
+    <div class="pergunta">👉 Toque para ver o gabarito</div>
+    <div class="resposta">
+      a) Don't take photos. · b) Wear a helmet. · c) Wash your hands. ·
+      d) Turn off your phone. · e) Recycle the trash.
+    </div>
+  </div>
+</div>
+
+<div class="simulado-item">
+  <p class="num">5. Rotina no Trabalho</p>
+  <p>Escreva um pequeno texto (4-5 linhas) descrevendo sua rotina de trabalho: as tarefas
+  que você faz, os horários e a frequência.</p>
+  <div class="click-target" onclick="this.classList.toggle('revelado')">
+    <div class="pergunta">👉 Toque para ver um modelo de resposta</div>
+    <div class="resposta">
+      "I usually arrive at work at 8am. I answer emails every morning and I attend
+      meetings twice a week. I always have lunch at 12pm, and I leave the office at 6pm."
+    </div>
+  </div>
+</div>
+
+<div class="simulado-item">
+  <p class="num">6. Listening — Direções (simulação de texto)</p>
+  <p>Leia as instruções abaixo e numere na ordem correta:</p>
+  <p>( &nbsp;) Turn left onto Elm Street. &nbsp; ( &nbsp;) Head south on Main Avenue. &nbsp;
+  ( &nbsp;) Continue straight for two blocks. &nbsp; ( &nbsp;) Turn right onto 3rd Street.</p>
+  <div class="click-target" onclick="this.classList.toggle('revelado')">
+    <div class="pergunta">👉 Toque para ver o gabarito</div>
+    <div class="resposta">
+      1) Head south on Main Avenue · 2) Continue straight for two blocks ·
+      3) Turn left onto Elm Street · 4) Turn right onto 3rd Street
+    </div>
+  </div>
+</div>
+
+<h2 class="parte" id="parte4">Parte 4 — Gabarito Comentado e Dicas de Memorização</h2>
+
+<div class="gabarito">
+  <b>1. There is / There are</b> — Sempre olhe a palavra seguinte: termina em "-s" (plural)?
+  Use <i>there are</i>. Palavra única? Use <i>there is</i>.
+  <div class="dica-ouro"><b>Dica de ouro:</b> "IS" é curtinho, como coisa no singular. "ARE"
+  tem mais letras, como várias coisas no plural. 😉</div>
+</div>
+
+<div class="gabarito">
+  <b>2. Simple Present</b> — He/She/It ganham "-s" (ou "-es" em verbos terminados em
+  -ch, -sh, -ss, -x, -z, -o) no afirmativo, mas perdem essa terminação em perguntas e
+  negativas (porque ela já apareceu em does/doesn't).
+  <div class="dica-ouro"><b>Dica de ouro:</b> pense na terminação "-s/-es" como uma "ficha" —
+  só pode aparecer <b>uma vez</b> na frase: ou no verbo, ou no does/doesn't. E lembre dos
+  macetes: <b>CH, SH, SS, X, Z, O → sempre "-ES"</b>; e para verbos com "Y" no final,
+  <b>consoante + Y → troca por "IES"</b> (study→studies), <b>vogal + Y → só "+S"</b>
+  (play→plays).</div>
+</div>
+
+<div class="gabarito">
+  <b>3. Preposições de Lugar</b> — Visualize a cena mentalmente antes de escrever, como se
+  fosse tirar uma foto.
+  <div class="dica-ouro"><b>Dica de ouro:</b> "next TO" e "beside" andam juntos (ao lado);
+  "in FRONT of" tem "front" = frente.</div>
+</div>
+
+<div class="gabarito">
+  <b>4. Imperativo</b> — O verbo vai sempre em primeiro lugar, sem "you", sem "-s".
+  <div class="dica-ouro"><b>Dica de ouro:</b> imperativo é "seco" — só o verbo, ponto final.
+  Se aparecer "you" antes, está errado!</div>
+</div>
+
+<div class="gabarito">
+  <b>5. Rotina/Frequência</b> — Combine sempre Simple Present + advérbio de frequência.
+  <div class="dica-ouro"><b>Dica de ouro:</b> "AT" é para hora exata (at 8am), "IN THE" é
+  para período (in the morning). Pense: "AT" é pontual, "IN" é mais largo.</div>
+</div>
+
+<div class="gabarito">
+  <b>6. Listening</b> — Foque nas palavras de direção (right, left, straight, north, south)
+  e nos nomes de rua — são as "âncoras" da frase.
+  <div class="dica-ouro"><b>Dica de ouro:</b> feche os olhos e desenhe mentalmente o
+  caminho conforme ouve — isso ajuda a fixar a ordem.</div>
+</div>
+
+<h2 class="parte" id="parte5">Parte 5 — Flashcards</h2>
+<p>Cada cartão tem uma <b>Frente</b> (o gatilho/pergunta) e um <b>Verso</b> (a explicação,
+pronúncia, exemplo e um desafio rápido). Revise um bloco de cada vez.</p>
+
+<h3 style="color:var(--azul);">Bloco 1 — There is / There are</h3>
+<div class="grid">
+
+  <div class="card">
+    <div class="card-id">Cartão 1 — There is</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">"____ a book on the table."</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> "book" é uma coisa só (singular) → usa-se <b>There is</b>.</p>
+      <p><b>Tradutor:</b> There is <span class="pronuncia">(dér iz)</span> = tem/há (singular)</p>
+      <p><b>Exemplo real:</b> "There is a coffee machine in the office."</p>
+      <div class="dica"><b>Dica de ouro:</b> IS é curto, como coisa única.</div>
+      <div class="desafio"><b>Desafio:</b> "There ___ a plant." (is/are?)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-id">Cartão 2 — There are</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">"____ two chairs here."</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> "chairs" é plural → usa-se <b>There are</b>.</p>
+      <p><b>Tradutor:</b> There are <span class="pronuncia">(dér ar)</span> = tem/há (plural)</p>
+      <p><b>Exemplo real:</b> "There are many types of coffee here."</p>
+      <div class="dica"><b>Dica de ouro:</b> ARE tem mais letras, como várias coisas.</div>
+      <div class="desafio"><b>Desafio:</b> "There ___ five students." (is/are?)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-id">Cartão 3 — There isn't / aren't</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">Como negar "There is / There are"?</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> só acrescente <b>not</b>: there isn't / there aren't.</p>
+      <p><b>Tradutor:</b> There isn't <span class="pronuncia">(dér izânt)</span> = não tem (sing.) ·
+      There aren't <span class="pronuncia">(dér arânt)</span> = não tem (plural)</p>
+      <p><b>Exemplo real:</b> "There isn't a stove in the kitchen."</p>
+      <div class="dica"><b>Dica de ouro:</b> "n't" = "not" grudadinho, sempre depois de is/are.</div>
+      <div class="desafio"><b>Desafio:</b> Sim ou não: "There isn't" pode ser usado com plural?</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-id">Cartão 4 — Is there / Are there?</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">Como perguntar "tem...?"</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> o verbo "salta" para o início: Is there...? / Are there...?</p>
+      <p><b>Tradutor:</b> Is there <span class="pronuncia">(iz dér)</span> · Are there <span class="pronuncia">(ar dér)</span></p>
+      <p><b>Exemplo real:</b> "Is there a kitchen on this floor?"</p>
+      <div class="dica"><b>Dica de ouro:</b> em perguntas, o verbo vira "sujeito" da frase e vai pra frente.</div>
+      <div class="desafio"><b>Desafio:</b> "___ there many chairs?" (Is/Are?)</div>
+    </div>
+  </div>
+</div>
+
+<h3 style="color:var(--azul);">Bloco 2 — Simple Present</h3>
+<div class="grid">
+
+  <div class="card">
+    <div class="card-id">Cartão 5 — Afirmativo (-s)</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">"She ___ (work) every day."</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> he/she/it ganham "-s" no verbo: <b>works</b>.</p>
+      <p><b>Tradutor:</b> works <span class="pronuncia">(uôrks)</span> = trabalha</p>
+      <p><b>Exemplo real:</b> "He travels a lot for work."</p>
+      <div class="dica"><b>Dica de ouro:</b> he/she/it = "ele/ela/coisa" → verbo com "-s".</div>
+      <div class="desafio"><b>Desafio:</b> "He ___ (like) coffee." Complete!</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-id">Cartão 6 — Regra do -ES</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">"He ___ (watch) TV every night."</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> verbos terminados em <b>ch, sh, ss, x, z, o</b> recebem
+      <b>-es</b> (não só "-s") na terceira pessoa.</p>
+      <p><b>Tradutor:</b> watches <span class="pronuncia">(uótchiz)</span> = assiste</p>
+      <p><b>Exemplo real:</b> "She fixes computers." / "He goes to work by bus."</p>
+      <div class="dica"><b>Dica de ouro:</b> macete: <b>CH-SH-SS-X-Z-O → sempre "-ES"</b>.</div>
+      <div class="desafio"><b>Desafio:</b> "She ___ (fix) the printer." Complete!</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-id">Cartão 6B — Regra do "Y"</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">"She ___ (study) English."</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> "study" termina em <b>consoante + y</b> (d+y) → troca o "y" por
+      "i" e acrescenta "-es": <b>studies</b>.</p>
+      <p><b>Tradutor:</b> studies <span class="pronuncia">(stádiz)</span> = estuda</p>
+      <p><b>Exemplo real:</b> "He cries when he watches sad movies."</p>
+      <div class="dica"><b>Dica de ouro:</b> olhe a letra ANTES do "y": consoante → vira
+      "ies"; vogal → só "+s" (play → plays, buy → buys).</div>
+      <div class="desafio"><b>Desafio:</b> "He ___ (play) the guitar." Complete!</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-id">Cartão 7 — Negativo</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">"I ___ (drink - negative) soda."</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> use don't (I/you/we/they) ou doesn't (he/she/it), verbo sem
+      "-s"/"-es".</p>
+      <p><b>Tradutor:</b> don't <span class="pronuncia">(dôunt)</span> · doesn't <span class="pronuncia">(dâzânt)</span></p>
+      <p><b>Exemplo real:</b> "She doesn't smoke anymore."</p>
+      <div class="dica"><b>Dica de ouro:</b> a terminação "-s/-es" só pode aparecer uma vez:
+      ou no doesn't, ou no verbo — nunca nos dois!</div>
+      <div class="desafio"><b>Desafio:</b> "They ___ (want - negative) tea." Complete!</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-id">Cartão 8 — Pergunta</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">"___ (you - want) some tea?"</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> pergunta = Do/Does no início, verbo sem "-s"/"-es".</p>
+      <p><b>Tradutor:</b> Do you...? <span class="pronuncia">(du iú)</span> · Does he...? <span class="pronuncia">(dâz rri)</span></p>
+      <p><b>Exemplo real:</b> "Does Eddy cook well?"</p>
+      <div class="dica"><b>Dica de ouro:</b> Do/Does + verbo puro (sem "-s"/"-es"), sempre.</div>
+      <div class="desafio"><b>Desafio:</b> "___ we need to fill in this form?" (Do/Does?)</div>
+    </div>
+  </div>
+</div>
+
+<h3 style="color:var(--azul);">Bloco 3 — Preposições de Lugar &amp; Imperativo</h3>
+<div class="grid">
+
+  <div class="card">
+    <div class="card-id">Cartão 9 — Preposições</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">🛋️ + 📺 (TV na frente do sofá)</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> "na frente de" = <b>in front of</b>.</p>
+      <p><b>Tradutor:</b> in front of <span class="pronuncia">(in frânt óv)</span></p>
+      <p><b>Exemplo real:</b> "The TV is in front of the sofa."</p>
+      <div class="dica"><b>Dica de ouro:</b> "front" = frente, fácil de lembrar!</div>
+      <div class="desafio"><b>Desafio:</b> Como se diz "atrás de"?</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-id">Cartão 10 — Preposições</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">🧺 embaixo da mesa</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> "embaixo de" = <b>under</b>.</p>
+      <p><b>Tradutor:</b> under <span class="pronuncia">(ânder)</span></p>
+      <p><b>Exemplo real:</b> "The carpet is under the coffee table."</p>
+      <div class="dica"><b>Dica de ouro:</b> "under" parece "underground" (embaixo da terra) — associe!</div>
+      <div class="desafio"><b>Desafio:</b> "The bag is ___ the chair." Complete!</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-id">Cartão 11 — Imperativo afirmativo</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">🛑 Placa de PARE</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> ordem simples = só o verbo, sem sujeito.</p>
+      <p><b>Tradutor:</b> Stop <span class="pronuncia">(stóp)</span> = pare</p>
+      <p><b>Exemplo real:</b> "Turn left." / "Be quiet."</p>
+      <div class="dica"><b>Dica de ouro:</b> nunca use "you" antes do verbo no imperativo.</div>
+      <div class="desafio"><b>Desafio:</b> Como se diz "vire à direita"?</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-id">Cartão 12 — Imperativo negativo</div>
+    <div class="frente"><div class="rotulo">FRENTE</div><div class="gatilho">🚭 Placa de proibido fumar</div></div>
+    <div class="verso">
+      <div class="rotulo">VERSO</div>
+      <p><b>Explicação:</b> ordem negativa = Don't + verbo.</p>
+      <p><b>Tradutor:</b> Don't smoke <span class="pronuncia">(dôunt smôuk)</span> = não fume</p>
+      <p><b>Exemplo real:</b> "Don't drink and drive."</p>
+      <div class="dica"><b>Dica de ouro:</b> "Don't" é sempre a primeira palavra da ordem negativa.</div>
+      <div class="desafio"><b>Desafio:</b> Como se diz "não fale"?</div>
+    </div>
+  </div>
+</div>
+
+<h3 style="color:var(--azul);">Atividade Complementar</h3>
+<div class="atividade">
+  <p><b>🎯 Jogo de Pareamento — "Frente e Verso Embaralhados"</b></p>
+  <p>Recorte todos os cartões acima separando a Frente do Verso (ou escreva cada uma em um
+  pedacinho de papel). Embaralhe tudo em cima da mesa com as informações viradas para baixo.
+  O aluno vira duas peças por vez tentando formar o par certo (Frente + Verso correspondente).
+  Quando encontrar o par, ele lê em voz alta a frase e a pronúncia figurada antes de guardar
+  a dupla de lado. Repita até casar todos os pares — ótimo para fixar vocabulário e praticar
+  a pronúncia ao mesmo tempo, sem depender de tela.</p>
+</div>
+
+<footer>Material completo — All Net Educação · Basic 1</footer>
+</div>
+</body>
+</html>
