@@ -2237,8 +2237,9 @@ select.input { appearance: none; cursor: pointer; }
     </div>
     <div class="game-footer" style="padding:14px 26px 10px">
       <div class="progress-track"><div id="game-progress-bar" class="progress-fill" style="width:0%"></div></div>
-      <div style="display:flex;justify-content:space-between;margin-top:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px">
         <span id="game-progress-label" class="text-xs text-muted">0 / 0</span>
+        <span id="game-save-label" class="text-xs text-muted"><i class="fa-solid fa-floppy-disk"></i> Salvo automaticamente</span>
         <span id="game-score-label" class="text-xs" style="color:var(--teal);font-weight:700">✓ 0</span>
       </div>
     </div>
@@ -4273,10 +4274,116 @@ function playTTS(text,rate=0.8,language='auto',context=''){
   window.speechSynthesis.speak(u);
 }
 
+const GAME_SESSION_VERSION=1;
+const GAME_SESSION_MAX_AGE=1000*60*60*24*90;
+
+function gameSessionsStorageKey(){
+  if(!currentUser?.id||currentUser.role==='teacher')return '';
+  return `english_hub_game_sessions_${currentUser.id}`;
+}
+
+function readGameSessions(){
+  const key=gameSessionsStorageKey();
+  if(!key)return {};
+  try{
+    const value=JSON.parse(localStorage.getItem(key)||'{}');
+    return value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+  }catch(error){
+    console.warn('Não foi possível ler as atividades em andamento:',error);
+    return {};
+  }
+}
+
+function writeGameSessions(sessions){
+  const key=gameSessionsStorageKey();
+  if(!key)return false;
+  try{
+    const recent=Object.entries(sessions)
+      .sort((a,b)=>Number(b[1]?.savedAt||0)-Number(a[1]?.savedAt||0))
+      .slice(0,30);
+    localStorage.setItem(key,JSON.stringify(Object.fromEntries(recent)));
+    return true;
+  }catch(error){
+    console.warn('Não foi possível salvar a atividade em andamento:',error);
+    return false;
+  }
+}
+
+function removeGameSession(sessionId=activeGame?.sessionId){
+  if(!sessionId)return;
+  const sessions=readGameSessions();
+  if(!sessions[sessionId])return;
+  delete sessions[sessionId];
+  writeGameSessions(sessions);
+}
+
+function readGameSession(sessionId,freshGame){
+  const sessions=readGameSessions();
+  const saved=sessions[sessionId];
+  const expired=Date.now()-Number(saved?.savedAt||0)>GAME_SESSION_MAX_AGE;
+  const valid=saved?.version===GAME_SESSION_VERSION
+    &&saved.type===freshGame.type
+    &&Array.isArray(saved.queue)
+    &&saved.queue.length>0
+    &&Number.isInteger(saved.index)
+    &&saved.index>=0
+    &&saved.index<Number(saved.total||0)
+    &&!expired;
+  if(valid)return saved;
+  if(saved)removeGameSession(sessionId);
+  return null;
+}
+
+function persistActiveGameSession(){
+  if(!activeGame?.sessionId||!currentUser?.id||currentUser.role==='teacher')return;
+  if(!Array.isArray(activeGame.queue)||activeGame.index>=activeGame.total){
+    removeGameSession(activeGame.sessionId);
+    return;
+  }
+  const sessions=readGameSessions();
+  sessions[activeGame.sessionId]={
+    version:GAME_SESSION_VERSION,
+    type:activeGame.type,
+    queue:activeGame.queue,
+    index:activeGame.index,
+    score:activeGame.score,
+    total:activeGame.total,
+    context:activeGame.context,
+    titleName:activeGame.titleName||'',
+    memoryDeck:activeGame.memoryDeck||null,
+    memoryMatches:activeGame.memoryMatches||[],
+    savedAt:Date.now()
+  };
+  const stored=writeGameSessions(sessions);
+  const label=document.getElementById('game-save-label');
+  if(label)label.innerHTML=stored
+    ? '<i class="fa-solid fa-circle-check"></i> Progresso salvo'
+    : '<i class="fa-solid fa-triangle-exclamation"></i> Não foi possível salvar';
+}
+
+function beginResumableGame(freshGame,sessionId,title){
+  const saved=readGameSession(sessionId,freshGame);
+  let resume=false;
+  if(saved){
+    resume=window.confirm(`Você já concluiu ${saved.index} de ${saved.total} etapas desta atividade.\n\nDeseja continuar de onde parou?\n\nOK = Continuar · Cancelar = Recomeçar`);
+    if(!resume)removeGameSession(sessionId);
+  }
+  activeGame=resume
+    ? {...freshGame,...saved,sessionId,gameTitle:title,resumed:true}
+    : {...freshGame,sessionId,gameTitle:title,resumed:false};
+  openGame(title);
+  dispatchGameStep();
+  persistActiveGameSession();
+}
+
 function openGame(title){
   document.getElementById('game-title').textContent=title;
   document.getElementById('game-overlay').classList.remove('hidden');
   document.getElementById('game-overlay').style.display='flex';
+  const label=document.getElementById('game-save-label');
+  if(label)label.innerHTML=activeGame.resumed
+    ? '<i class="fa-solid fa-clock-rotate-left"></i> Continuando de onde parou'
+    : '<i class="fa-solid fa-floppy-disk"></i> Salvo automaticamente';
   updateGameProgress();
 }
 function closeGame(){
@@ -4431,9 +4538,9 @@ function startTrilhaGame(faseId,mode,turmaKey){
   else if(mode==='fillblank') queue=buildFillBlankQueue(fase);
   else queue=(fase.teoria||[]).filter(x=>x.en&&x.pt);
   if(!queue||queue.length===0)return alert("Esta fase ainda não tem conteúdo para este modo.");
-  activeGame={type:'trilha_'+mode,queue:[...queue].sort(()=>Math.random()-.5),index:0,score:0,total:queue.length,context:faseId,titleName:fase.title};
-  openGame(fase.title+' — '+(mode==='teoria'?'Teoria':mode==='vocab'?'Vocabulário':mode==='pratica'?'Teste':mode==='erros'?'Ache o Erro':mode==='wordorder'?'Organizar':mode==='fillblank'?'Complete':mode==='memoria'?'Memória':'Quiz'));
-  dispatchGameStep();
+  const gameTitle=fase.title+' — '+(mode==='teoria'?'Teoria':mode==='vocab'?'Vocabulário':mode==='pratica'?'Teste':mode==='erros'?'Ache o Erro':mode==='wordorder'?'Organizar':mode==='fillblank'?'Complete':mode==='memoria'?'Memória':'Quiz');
+  const freshGame={type:'trilha_'+mode,queue:[...queue].sort(()=>Math.random()-.5),index:0,score:0,total:queue.length,context:faseId,titleName:fase.title};
+  beginResumableGame(freshGame,`trilha:${turmaKey}:${faseId}:${mode}`,gameTitle);
 }
 
 const WEEKLY_QUIZ_ITEMS=25;
@@ -4516,9 +4623,9 @@ function startSemanaGame(rKey,idx,type){
   }
   if(q.length===0)return alert("Sem conteúdo nesta seção.");
   const typeLabel={vocab:'Vocabulário',chunks:'Chunks',ditado:'Ditado',erros:'Ache o Erro',memoria:'Memória',quiz:'Quiz da Aula'};
-  activeGame={type:'semana_'+type,queue:q,index:0,score:0,total:q.length,context:sem.title};
-  openGame(sem.title+' — '+typeLabel[type]);
-  dispatchGameStep();
+  const gameTitle=sem.title+' — '+typeLabel[type];
+  const freshGame={type:'semana_'+type,queue:q,index:0,score:0,total:q.length,context:sem.title,titleName:sem.title};
+  beginResumableGame(freshGame,`semana:${rKey}:${sem.title}:${type}`,gameTitle);
 }
 
 function dispatchGameStep(){
@@ -4537,8 +4644,9 @@ function dispatchGameStep(){
 function nextStep(){
   activeGame.index++;
   updateGameProgress();
-  if(activeGame.index>=activeGame.total){endGame();return;}
+  if(activeGame.index>=activeGame.total){removeGameSession(activeGame.sessionId);endGame();return;}
   dispatchGameStep();
+  persistActiveGameSession();
 }
 
 /* ══ ENGINE: FLASHCARD ══ */
@@ -4763,17 +4871,31 @@ function handleGrammar(btn,isCorrect,exp,correct,wrong){
 let memState={flipped:[],matched:0,lock:false};
 function engineMemory(){
   const words=activeGame.queue.slice(0,6);
-  let deck=[...words.map(w=>({id:w.en,txt:w.en,t:'en'})),...words.map(w=>({id:w.en,txt:w.pt,t:'pt'}))].sort(()=>Math.random()-.5);
-  memState={flipped:[],matched:0,lock:false};
+  const savedDeck=Array.isArray(activeGame.memoryDeck)&&activeGame.memoryDeck.length===words.length*2?activeGame.memoryDeck:null;
+  const deck=savedDeck||[
+    ...words.map((w,index)=>({id:String(index),txt:w.en,t:'en'})),
+    ...words.map((w,index)=>({id:String(index),txt:w.pt,t:'pt'}))
+  ].sort(()=>Math.random()-.5);
+  activeGame.memoryDeck=deck;
+  activeGame.memoryMatches=Array.isArray(activeGame.memoryMatches)?activeGame.memoryMatches:[];
+  const matchedIds=new Set(activeGame.memoryMatches.map(String));
+  memState={flipped:[],matched:matchedIds.size,lock:false};
   const body=document.getElementById('game-body');
   body.innerHTML=`
     <div class="anim-fade-up" style="flex:1">
       <p style="text-align:center;font-size:12px;color:var(--slate);font-weight:700;margin-bottom:14px;letter-spacing:.04em;text-transform:uppercase">Encontre os pares EN ↔ PT</p>
       <div class="memory-grid" id="mem-grid">
-        ${deck.map((c,i)=>`<div class="mem-card" id="mc-${i}" data-id="${esc(c.id)}" data-t="${c.t}" data-txt="${esc(c.txt)}" onclick="flipMem(this)">&nbsp;</div>`).join('')}
+        ${deck.map((c,i)=>{
+          const matched=matchedIds.has(String(c.id));
+          return `<div class="mem-card${matched?' matched':''}" id="mc-${i}" data-id="${esc(c.id)}" data-t="${c.t}" data-txt="${esc(c.txt)}" onclick="flipMem(this)">${matched?c.txt:'&nbsp;'}</div>`;
+        }).join('')}
       </div>
     </div>`;
   activeGame.total=words.length;
+  if(memState.matched>=activeGame.total&&activeGame.total>0){
+    activeGame.index=activeGame.total-1;
+    setTimeout(nextStep,600);
+  }
 }
 function flipMem(el){
   if(memState.lock||el.classList.contains('matched')||memState.flipped.includes(el))return;
@@ -4789,7 +4911,9 @@ function flipMem(el){
         a.classList.replace('flip','matched');b.classList.replace('flip','matched');
         memState.matched++;memState.flipped=[];memState.lock=false;
         activeGame.score++;
+        if(!activeGame.memoryMatches.includes(a.dataset.id))activeGame.memoryMatches.push(a.dataset.id);
         updateGameProgress();
+        persistActiveGameSession();
         if(memState.matched>=activeGame.total){activeGame.index=activeGame.total-1;setTimeout(nextStep,600);}
       },500);
     } else {
@@ -4920,6 +5044,7 @@ function checkWordOrder(){
 
 /* ══ END GAME ══ */
 async function endGame(){
+  removeGameSession(activeGame.sessionId);
   closeGame();
   const pct=activeGame.total>0?Math.round((activeGame.score/activeGame.total)*100):0;
   const nota=(pct/10).toFixed(1);
