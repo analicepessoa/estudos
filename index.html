@@ -2085,6 +2085,7 @@ select.input { appearance: none; cursor: pointer; }
           <div><label class="label">Nível do Curso</label><input type="text" id="admin-trilha-nivel" class="input" placeholder="Ex: Basic 01 MID TERM"></div>
 
           <div><label class="label">Título da fase</label><input type="text" id="admin-trilha-title" class="input" placeholder="Ex: 11. Futuro Simples"></div>
+          <div><label class="label">📅 Publicar em (opcional)</label><input type="datetime-local" id="admin-trilha-publish-at" class="input"><div class="text-xs text-muted" style="margin-top:5px">Deixe vazio para publicar imediatamente. A professora pode visualizar antes da data.</div></div>
           
           <div>
             <label class="label">Jogos Habilitados</label>
@@ -2124,6 +2125,7 @@ select.input { appearance: none; cursor: pointer; }
             <div><label class="label">Turma</label><select id="admin-semana-room" class="input" onchange="changeAdminRoom(this.value)"></select></div>
             <div><label class="label">Título</label><input type="text" id="admin-semana-title" class="input" placeholder="Semana 12"></div>
           </div>
+          <div><label class="label">📅 Publicar em (opcional)</label><input type="datetime-local" id="admin-semana-publish-at" class="input"><div class="text-xs text-muted" style="margin-top:5px">A aula ficará invisível para os alunos até esta data e horário.</div></div>
           <div><label class="label" style="color:#4F46E5">📖 Vocabulário (inglês | pt | pronúncia)</label><textarea id="admin-semana-vocab" class="input" placeholder="apple | maçã | /æp.əl/&#10;car | carro | /kɑːr/"></textarea></div>
           <div><label class="label" style="color:#B45309">🎯 Chunks (inglês | pt | contexto)</label><textarea id="admin-semana-chunks" class="input" placeholder="I like | Eu gosto | Opinião"></textarea></div>
           <div><label class="label" style="color:#B91C1C">❌ Ache o Erro (errado | certo | regra)</label><textarea id="admin-semana-erros" class="input" placeholder="He have | He has | He, She, It usa has"></textarea></div>
@@ -2170,6 +2172,7 @@ select.input { appearance: none; cursor: pointer; }
           </div>
           <div><label class="label">Artista</label><input type="text" id="admin-musica-artist" class="input" placeholder="Ex: Ed Sheeran"></div>
           <div><label class="label">URL do MP3 (GitHub Raw Link)</label><input type="text" id="admin-musica-audio" class="input" placeholder="https://raw.githubusercontent.com/..."></div>
+          <div><label class="label">📅 Publicar em (opcional)</label><input type="datetime-local" id="admin-musica-publish-at" class="input"><div class="text-xs text-muted" style="margin-top:5px">A música ficará invisível para os alunos até esta data e horário.</div></div>
           
           <div><label class="label">Letra (Inglês | Pronúncia | PT)</label><textarea id="admin-musica-letra" class="input" style="height:120px" placeholder="I'm in love | aim in lóf | Eu estou apaixonado&#10;With the shape of you | wif dã cheip óv iu | Pelo seu corpo"></textarea></div>
           
@@ -2271,6 +2274,7 @@ const SHEET_WEB_API = "https://script.google.com/macros/s/AKfycbyixLasg-0TGX8vae
 let sbClient = null;
 let currentUser = null;
 let activeGame = { type:'', queue:[], index:0, score:0, total:0, context:null };
+let scheduledContentRefreshTimer = null;
 let adminSelectedRoom = localStorage.getItem('ap_admin_selected_room') || '';
 let progressSaveChain = Promise.resolve();
 let progressRetryTimer = null;
@@ -3980,6 +3984,7 @@ async function doRegister(){
 function doLogout(){
   if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
   progressRetryAttempts=0;
+  if(scheduledContentRefreshTimer){clearInterval(scheduledContentRefreshTimer);scheduledContentRefreshTimer=null;}
   currentUser=null;
   localStorage.removeItem('teacher_unlocked');
   if(sbClient)sbClient.auth.signOut();
@@ -3991,6 +3996,13 @@ async function setupUserSession(user){
   if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
   progressRetryAttempts=0;
   progressSaveChain=Promise.resolve();
+  if(scheduledContentRefreshTimer)clearInterval(scheduledContentRefreshTimer);
+  scheduledContentRefreshTimer=setInterval(()=>{
+    if(currentUser?.role!=='student')return;
+    renderStudentTrilha();
+    renderStudentSemanas();
+    renderStudentMusicas();
+  },30000);
   const m=user.user_metadata||{};
   currentUser={id:user.id,email:user.email,role:'student',name:m.name||"Aluno",
     turma:m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{},xpAwards:m.xpAwards||{}};
@@ -4032,6 +4044,44 @@ function switchStudentTab(tab){
   if(tab==='musica')renderStudentMusicas();
 }
 
+function publishDateValue(value){
+  if(!value)return 0;
+  const time=new Date(value).getTime();
+  return Number.isFinite(time)?time:0;
+}
+
+function isContentPublished(item,now=Date.now()){
+  const publishTime=publishDateValue(item?.publishAt);
+  return !publishTime||publishTime<=now;
+}
+
+function publishAtFromInput(inputId){
+  const value=document.getElementById(inputId)?.value||'';
+  if(!value)return '';
+  const date=new Date(value);
+  return Number.isFinite(date.getTime())?date.toISOString():'';
+}
+
+function publishAtToInput(value){
+  const time=publishDateValue(value);
+  if(!time)return '';
+  const date=new Date(time);
+  const local=new Date(time-date.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,16);
+}
+
+function formatPublishAt(value){
+  const time=publishDateValue(value);
+  if(!time)return '';
+  return new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(new Date(time));
+}
+
+function scheduledAdminLabel(item){
+  return !isContentPublished(item)
+    ? ` · <span style="color:#7C3AED;font-weight:800">📅 AGENDADO: ${formatPublishAt(item.publishAt)}</span>`
+    : '';
+}
+
 /* -- TRILHA -- */
 function renderStudentTrilha(){
   const cont=document.getElementById('trilha-container');
@@ -4045,8 +4095,8 @@ function renderStudentTrilha(){
           (DATABASE.trilhas[k] || []).forEach(t => trilhasToRender.push({...t, turmaName: DATABASE.turmas[k]?.name, rKey: k}));
       });
   } else {
-      const arr = DATABASE.trilhas[currentUser.turma] || [];
-      trilhasToRender = arr.map(t => ({...t, rKey: currentUser.turma}));
+    const arr = DATABASE.trilhas[currentUser.turma] || [];
+    trilhasToRender = arr.filter(isContentPublished).map(t => ({...t, rKey: currentUser.turma}));
   }
 
   if(trilhasToRender.length === 0) {
@@ -4079,7 +4129,8 @@ function renderStudentTrilha(){
 
     const gameButtons=isUnlocked?buildFaseButtons(fase):'';
     const teacherLockTag = currentUser.role==='teacher'&&fase.locked ? '<span class="badge" style="background:#FEF2F2;color:#991B1B;font-size:10px;margin-left:6px">🔒 travada</span>' : '';
-    const badge = currentUser.role === 'teacher' ? `<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${fase.turmaName||''}</span>${teacherLockTag}` : '';
+    const teacherScheduleTag = currentUser.role==='teacher'&&!isContentPublished(fase) ? `<span class="badge" style="background:#F5F3FF;color:#7C3AED;font-size:10px;margin-left:6px">📅 ${formatPublishAt(fase.publishAt)}</span>` : '';
+    const badge = currentUser.role === 'teacher' ? `<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${fase.turmaName||''}</span>${teacherLockTag}${teacherScheduleTag}` : '';
     const sequence=currentUser.role==='teacher'
       ? Math.max(1,(DATABASE.trilhas[fase.rKey]||[]).findIndex(item=>item.id===fase.id)+1)
       : i+1;
@@ -4162,7 +4213,9 @@ function renderStudentSemanas(){
       DATABASE.semanas[k].forEach((s,i)=>list.push({...s,rKey:k,realIdx:i,turmaName:DATABASE.turmas[k]?.name||k}));
     });
   } else {
-    (DATABASE.semanas[currentUser.turma]||[]).forEach((s,i)=>list.push({...s,rKey:currentUser.turma,realIdx:i}));
+    (DATABASE.semanas[currentUser.turma]||[]).forEach((s,i)=>{
+      if(isContentPublished(s))list.push({...s,rKey:currentUser.turma,realIdx:i});
+    });
   }
   if(list.length===0){cont.innerHTML='<div class="card card-body text-center text-muted">Nenhuma aula cadastrada ainda.</div>';return;}
   [...list].reverse().forEach(sem=>{
@@ -4170,6 +4223,7 @@ function renderStudentSemanas(){
     const lockedByTeacher=sem.locked && !isTeacher;
     const badge=isTeacher?`<span class="badge badge-violet">${sem.turmaName}</span>`:'';
     const lockTag=isTeacher&&sem.locked?'<span class="badge" style="background:#FEF2F2;color:#991B1B;margin-left:6px">🔒 travada</span>':'';
+    const scheduleTag=isTeacher&&!isContentPublished(sem)?`<span class="badge" style="background:#F5F3FF;color:#7C3AED;margin-left:6px">📅 ${formatPublishAt(sem.publishAt)}</span>`:'';
     const div=document.createElement('div');
     div.className='card semana-card';
 
@@ -4190,7 +4244,7 @@ function renderStudentSemanas(){
 
     div.innerHTML=`
       <div class="semana-header">
-        <div class="semana-title">${sem.title}${lockTag}</div>
+        <div class="semana-title">${sem.title}${lockTag}${scheduleTag}</div>
         ${badge?`<div class="semana-turma-badge" style="margin-top:6px">${badge}</div>`:''}
       </div>
       <div class="semana-games">
@@ -4533,6 +4587,7 @@ function buildFillBlankQueue(fase){
 function startTrilhaGame(faseId,mode,turmaKey){
   const fase=(DATABASE.trilhas[turmaKey]||[]).find(f=>f.id===faseId);
   if(!fase)return;
+  if(currentUser.role!=='teacher'&&!isContentPublished(fase))return alert('Esta fase será liberada pela professora em breve.');
   let queue;
   if(mode==='teoria') queue=(fase.teoria||[]).filter(x=>x.exp);
   else if(mode==='vocab') queue=(fase.teoria||[]).filter(x=>x.en||x.pt);
@@ -4616,6 +4671,7 @@ function buildSemanaQuizQueue(sem){
 function startSemanaGame(rKey,idx,type){
   const sem=DATABASE.semanas[rKey][idx];
   if(!sem)return;
+  if(currentUser.role!=='teacher'&&!isContentPublished(sem))return alert('Esta aula será liberada pela professora em breve.');
   let q=[];
   if(type==='vocab') q=[...sem.vocab];
   else if(type==='chunks') q=[...sem.chunks];
@@ -5682,6 +5738,7 @@ function adminSaveTrilha(){
   const emoji = document.getElementById('admin-trilha-emoji').value;
   const nivel = document.getElementById('admin-trilha-nivel').value.trim();
   const title = document.getElementById('admin-trilha-title').value.trim();
+  const publishAt = publishAtFromInput('admin-trilha-publish-at');
   const tipo = document.getElementById('admin-trilha-types-val').value;
   const explicacaoRaw = document.getElementById('admin-trilha-explicacao').value.trim();
   const vocabRaw = document.getElementById('admin-trilha-teoria').value.trim();
@@ -5714,11 +5771,11 @@ function adminSaveTrilha(){
   if (editId) {
     const idx = DATABASE.trilhas[rKey].findIndex(t => t.id === editId);
     if(idx >= 0) {
-      DATABASE.trilhas[rKey][idx] = { ...DATABASE.trilhas[rKey][idx], nivel, title, emoji, tipo:tipoFinal, teoria, pratica, erros };
+      DATABASE.trilhas[rKey][idx] = { ...DATABASE.trilhas[rKey][idx], nivel, title, emoji, tipo:tipoFinal, teoria, pratica, erros, publishAt };
     }
     alert("Fase atualizada!");
   } else {
-    DATABASE.trilhas[rKey].push({ id:'fase_'+Date.now(), nivel, title, emoji, tipo:tipoFinal, teoria, pratica, erros });
+    DATABASE.trilhas[rKey].push({ id:'fase_'+Date.now(), nivel, title, emoji, tipo:tipoFinal, teoria, pratica, erros, publishAt });
     alert("Fase criada!");
   }
 
@@ -5736,6 +5793,7 @@ function adminEditTrilha(rKey, idx){
   document.getElementById('admin-trilha-room').value = rKey;
   document.getElementById('admin-trilha-nivel').value = t.nivel || '';
   document.getElementById('admin-trilha-title').value = t.title;
+  document.getElementById('admin-trilha-publish-at').value = publishAtToInput(t.publishAt);
   
   // Set emoji
   const eVal = t.emoji || '📚';
@@ -5773,6 +5831,7 @@ function adminCancelEditTrilha(){
   document.getElementById('admin-trilha-id').value = '';
   document.getElementById('admin-trilha-nivel').value = '';
   document.getElementById('admin-trilha-title').value = '';
+  document.getElementById('admin-trilha-publish-at').value = '';
   document.getElementById('admin-trilha-explicacao').value = '';
   document.getElementById('admin-trilha-teoria').value = '';
   document.getElementById('admin-trilha-pratica').value = '';
@@ -5848,11 +5907,12 @@ function renderAdminTrilhas(){
   let bloco=`<div class="label" style="margin-top:12px;margin-bottom:8px">${DATABASE.turmas[rKey].name} · ${arr.length} fase(s) · use ↑ e ↓ para organizar</div>`;
   arr.forEach((t,i) => {
       const lock = t.locked;
+      const scheduled = !isContentPublished(t);
       bloco += `
-      <div class="admin-item admin-trail-item"${lock?' style="opacity:.65"':''}>
+      <div class="admin-item admin-trail-item"${lock||scheduled?' style="opacity:.72"':''}>
         <div class="admin-phase-main">
           <button class="admin-phase-sequence" title="Mover para outra posição" onclick="adminMoveTrilhaTo('${rKey}',${i})">${String(i+1).padStart(2,'0')}</button>
-          <div style="min-width:0"><div class="admin-item-name">${lock?'🔒 ':''}${t.emoji||'📚'} ${t.title}</div><div class="admin-item-sub">${t.nivel?'<strong>'+t.nivel+'</strong> · ':''}${(t.tipo||'flashcard+quiz').split('+').join(', ')}${lock?' · TRAVADA':''}</div></div>
+          <div style="min-width:0"><div class="admin-item-name">${lock?'🔒 ':''}${scheduled?'📅 ':''}${t.emoji||'📚'} ${t.title}</div><div class="admin-item-sub">${t.nivel?'<strong>'+t.nivel+'</strong> · ':''}${(t.tipo||'flashcard+quiz').split('+').join(', ')}${lock?' · TRAVADA':''}${scheduledAdminLabel(t)}</div></div>
         </div>
         <div class="admin-trail-actions">
           <div class="admin-order-controls">
@@ -5900,6 +5960,7 @@ function adminSaveSemana(){
   const editIdx = document.getElementById('admin-semana-idx').value;
   const rKey=document.getElementById('admin-semana-room').value;
   const title=document.getElementById('admin-semana-title').value.trim();
+  const publishAt=publishAtFromInput('admin-semana-publish-at');
   if(!rKey||!title)return alert("Selecione a turma e dê um título.");
   const parseLines=(id,keys)=>document.getElementById(id).value.trim().split('\n').filter(Boolean).map(l=>{
     const p=l.split('|');const obj={};keys.forEach((k,i)=>obj[k]=(p[i]||'').trim());return obj;
@@ -5907,6 +5968,7 @@ function adminSaveSemana(){
   
   const novaSemana = {
     title,
+    publishAt,
     vocab:parseLines('admin-semana-vocab',['en','pt','pron']),
     chunks:parseLines('admin-semana-chunks',['en','pt','ctx']),
     erros:parseLines('admin-semana-erros',['errado','certo','exp']),
@@ -5914,7 +5976,7 @@ function adminSaveSemana(){
   };
   
   if (editIdx !== "") {
-    DATABASE.semanas[rKey][editIdx] = novaSemana;
+    DATABASE.semanas[rKey][editIdx] = {...DATABASE.semanas[rKey][editIdx],...novaSemana};
     alert("Aula atualizada com sucesso!");
   } else {
     DATABASE.semanas[rKey].push(novaSemana);
@@ -5935,6 +5997,7 @@ function adminEditSemana(rKey, idx) {
   document.getElementById('admin-semana-idx').value = idx;
   document.getElementById('admin-semana-room').value = rKey;
   document.getElementById('admin-semana-title').value = sem.title;
+  document.getElementById('admin-semana-publish-at').value = publishAtToInput(sem.publishAt);
   
   document.getElementById('admin-semana-vocab').value = (sem.vocab||[]).map(x => `${x.en} | ${x.pt} | ${x.pron}`).join('\n');
   document.getElementById('admin-semana-chunks').value = (sem.chunks||[]).map(x => `${x.en} | ${x.pt} | ${x.ctx}`).join('\n');
@@ -5950,6 +6013,7 @@ function adminCancelEditSemana() {
   document.getElementById('btn-cancel-semana').classList.add('hidden');
   document.getElementById('admin-semana-idx').value = '';
   document.getElementById('admin-semana-title').value = '';
+  document.getElementById('admin-semana-publish-at').value = '';
   document.getElementById('admin-semana-vocab').value = '';
   document.getElementById('admin-semana-chunks').value = '';
   document.getElementById('admin-semana-erros').value = '';
@@ -5968,9 +6032,10 @@ function renderAdminSemanas(){
     wrap.innerHTML=`<div class="label" style="margin-bottom:8px">${DATABASE.turmas[k].name} · ${aulas.length} aula(s)</div>`+
       aulas.map((s,i)=>{
         const lock=s.locked;
+        const scheduled=!isContentPublished(s);
         return `
-        <div class="admin-item" style="margin-bottom:8px${lock?';opacity:.65':''}">
-          <div><div class="admin-item-name">${lock?'🔒 ':''}${s.title}</div><div class="admin-item-sub">${(s.vocab||[]).length} vocab · ${(s.chunks||[]).length} chunks · ${(s.ditado||[]).length} ditado${lock?' · TRAVADA':''}</div></div>
+        <div class="admin-item" style="margin-bottom:8px${lock||scheduled?';opacity:.72':''}">
+          <div><div class="admin-item-name">${lock?'🔒 ':''}${scheduled?'📅 ':''}${s.title}</div><div class="admin-item-sub">${(s.vocab||[]).length} vocab · ${(s.chunks||[]).length} chunks · ${(s.ditado||[]).length} ditado${lock?' · TRAVADA':''}${scheduledAdminLabel(s)}</div></div>
           <div style="display:flex;gap:4px">
             <button class="admin-edit" title="${lock?'Liberar para os alunos':'Travar (esconder dos alunos)'}" onclick="adminToggleLockSemana('${k}',${i})"><i class="fa-solid fa-${lock?'lock':'lock-open'}"></i></button>
             <button class="admin-edit" title="Copiar para outra turma" onclick="adminCopySemana('${k}',${i})"><i class="fa-solid fa-copy"></i></button>
@@ -6005,6 +6070,7 @@ function adminSaveMusica() {
   const rKey = document.getElementById('admin-musica-room').value;
   const title = document.getElementById('admin-musica-title').value.trim();
   const artist = document.getElementById('admin-musica-artist').value.trim();
+  const publishAt = publishAtFromInput('admin-musica-publish-at');
   let audio = document.getElementById('admin-musica-audio').value.trim();
   if(!rKey || !title || !audio) return alert("Turma, Título e Áudio são obrigatórios.");
 
@@ -6016,7 +6082,7 @@ function adminSaveMusica() {
   const parseLines = (eid) => document.getElementById(eid).value.trim().split('\n').filter(Boolean);
   
   const m = {
-    id: ('music_'+Date.now()+Math.floor(Math.random()*1000)), title, artist, audioUrl: audio,
+    id: ('music_'+Date.now()+Math.floor(Math.random()*1000)), title, artist, audioUrl: audio, publishAt,
     letraRaw: document.getElementById('admin-musica-letra').value.trim(),
     vocabRaw: document.getElementById('admin-musica-vocab').value.trim(),
     dicasRaw: document.getElementById('admin-musica-dicas').value.trim()
@@ -6049,6 +6115,7 @@ function adminEditMusica(rKey, idx) {
   document.getElementById('admin-musica-title').value = m.title;
   document.getElementById('admin-musica-artist').value = m.artist;
   document.getElementById('admin-musica-audio').value = m.audioUrl;
+  document.getElementById('admin-musica-publish-at').value = publishAtToInput(m.publishAt);
   document.getElementById('admin-musica-letra').value = m.letraRaw || '';
   document.getElementById('admin-musica-vocab').value = m.vocabRaw || '';
   document.getElementById('admin-musica-dicas').value = m.dicasRaw || '';
@@ -6060,7 +6127,7 @@ function adminCancelEditMusica() {
   document.getElementById('musicas-form-title').textContent = "Fábrica de Hits";
   document.getElementById('btn-save-musica').innerHTML = 'Adicionar Música 🎧';
   document.getElementById('btn-cancel-musica').classList.add('hidden');
-  ['admin-musica-idx','admin-musica-title','admin-musica-artist','admin-musica-audio','admin-musica-letra','admin-musica-vocab','admin-musica-dicas'].forEach(id => document.getElementById(id).value='');
+  ['admin-musica-idx','admin-musica-title','admin-musica-artist','admin-musica-audio','admin-musica-publish-at','admin-musica-letra','admin-musica-vocab','admin-musica-dicas'].forEach(id => document.getElementById(id).value='');
 }
 
 async function adminDeleteMusica(rKey, idx) {
@@ -6095,8 +6162,8 @@ function renderAdminMusicas() {
     wrap.style.marginBottom = '16px';
     wrap.innerHTML = `<div class="label" style="margin-bottom:8px">${DATABASE.turmas[k].name} · ${musicas.length} música(s)</div>` +
       musicas.map((m, i) => `
-        <div class="admin-item" style="margin-bottom:8px">
-          <div><div class="admin-item-name">${m.title}</div><div class="admin-item-sub">${m.artist||'Desconhecido'}</div></div>
+        <div class="admin-item" style="margin-bottom:8px${!isContentPublished(m)?';opacity:.72':''}">
+          <div><div class="admin-item-name">${!isContentPublished(m)?'📅 ':''}${m.title}</div><div class="admin-item-sub">${m.artist||'Desconhecido'}${scheduledAdminLabel(m)}</div></div>
           <div style="display:flex;gap:4px">
             <button class="admin-edit" onclick="adminEditMusica('${k}', ${i})"><i class="fa-solid fa-pen"></i></button>
             <button class="admin-delete" onclick="adminDeleteMusica('${k}', ${i})"><i class="fa-solid fa-trash"></i></button>
@@ -6120,7 +6187,7 @@ function renderStudentMusicas() {
     });
   } else {
     const tKey = currentUser?.turma;
-    (DATABASE.musicas[tKey] || []).forEach(m => list.push({...m, rKey: tKey}));
+    (DATABASE.musicas[tKey] || []).filter(isContentPublished).forEach(m => list.push({...m, rKey: tKey}));
   }
   
   if(list.length === 0) {
@@ -6133,7 +6200,7 @@ function renderStudentMusicas() {
       <div class="music-icon"><i class="fa-solid fa-play"></i></div>
       <div class="music-info">
         <div class="music-title">${m.title}</div>
-        <div class="music-artist">${m.artist||'Desconhecido'} ${currentUser.role==='teacher'?`<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${m.turmaName}</span>`:''}</div>
+        <div class="music-artist">${m.artist||'Desconhecido'} ${currentUser.role==='teacher'?`<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${m.turmaName}</span>${!isContentPublished(m)?`<span class="badge" style="font-size:10px;margin-left:6px;background:#F5F3FF;color:#7C3AED">📅 ${formatPublishAt(m.publishAt)}</span>`:''}`:''}</div>
       </div>
     </div>
   `).join('');
@@ -6191,6 +6258,7 @@ function trackMusicListening(audio){
 function openMusicPlayer(rKey, id) {
   const m = (DATABASE.musicas[rKey]||[]).find(x => x.id === id);
   if(!m) return;
+  if(currentUser.role!=='teacher'&&!isContentPublished(m))return alert('Esta música será liberada pela professora em breve.');
   activeMusicObj = {...m,rKey};
   activeMusicState={listenSeconds:0,lastAudioTime:0,listenAwarded:false,studySeconds:0,studyAwarded:false,currentTab:'letra',tabsSeen:['letra']};
   if(activeMusicStudyInterval)clearInterval(activeMusicStudyInterval);
