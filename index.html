@@ -2224,6 +2224,9 @@ select.input { appearance: none; cursor: pointer; }
     <button class="music-tab" onclick="switchMusicTab('vocab')" id="mtab-btn-vocab">Estudo</button>
     <button class="music-tab" onclick="switchMusicTab('passo')" id="mtab-btn-passo">Passo a Passo</button>
   </div>
+  <div id="mp-xp-status" class="text-xs text-muted" style="padding:10px 22px;background:var(--surface2);border-bottom:1px solid var(--border);text-align:center">
+    <i class="fa-solid fa-star"></i> Ouça e estude para ganhar XP
+  </div>
   
   <div class="music-content-area" id="mp-content-area"></div>
 </div>
@@ -3990,7 +3993,7 @@ async function setupUserSession(user){
   progressSaveChain=Promise.resolve();
   const m=user.user_metadata||{};
   currentUser={id:user.id,email:user.email,role:'student',name:m.name||"Aluno",
-    turma:m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{}};
+    turma:m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{},xpAwards:m.xpAwards||{}};
   await saveStudentProgress({silent:true});
   document.getElementById('student-xp').textContent=currentUser.xp;
   document.getElementById('xp-num').textContent=currentUser.xp;
@@ -4350,6 +4353,7 @@ function persistActiveGameSession(){
     total:activeGame.total,
     context:activeGame.context,
     titleName:activeGame.titleName||'',
+    correctItems:activeGame.correctItems||[],
     memoryDeck:activeGame.memoryDeck||null,
     memoryMatches:activeGame.memoryMatches||[],
     savedAt:Date.now()
@@ -4641,6 +4645,13 @@ function dispatchGameStep(){
   else engineQuiz();
 }
 
+function registerCorrectAnswer(key=activeGame.index){
+  activeGame.score++;
+  activeGame.correctItems=Array.isArray(activeGame.correctItems)?activeGame.correctItems:[];
+  const itemKey=String(key);
+  if(!activeGame.correctItems.includes(itemKey))activeGame.correctItems.push(itemKey);
+}
+
 function nextStep(){
   activeGame.index++;
   updateGameProgress();
@@ -4717,7 +4728,7 @@ function handleQuiz(btn,ans,correct,language='auto'){
   const fb=document.getElementById('quiz-fb');
   if(ans===correct){
     btn.classList.add('correct');
-    activeGame.score++;
+    registerCorrectAnswer();
     fb.className='answer-feedback ok';
     fb.innerHTML=`✅ <strong>Correto!</strong><br>A resposta é: ${correct}
       <br><button class="answer-listen-btn" onclick="playTTS('${esc(correct)}',0.8,'${language}')"><i class="fa-solid fa-volume-high"></i> Ouvir resposta novamente</button>`;
@@ -4807,7 +4818,7 @@ function checkDictation(correct){
   if(input===clean){
     fb.className='dictation-feedback ok';
     fb.innerHTML=`<i class="fa-solid fa-check-circle"></i> <strong>Perfeito, você acertou!</strong><br><br><strong>Frase correta:</strong><br>${correct}`;
-    activeGame.score++;
+    registerCorrectAnswer();
     actions.innerHTML=`
       <button class="btn btn-primary w-full btn-lg" onclick="nextStep()">
         ${advanceLabel} <i class="fa-solid fa-arrow-right"></i>
@@ -4851,7 +4862,7 @@ function handleGrammar(btn,isCorrect,exp,correct,wrong){
   const explanation=exp||`A forma correta é "${correct}". Compare a estrutura das duas frases.`;
   if(isCorrect){
     btn.classList.add('correct');
-    activeGame.score++;
+    registerCorrectAnswer();
   } else {
     btn.classList.add('wrong');
     document.querySelectorAll('.grammar-option').forEach(b=>{if(!b.classList.contains('wrong'))b.classList.add('correct');});
@@ -4910,7 +4921,7 @@ function flipMem(el){
       setTimeout(()=>{
         a.classList.replace('flip','matched');b.classList.replace('flip','matched');
         memState.matched++;memState.flipped=[];memState.lock=false;
-        activeGame.score++;
+        registerCorrectAnswer(`memory:${a.dataset.id}`);
         if(!activeGame.memoryMatches.includes(a.dataset.id))activeGame.memoryMatches.push(a.dataset.id);
         updateGameProgress();
         persistActiveGameSession();
@@ -5025,7 +5036,7 @@ function checkWordOrder(){
   const isCorrect=ans===correct;
   if(isCorrect){
     fb.style.background='var(--teal-light)';fb.style.color='var(--teal)';
-    activeGame.score++;
+    registerCorrectAnswer();
   } else {
     fb.style.background='var(--rose-light)';fb.style.color='var(--rose)';
   }
@@ -5042,6 +5053,61 @@ function checkWordOrder(){
   document.getElementById('word-next-wrap').classList.remove('hidden');
 }
 
+const XP_REVIEW_COOLDOWN=1000*60*60*24*7;
+
+function dictationCorrectBonus(sentence){
+  const words=gameWords(sentence).length;
+  if(words<=4)return 9;
+  if(words<=8)return 12;
+  return 15;
+}
+
+function calculateGameXp(game){
+  const total=Math.max(0,Number(game.total)||0);
+  const score=Math.max(0,Math.min(total,Number(game.score)||0));
+  const type=game.type||'';
+  if(!total)return 0;
+
+  let xp=10;
+  if(type==='trilha_teoria')return xp+total;
+  if(type.includes('vocab'))return xp+(total*2);
+  if(type.includes('chunks'))return xp+(total*3);
+  if(type.includes('memoria'))return xp+(total*2)+(score*3);
+  if(type.includes('ditado')){
+    const correctIndexes=[...new Set((game.correctItems||[])
+      .map(value=>Number(value))
+      .filter(index=>Number.isInteger(index)&&index>=0&&index<game.queue.length))];
+    let correctXp=correctIndexes.reduce((sum,index)=>sum+dictationCorrectBonus(game.queue[index]),0);
+    const missing=Math.max(0,score-correctIndexes.length);
+    if(missing){
+      const average=Math.round(game.queue.reduce((sum,item)=>sum+dictationCorrectBonus(item),0)/game.queue.length);
+      correctXp+=missing*average;
+    }
+    return xp+(total*3)+correctXp;
+  }
+  if(type.includes('wordorder'))return xp+(total*2)+(score*8);
+  if(type.includes('fillblank')||type.includes('erros'))return xp+(total*2)+(score*6);
+  return xp+(total*2)+(score*4);
+}
+
+function claimXpReward(activityKey,fullXp,now=Date.now()){
+  if(!currentUser||currentUser.role==='teacher'||!activityKey||fullXp<=0)return {amount:0,kind:'none'};
+  currentUser.xpAwards=currentUser.xpAwards&&typeof currentUser.xpAwards==='object'?currentUser.xpAwards:{};
+  const record=currentUser.xpAwards[activityKey];
+  if(record&&now-Number(record.lastAt||0)<XP_REVIEW_COOLDOWN){
+    const remaining=XP_REVIEW_COOLDOWN-(now-Number(record.lastAt||0));
+    return {amount:0,kind:'cooldown',days:Math.max(1,Math.ceil(remaining/(1000*60*60*24)))};
+  }
+  const first=!record;
+  const amount=first?Math.round(fullXp):Math.max(1,Math.round(fullXp*.25));
+  currentUser.xpAwards[activityKey]={
+    firstAt:Number(record?.firstAt||now),
+    lastAt:now,
+    count:Number(record?.count||0)+1
+  };
+  return {amount,kind:first?'first':'review'};
+}
+
 /* ══ END GAME ══ */
 async function endGame(){
   removeGameSession(activeGame.sessionId);
@@ -5049,7 +5115,9 @@ async function endGame(){
   const pct=activeGame.total>0?Math.round((activeGame.score/activeGame.total)*100):0;
   const nota=(pct/10).toFixed(1);
   let unlockMsg='';
-  let xpGain=activeGame.score*10;
+  const fullXp=calculateGameXp(activeGame);
+  const xpReward=claimXpReward(activeGame.sessionId||`${activeGame.type}:${activeGame.context}`,fullXp);
+  const xpGain=xpReward.amount;
 
   if(activeGame.type==='trilha_pratica'){
     if(currentUser.role!=='teacher'){
@@ -5069,7 +5137,6 @@ async function endGame(){
       unlockMsg='🌟 Fase desbloqueada!';
     } else {
       unlockMsg=`Sua nota: ${nota} — Para desbloquear a próxima fase é necessário tirar no mínimo 8.0. Revise a teoria!`;
-      xpGain=0;
     }
   }
 
@@ -5084,7 +5151,14 @@ async function endGame(){
   document.getElementById('result-title').textContent=pct>=80?'Excelente!':pct>=50?'Bom trabalho!':'Continue praticando!';
   document.getElementById('result-score').textContent=`${activeGame.score}/${activeGame.total}`;
   document.getElementById('result-label').textContent=`acertos (nota ${nota})`;
-  const finalMessage=unlockMsg||`+${xpGain} XP ganhos`;
+  const xpMessage=currentUser.role==='teacher'
+    ? 'Prévia concluída'
+    : xpReward.kind==='cooldown'
+      ? `Revisão concluída · novo XP disponível em ${xpReward.days} dia${xpReward.days===1?'':'s'}`
+      : xpReward.kind==='review'
+        ? `+${xpGain} XP de revisão (25%)`
+        : `+${xpGain} XP ganhos`;
+  const finalMessage=[unlockMsg,xpMessage].filter(Boolean).join(' · ');
   document.getElementById('result-subtitle').textContent=currentUser.role==='teacher'?finalMessage:'Salvando seu progresso...';
   overlay.classList.remove('hidden');
 
@@ -5201,16 +5275,18 @@ function normalizeProgressSnapshot(source){
   const data=source&&typeof source==='object'?source:{};
   const xp=Number(data.xp||0);
   const notas=data.notas&&typeof data.notas==='object'&&!Array.isArray(data.notas)?data.notas:{};
+  const xpAwards=data.xpAwards&&typeof data.xpAwards==='object'&&!Array.isArray(data.xpAwards)?data.xpAwards:{};
   const unlocked=Array.isArray(data.unlockedFases)?data.unlockedFases:Array.isArray(data.unlocked)?data.unlocked:[];
   return {
     xp:Number.isFinite(xp)?Math.max(0,xp):0,
     notas:{...notas},
+    xpAwards:{...xpAwards},
     unlockedFases:[...new Set(unlocked.filter(value=>typeof value==='string'&&value))]
   };
 }
 
 function mergeProgressSnapshots(...sources){
-  const merged={xp:0,notas:{},unlockedFases:[]};
+  const merged={xp:0,notas:{},xpAwards:{},unlockedFases:[]};
   const unlocked=new Set();
   sources.filter(Boolean).forEach(source=>{
     const item=normalizeProgressSnapshot(source);
@@ -5220,6 +5296,11 @@ function mergeProgressSnapshots(...sources){
       if(!Number.isFinite(nota))return;
       const anterior=Number(merged.notas[faseId]||0);
       merged.notas[faseId]=Math.max(anterior,nota);
+    });
+    Object.entries(item.xpAwards).forEach(([activityKey,record])=>{
+      if(!record||typeof record!=='object')return;
+      const previous=merged.xpAwards[activityKey];
+      if(!previous||Number(record.lastAt||0)>=Number(previous.lastAt||0))merged.xpAwards[activityKey]={...record};
     });
     item.unlockedFases.forEach(value=>unlocked.add(value));
   });
@@ -5249,6 +5330,7 @@ function applyProgressSnapshot(snapshot,userId=currentUser?.id){
   const normalized=normalizeProgressSnapshot(snapshot);
   currentUser.xp=normalized.xp;
   currentUser.notas=normalized.notas;
+  currentUser.xpAwards=normalized.xpAwards;
   currentUser.unlockedFases=normalized.unlockedFases;
   const headerXp=document.getElementById('student-xp');
   const profileXp=document.getElementById('xp-num');
@@ -5324,6 +5406,7 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
     withTimeout(sbClient.auth.updateUser({data:{
       xp:merged.xp,
       notas:merged.notas,
+      xpAwards:merged.xpAwards,
       unlockedFases:merged.unlockedFases
     }}),7000)
   ]);
@@ -6059,11 +6142,60 @@ function renderStudentMusicas() {
 // -- MUSIC PLAYER LOGIC --
 let activeMusicInterval = null;
 let activeMusicObj = null;
+let activeMusicStudyInterval = null;
+let activeMusicState = null;
+
+function updateMusicXpStatus(message){
+  const status=document.getElementById('mp-xp-status');
+  if(status)status.innerHTML=`<i class="fa-solid fa-star"></i> ${message}`;
+}
+
+async function awardMusicXp(kind,fullXp,label){
+  if(!activeMusicObj||!currentUser||currentUser.role==='teacher')return;
+  const activityKey=`music:${activeMusicObj.rKey}:${activeMusicObj.id}:${kind}`;
+  const reward=claimXpReward(activityKey,fullXp);
+  if(reward.kind==='cooldown'){
+    updateMusicXpStatus(`${label} concluído · XP de revisão disponível em ${reward.days} dia${reward.days===1?'':'s'}`);
+    return;
+  }
+  if(!reward.amount)return;
+  updateMusicXpStatus(`${label} concluído · salvando +${reward.amount} XP...`);
+  const saved=await saveStudentProgress({xpGain:reward.amount,silent:true});
+  updateMusicXpStatus(`${label} concluído · +${reward.amount} XP${reward.kind==='review'?' de revisão':''}${saved?'':' (salvo neste aparelho)'}`);
+}
+
+function trackMusicStudy(){
+  if(!activeMusicState||document.hidden)return;
+  if(['traducao','vocab','passo'].includes(activeMusicState.currentTab))activeMusicState.studySeconds++;
+  const studiedAreas=activeMusicState.tabsSeen.filter(tab=>['traducao','vocab','passo'].includes(tab));
+  if(!activeMusicState.studyAwarded&&activeMusicState.studySeconds>=30&&studiedAreas.length>=2){
+    activeMusicState.studyAwarded=true;
+    awardMusicXp('study',10,'Estudo da música');
+  }
+}
+
+function trackMusicListening(audio){
+  if(!activeMusicState||!audio)return;
+  const current=Number(audio.currentTime)||0;
+  const delta=current-activeMusicState.lastAudioTime;
+  if(!audio.paused&&delta>0&&delta<=2.5)activeMusicState.listenSeconds+=delta;
+  activeMusicState.lastAudioTime=current;
+  const duration=Number(audio.duration)||0;
+  const target=duration>0?Math.min(60,duration*.5):60;
+  if(!activeMusicState.listenAwarded&&activeMusicState.listenSeconds>=target){
+    activeMusicState.listenAwarded=true;
+    awardMusicXp('listen',15,'Escuta da música');
+  }
+}
 
 function openMusicPlayer(rKey, id) {
   const m = (DATABASE.musicas[rKey]||[]).find(x => x.id === id);
   if(!m) return;
-  activeMusicObj = m;
+  activeMusicObj = {...m,rKey};
+  activeMusicState={listenSeconds:0,lastAudioTime:0,listenAwarded:false,studySeconds:0,studyAwarded:false,currentTab:'letra',tabsSeen:['letra']};
+  if(activeMusicStudyInterval)clearInterval(activeMusicStudyInterval);
+  activeMusicStudyInterval=setInterval(trackMusicStudy,1000);
+  updateMusicXpStatus('Ouça metade da música e explore duas áreas de estudo para ganhar XP');
   
   document.getElementById('view-music-player').classList.remove('hidden');
   document.getElementById('mp-title').textContent = m.title;
@@ -6095,6 +6227,8 @@ function closeMusicPlayer() {
   const audio = document.getElementById('mp-audio-el');
   audio.pause();
   audio.ontimeupdate = null;
+  if(activeMusicStudyInterval){clearInterval(activeMusicStudyInterval);activeMusicStudyInterval=null;}
+  activeMusicState = null;
   activeMusicObj = null;
 }
 
@@ -6142,6 +6276,7 @@ function updateAudioProgress() {
   
   const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
   document.getElementById('mp-progress-fill').style.width = pct + '%';
+  trackMusicListening(audio);
 }
 
 function switchMusicTab(tab) {
@@ -6152,6 +6287,10 @@ function switchMusicTab(tab) {
   const content = document.getElementById('mp-content-area');
   const m = activeMusicObj;
   if(!m) return;
+  if(activeMusicState){
+    activeMusicState.currentTab=tab;
+    if(!activeMusicState.tabsSeen.includes(tab))activeMusicState.tabsSeen.push(tab);
+  }
   
   let h = '';
   if(tab === 'letra') {
