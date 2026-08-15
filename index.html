@@ -680,6 +680,34 @@ select.input { appearance: none; cursor: pointer; }
 .section-header h2 { font-size: 26px; letter-spacing: -.03em; color: var(--ink); }
 .section-header p { color: var(--slate); font-size: 14px; margin-top: 6px; font-weight: 500; }
 
+/* Palavra do dia */
+.daily-word-card {
+  margin-bottom: 24px; padding: 22px; border-radius: var(--radius-xl);
+  border: 1.5px solid rgba(79,70,229,.16);
+  background: linear-gradient(145deg, #FFFFFF 0%, #F5F3FF 52%, #FFF7ED 100%);
+  box-shadow: var(--shadow-md); position: relative; overflow: hidden;
+}
+.daily-word-card::after {
+  content: ''; position: absolute; width: 180px; height: 180px; right: -75px; top: -85px;
+  border-radius: 50%; background: radial-gradient(circle, rgba(245,124,0,.13), transparent 70%);
+  pointer-events: none;
+}
+.daily-word-top { display:flex; align-items:center; justify-content:space-between; gap:12px; position:relative; z-index:1; }
+.daily-word-label { font-size:10px; font-weight:900; letter-spacing:.09em; color:#5B21B6; text-transform:uppercase; }
+.daily-word-level { font-size:10px; font-weight:800; color:var(--slate); background:rgba(255,255,255,.8); border:1px solid var(--border); border-radius:20px; padding:5px 10px; }
+.daily-word-main { display:flex; align-items:center; gap:14px; margin-top:15px; position:relative; z-index:1; }
+.daily-word-icon { width:52px; height:52px; flex-shrink:0; display:flex; align-items:center; justify-content:center; border-radius:17px; color:white; font-size:22px; background:linear-gradient(135deg,#4F46E5,#7C3AED); box-shadow:0 8px 20px rgba(79,70,229,.22); }
+.daily-word-en { font-family:'Nunito',sans-serif; font-size:27px; line-height:1.05; font-weight:900; color:var(--ink); letter-spacing:-.025em; }
+.daily-word-pron { color:#6D5BA8; font-size:12px; font-weight:700; margin-top:5px; }
+.daily-word-meaning { margin-top:18px; font-size:16px; font-weight:800; color:var(--orange-dark); position:relative; z-index:1; }
+.daily-word-explanation { margin-top:7px; font-size:13px; line-height:1.55; color:var(--slate); position:relative; z-index:1; }
+.daily-word-example { margin-top:14px; padding:13px 15px; border-radius:13px; background:rgba(255,255,255,.78); border:1px solid rgba(79,70,229,.12); position:relative; z-index:1; }
+.daily-word-example-en { color:var(--ink); font-size:14px; font-weight:750; line-height:1.45; }
+.daily-word-example-pt { color:var(--slate); font-size:12px; margin-top:4px; line-height:1.4; }
+.daily-word-actions { display:flex; gap:10px; margin-top:16px; position:relative; z-index:1; }
+.daily-word-actions .btn { flex:1; justify-content:center; }
+.daily-word-status { min-height:18px; margin-top:9px; font-size:11px; font-weight:700; color:var(--teal); position:relative; z-index:1; }
+
 /* ══════════════════════════════════════════
    XP BAR — GRADIENT CARD
 ══════════════════════════════════════════ */
@@ -1545,6 +1573,10 @@ select.input { appearance: none; cursor: pointer; }
   .app-main { padding: 20px 12px 90px; }
   .section-header h2 { font-size: 20px; }
   .section-header p { font-size: 12px; }
+  .daily-word-card { padding: 18px 16px; }
+  .daily-word-en { font-size: 23px; }
+  .daily-word-level { max-width: 46%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .daily-word-actions { flex-direction:column; }
 
   .xp-bar-wrap { padding: 12px 14px; gap: 10px; }
   .xp-value { font-size: 17px; }
@@ -1993,6 +2025,7 @@ select.input { appearance: none; cursor: pointer; }
         <h2>Suas Aulas</h2>
         <p>Conteúdo semanal com jogos variados</p>
       </div>
+      <div id="daily-word-container" class="hidden"></div>
       <div id="semanas-container"></div>
     </section>
 
@@ -2279,6 +2312,8 @@ let adminSelectedRoom = localStorage.getItem('ap_admin_selected_room') || '';
 let progressSaveChain = Promise.resolve();
 let progressRetryTimer = null;
 let progressRetryAttempts = 0;
+let dailyWordCurrent = null;
+const dailyWordListened = new Set();
 
 const withTimeout = (p, ms=5000) => Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
 
@@ -3985,6 +4020,8 @@ function doLogout(){
   if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
   progressRetryAttempts=0;
   if(scheduledContentRefreshTimer){clearInterval(scheduledContentRefreshTimer);scheduledContentRefreshTimer=null;}
+  dailyWordCurrent=null;
+  dailyWordListened.clear();
   currentUser=null;
   localStorage.removeItem('teacher_unlocked');
   if(sbClient)sbClient.auth.signOut();
@@ -3996,6 +4033,8 @@ async function setupUserSession(user){
   if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
   progressRetryAttempts=0;
   progressSaveChain=Promise.resolve();
+  dailyWordCurrent=null;
+  dailyWordListened.clear();
   if(scheduledContentRefreshTimer)clearInterval(scheduledContentRefreshTimer);
   scheduledContentRefreshTimer=setInterval(()=>{
     if(currentUser?.role!=='student')return;
@@ -4204,9 +4243,217 @@ function toggleFase(id){
 }
 
 /* -- SEMANAS -- */
+function dailyWordDate(now=new Date()){
+  const parts=new Intl.DateTimeFormat('en-US',{
+    timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(now).reduce((acc,part)=>{
+    if(part.type!=='literal')acc[part.type]=part.value;
+    return acc;
+  },{});
+  const key=`${parts.year}-${parts.month}-${parts.day}`;
+  const dayNumber=Math.floor(Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day))/86400000);
+  return {key,dayNumber};
+}
+
+function dailyWordHash(value){
+  let hash=2166136261;
+  for(const char of String(value||'')){
+    hash^=char.charCodeAt(0);
+    hash=Math.imul(hash,16777619);
+  }
+  return hash>>>0;
+}
+
+function normalizeDailyWordText(value){
+  return String(value||'').toLocaleLowerCase('en-US')
+    .replace(/[’‘]/g,"'")
+    .replace(/[^a-z0-9' -]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function currentTrailLevel(){
+  const phases=(DATABASE.trilhas[currentUser?.turma]||[]).filter(fase=>isContentPublished(fase)&&!fase.locked);
+  if(!phases.length)return '';
+  const unlocked=currentUser?.unlockedFases||[];
+  let selected=phases[0];
+  for(let index=0;index<phases.length;index++){
+    const fase=phases[index];
+    const accessible=index===0||unlocked.includes(fase.id)||Number(currentUser?.notas?.[fase.id]||0)>=8;
+    if(!accessible)break;
+    selected=fase;
+    const completed=unlocked.includes(fase.id+'_done')||Number(currentUser?.notas?.[fase.id]||0)>=8;
+    if(!completed)break;
+  }
+  return selected.nivel||'';
+}
+
+function isUsefulDailyWord(en,pt){
+  const english=String(en||'').trim();
+  const portuguese=String(pt||'').trim();
+  const words=english.match(/[A-Za-z]+(?:['’-][A-Za-z]+)?/g)||[];
+  if(!english||!portuguese||english.length>55||words.length<1||words.length>5)return false;
+  if(/[=?]|,.*,/g.test(english)||normalizeDailyWordText(english)===normalizeDailyWordText(portuguese))return false;
+  return /[A-Za-z]{2}/.test(english);
+}
+
+function dailyWordExampleSources(level){
+  const sources=[];
+  const add=(en,pt='')=>{
+    const text=String(en||'').trim();
+    if(text)sources.push({en:text,pt:String(pt||'').trim()});
+  };
+  (DATABASE.semanas[currentUser.turma]||[])
+    .filter(sem=>isContentPublished(sem)&&!sem.locked)
+    .forEach(sem=>{
+      (sem.chunks||[]).forEach(item=>add(item?.en,item?.pt));
+      (sem.ditado||[]).forEach(item=>add(typeof item==='string'?item:item?.en,item?.pt));
+      (sem.erros||[]).forEach(item=>add(item?.certo));
+    });
+  (DATABASE.trilhas[currentUser.turma]||[])
+    .filter(fase=>isContentPublished(fase)&&!fase.locked&&(!level||fase.nivel===level))
+    .forEach(fase=>{
+      (fase.teoria||[]).forEach(item=>add(item?.example||item?.exemplo||item?.en,item?.examplePt||item?.exemploPt||item?.pt));
+      (fase.erros||[]).forEach(item=>add(item?.certo));
+      (fase.pratica||[]).forEach(item=>{
+        if(String(item?.c||'').trim().split(/\s+/).length>=3)add(item.c);
+      });
+    });
+  return sources;
+}
+
+function findDailyWordExample(candidate,sources){
+  if(candidate.example)return {en:candidate.example,pt:candidate.examplePt||''};
+  const target=normalizeDailyWordText(candidate.en);
+  const paddedTarget=` ${target} `;
+  const matches=sources.filter(source=>{
+    const normalized=` ${normalizeDailyWordText(source.en)} `;
+    return normalized.includes(paddedTarget)&&normalizeDailyWordText(source.en)!==target;
+  });
+  if(matches.length){
+    matches.sort((a,b)=>a.en.length-b.en.length);
+    return matches[0];
+  }
+  const kind=(candidate.en.match(/[A-Za-z]+(?:['’-][A-Za-z]+)?/g)||[]).length>1?'expression':'word';
+  return {
+    en:`I'm learning the ${kind} “${candidate.en}” today.`,
+    pt:`Hoje eu estou aprendendo ${kind==='expression'?'a expressão':'a palavra'} “${candidate.en}”.`
+  };
+}
+
+function buildDailyWord(){
+  if(!currentUser||currentUser.role!=='student'||!currentUser.turma)return null;
+  const level=currentTrailLevel();
+  const candidates=[];
+  const seen=new Set();
+  const addCandidate=(item,sourcePriority)=>{
+    const en=String(item?.en||'').trim();
+    const pt=String(item?.pt||'').trim();
+    if(!isUsefulDailyWord(en,pt))return;
+    const key=normalizeDailyWordText(en);
+    if(seen.has(key))return;
+    seen.add(key);
+    candidates.push({
+      key,en,pt,pron:String(item?.pron||item?.pronuncia||'').trim(),
+      explanation:String(item?.exp||item?.explanation||item?.explicacao||'').trim(),
+      example:String(item?.example||item?.exemplo||'').trim(),
+      examplePt:String(item?.examplePt||item?.exemploPt||'').trim(),
+      sourcePriority
+    });
+  };
+
+  (DATABASE.semanas[currentUser.turma]||[])
+    .filter(sem=>isContentPublished(sem)&&!sem.locked)
+    .forEach(sem=>(sem.vocab||[]).forEach(item=>addCandidate(item,0)));
+  (DATABASE.trilhas[currentUser.turma]||[])
+    .filter(fase=>isContentPublished(fase)&&!fase.locked&&(!level||fase.nivel===level))
+    .forEach(fase=>(fase.teoria||[]).forEach(item=>addCandidate(item,1)));
+
+  if(!candidates.length)return null;
+  const sources=dailyWordExampleSources(level);
+  candidates.forEach(candidate=>candidate.exampleData=findDailyWordExample(candidate,sources));
+  const seed=`${level||'geral'}|${currentUser.turma}`;
+  candidates.sort((a,b)=>{
+    if(a.sourcePriority!==b.sourcePriority)return a.sourcePriority-b.sourcePriority;
+    return dailyWordHash(`${seed}|${a.key}`)-dailyWordHash(`${seed}|${b.key}`);
+  });
+  const primary=candidates.filter(item=>item.sourcePriority===candidates[0].sourcePriority);
+  const pool=primary.length>=7?primary:candidates;
+  const date=dailyWordDate();
+  const selected=pool[((date.dayNumber%pool.length)+pool.length)%pool.length];
+  const activityKey=`daily-word:${date.key}:${dailyWordHash(`${level}|${selected.key}`)}`;
+  return {...selected,level:level||'Conteúdo atual',dateKey:date.key,activityKey};
+}
+
+function renderDailyWord(){
+  const cont=document.getElementById('daily-word-container');
+  if(!cont)return;
+  const word=buildDailyWord();
+  dailyWordCurrent=word;
+  if(!word){cont.classList.add('hidden');cont.innerHTML='';return;}
+  const studied=Boolean(currentUser.xpAwards?.[word.activityKey]);
+  const listened=dailyWordListened.has(word.activityKey);
+  const wordType=(word.en.match(/[A-Za-z]+(?:['’-][A-Za-z]+)?/g)||[]).length>1?'expressão':'palavra';
+  const explanation=word.explanation||`Esta ${wordType} é usada para comunicar a ideia de “${word.pt}” em inglês.`;
+  cont.classList.remove('hidden');
+  cont.innerHTML=`
+    <div class="daily-word-card">
+      <div class="daily-word-top">
+        <div class="daily-word-label"><i class="fa-solid fa-sparkles"></i> ${wordType} do dia</div>
+        <div class="daily-word-level">${htmlSafe(word.level)}</div>
+      </div>
+      <div class="daily-word-main">
+        <div class="daily-word-icon"><i class="fa-solid fa-book-open"></i></div>
+        <div>
+          <div class="daily-word-en">${htmlSafe(word.en)}</div>
+          ${word.pron?`<div class="daily-word-pron">${htmlSafe(word.pron)}</div>`:''}
+        </div>
+      </div>
+      <div class="daily-word-meaning">🇧🇷 ${htmlSafe(word.pt)}</div>
+      <div class="daily-word-explanation">${htmlSafe(explanation)}</div>
+      <div class="daily-word-example">
+        <div class="daily-word-example-en"><strong>Exemplo:</strong> ${htmlSafe(word.exampleData.en)}</div>
+        ${word.exampleData.pt?`<div class="daily-word-example-pt">${htmlSafe(word.exampleData.pt)}</div>`:''}
+      </div>
+      <div class="daily-word-actions">
+        <button class="btn btn-ghost" type="button" onclick="listenDailyWord('${esc(word.activityKey)}')"><i class="fa-solid fa-volume-high"></i> Ouvir</button>
+        <button id="daily-word-study-btn" class="btn btn-primary" type="button" onclick="studyDailyWord('${esc(word.activityKey)}')" ${studied||!listened?'disabled':''}>
+          ${studied?'<i class="fa-solid fa-circle-check"></i> Estudada hoje':listened?'<i class="fa-solid fa-bolt"></i> Estudei · +2 XP':'Ouça para liberar · +2 XP'}
+        </button>
+      </div>
+      <div id="daily-word-status" class="daily-word-status">${studied?'✓ XP da palavra de hoje já recebido.':listened?'Áudio ouvido. Agora marque como estudada.':'Ouça a pronúncia antes de marcar como estudada.'}</div>
+    </div>`;
+}
+
+function listenDailyWord(activityKey){
+  if(!dailyWordCurrent||dailyWordCurrent.activityKey!==activityKey)return;
+  dailyWordListened.add(activityKey);
+  playTTS(dailyWordCurrent.en,0.78,'en-US');
+  if(currentUser.xpAwards?.[activityKey])return;
+  const button=document.getElementById('daily-word-study-btn');
+  const status=document.getElementById('daily-word-status');
+  if(button){
+    button.disabled=false;
+    button.innerHTML='<i class="fa-solid fa-bolt"></i> Estudei · +2 XP';
+  }
+  if(status)status.textContent='Áudio ouvido. Agora marque como estudada.';
+}
+
+async function studyDailyWord(activityKey){
+  if(!dailyWordCurrent||dailyWordCurrent.activityKey!==activityKey||currentUser.role==='teacher')return;
+  if(!dailyWordListened.has(activityKey))return alert('Ouça a palavra antes de marcar como estudada.');
+  if(currentUser.xpAwards?.[activityKey]){renderDailyWord();return;}
+  const button=document.getElementById('daily-word-study-btn');
+  if(button){button.disabled=true;button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';}
+  const reward=claimXpReward(activityKey,2);
+  if(reward.amount>0)await saveStudentProgress({xpGain:reward.amount,silent:true});
+  renderDailyWord();
+}
+
 function renderStudentSemanas(){
   const cont=document.getElementById('semanas-container');
   cont.innerHTML='';
+  renderDailyWord();
   let list=[];
   if(currentUser.role==='teacher'){
     Object.keys(DATABASE.semanas).forEach(k=>{
@@ -6407,6 +6654,14 @@ function switchMusicTab(tab) {
 }
 
 /* ══ UTILS ══ */
+function htmlSafe(s){
+  return String(s??'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
 function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
 </script>
 <script>
