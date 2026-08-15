@@ -2313,6 +2313,7 @@ let progressSaveChain = Promise.resolve();
 let progressRetryTimer = null;
 let progressRetryAttempts = 0;
 let dailyWordCurrent = null;
+let dailyWordCache = {key:'',word:null};
 const dailyWordListened = new Set();
 
 const withTimeout = (p, ms=5000) => Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
@@ -4021,6 +4022,7 @@ function doLogout(){
   progressRetryAttempts=0;
   if(scheduledContentRefreshTimer){clearInterval(scheduledContentRefreshTimer);scheduledContentRefreshTimer=null;}
   dailyWordCurrent=null;
+  dailyWordCache={key:'',word:null};
   dailyWordListened.clear();
   currentUser=null;
   localStorage.removeItem('teacher_unlocked');
@@ -4034,13 +4036,14 @@ async function setupUserSession(user){
   progressRetryAttempts=0;
   progressSaveChain=Promise.resolve();
   dailyWordCurrent=null;
+  dailyWordCache={key:'',word:null};
   dailyWordListened.clear();
   if(scheduledContentRefreshTimer)clearInterval(scheduledContentRefreshTimer);
   scheduledContentRefreshTimer=setInterval(()=>{
     if(currentUser?.role!=='student')return;
-    renderStudentTrilha();
-    renderStudentSemanas();
-    renderStudentMusicas();
+    if(!document.getElementById('stab-trilha')?.classList.contains('hidden'))renderStudentTrilha();
+    else if(!document.getElementById('stab-semanas')?.classList.contains('hidden'))renderStudentSemanas();
+    else if(!document.getElementById('stab-musica')?.classList.contains('hidden'))renderStudentMusicas();
   },30000);
   const m=user.user_metadata||{};
   currentUser={id:user.id,email:user.email,role:'student',name:m.name||"Aluno",
@@ -4344,6 +4347,9 @@ function findDailyWordExample(candidate,sources){
 function buildDailyWord(){
   if(!currentUser||currentUser.role!=='student'||!currentUser.turma)return null;
   const level=currentTrailLevel();
+  const date=dailyWordDate();
+  const cacheKey=`${currentUser.id||currentUser.email||'student'}|${currentUser.turma}|${level}|${date.key}`;
+  if(dailyWordCache.key===cacheKey&&dailyWordCache.word)return dailyWordCache.word;
   const candidates=[];
   const seen=new Set();
   const addCandidate=(item,sourcePriority)=>{
@@ -4370,19 +4376,24 @@ function buildDailyWord(){
     .forEach(fase=>(fase.teoria||[]).forEach(item=>addCandidate(item,1)));
 
   if(!candidates.length)return null;
-  const sources=dailyWordExampleSources(level);
-  candidates.forEach(candidate=>candidate.exampleData=findDailyWordExample(candidate,sources));
   const seed=`${level||'geral'}|${currentUser.turma}`;
+  candidates.forEach(candidate=>candidate.order=dailyWordHash(`${seed}|${candidate.key}`));
   candidates.sort((a,b)=>{
     if(a.sourcePriority!==b.sourcePriority)return a.sourcePriority-b.sourcePriority;
-    return dailyWordHash(`${seed}|${a.key}`)-dailyWordHash(`${seed}|${b.key}`);
+    return a.order-b.order;
   });
   const primary=candidates.filter(item=>item.sourcePriority===candidates[0].sourcePriority);
   const pool=primary.length>=7?primary:candidates;
-  const date=dailyWordDate();
   const selected=pool[((date.dayNumber%pool.length)+pool.length)%pool.length];
   const activityKey=`daily-word:${date.key}:${dailyWordHash(`${level}|${selected.key}`)}`;
-  return {...selected,level:level||'Conteúdo atual',dateKey:date.key,activityKey};
+  const sources=dailyWordExampleSources(level);
+  const word={
+    ...selected,
+    exampleData:findDailyWordExample(selected,sources),
+    level:level||'Conteúdo atual',dateKey:date.key,activityKey
+  };
+  dailyWordCache={key:cacheKey,word};
+  return word;
 }
 
 function renderDailyWord(){
