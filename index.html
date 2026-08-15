@@ -1180,24 +1180,53 @@ select.input { appearance: none; cursor: pointer; }
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
 }
 .mem-card {
-  aspect-ratio: 1; border-radius: 14px; border: 1.5px solid var(--border);
-  background: linear-gradient(145deg, var(--surface2), var(--surface));
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; text-align: center; padding: 6px;
-  color: transparent; transition: all .3s var(--ease-spring); user-select: none;
-  box-shadow: var(--shadow-xs);
+  appearance:none; aspect-ratio:1; min-width:0; border-radius:16px; border:1.5px solid rgba(79,70,229,.16);
+  background:linear-gradient(145deg,#4F46E5,#6D28D9); cursor:pointer;
+  position:relative; overflow:hidden; padding:7px; font-family:'Inter',sans-serif;
+  transition:all .28s var(--ease-spring); user-select:none; box-shadow:0 5px 14px rgba(79,70,229,.16);
 }
-.mem-card:hover { transform: scale(1.04); box-shadow: var(--shadow-sm); }
-.mem-card.flip {
-  background: linear-gradient(145deg, var(--orange-pale), #FFF0E0);
-  border-color: rgba(245,124,0,.3); color: var(--orange-dark);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(245,124,0,.15);
+.mem-card::after {
+  content:''; position:absolute; width:62px; height:62px; right:-25px; top:-25px;
+  border-radius:50%; background:rgba(255,255,255,.12); pointer-events:none;
 }
+.mem-card:hover { transform:translateY(-2px) scale(1.025); box-shadow:0 8px 18px rgba(79,70,229,.2); }
+.mem-card-back,.mem-card-face {
+  position:absolute; inset:6px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  border-radius:11px; transition:opacity .2s ease,transform .3s var(--ease-spring); backface-visibility:hidden;
+}
+.mem-card-back { color:white; opacity:1; transform:rotateY(0); }
+.mem-card-back-icon { font-size:24px; filter:drop-shadow(0 2px 5px rgba(0,0,0,.18)); }
+.mem-card-back-label { font-size:8px; font-weight:900; letter-spacing:.1em; margin-top:6px; opacity:.72; }
+.mem-card-face { opacity:0; transform:rotateY(90deg); background:rgba(255,255,255,.84); padding:6px; }
+.mem-card.flip,.mem-card.matched { transform:scale(1.035); }
+.mem-card.flip .mem-card-back,.mem-card.matched .mem-card-back { opacity:0; transform:rotateY(-90deg); }
+.mem-card.flip .mem-card-face,.mem-card.matched .mem-card-face { opacity:1; transform:rotateY(0); }
+.mem-card.flip.kind-visual,.mem-card.matched.kind-visual { background:linear-gradient(145deg,#F59E0B,#F97316); border-color:rgba(245,158,11,.35); }
+.mem-card.flip.kind-en,.mem-card.matched.kind-en { background:linear-gradient(145deg,#EEF2FF,#EDE9FE); border-color:rgba(79,70,229,.25); }
+.mem-card.flip.kind-pt,.mem-card.matched.kind-pt { background:linear-gradient(145deg,#ECFDF5,#CCFBF1); border-color:rgba(13,148,136,.25); }
+.mem-card-emoji { font-size:30px; line-height:1; filter:drop-shadow(0 2px 4px rgba(0,0,0,.12)); }
+.mem-card-text { color:var(--ink); font-size:11px; line-height:1.2; font-weight:850; text-align:center; overflow-wrap:anywhere; }
+.mem-card-tag { font-size:7px; line-height:1; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:var(--slate); margin-top:6px; }
 .mem-card.matched {
-  background: linear-gradient(145deg, var(--teal-light), #D5F5F0);
-  border-color: rgba(13,148,136,.25); color: var(--teal-dark);
-  opacity: .8; transform: scale(.95);
+  border-color:rgba(13,148,136,.45); box-shadow:0 0 0 2px rgba(13,148,136,.12);
+  opacity:.9; transform:scale(.97);
+}
+.memory-feedback {
+  min-height:62px; margin-top:13px; padding:10px 13px; border-radius:14px;
+  display:flex; align-items:center; gap:11px; background:linear-gradient(135deg,#ECFDF5,#F0FDFA);
+  border:1px solid rgba(13,148,136,.16); color:var(--teal-dark);
+}
+.memory-feedback.waiting { background:var(--surface); border-color:var(--border-light); color:var(--slate); }
+.memory-feedback-emoji { width:38px; text-align:center; flex-shrink:0; font-size:27px; }
+.memory-feedback-en { font-size:13px; font-weight:900; color:var(--ink); }
+.memory-feedback-pt { font-size:11px; font-weight:650; margin-top:2px; color:var(--slate); }
+.memory-feedback-listen {
+  width:34px; height:34px; flex-shrink:0; border-radius:50%; border:0; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; color:white; background:var(--teal);
+  box-shadow:0 3px 9px rgba(13,148,136,.2);
+}
+.memory-legend {
+  text-align:center; font-size:11px; color:var(--slate); font-weight:700; margin-bottom:13px; line-height:1.4;
 }
 
 /* ── Game: Word Order (arrastar) ── */
@@ -4853,6 +4882,7 @@ function startTrilhaGame(faseId,mode,turmaKey){
   else if(mode==='erros') queue=(fase.erros||[]);
   else if(mode==='wordorder') queue=buildWordOrderQueue(fase);
   else if(mode==='fillblank') queue=buildFillBlankQueue(fase);
+  else if(mode==='memoria') queue=selectMemoryItems(fase.teoria||[]);
   else queue=(fase.teoria||[]).filter(x=>x.en&&x.pt);
   if(!queue||queue.length===0)return alert("Esta fase ainda não tem conteúdo para este modo.");
   const gameTitle=fase.title+' — '+(mode==='teoria'?'Teoria':mode==='vocab'?'Vocabulário':mode==='pratica'?'Teste':mode==='erros'?'Ache o Erro':mode==='wordorder'?'Organizar':mode==='fillblank'?'Complete':mode==='memoria'?'Memória':'Quiz');
@@ -4926,6 +4956,75 @@ function buildSemanaQuizQueue(sem){
   return queue.sort(()=>Math.random()-.5).slice(0,WEEKLY_QUIZ_ITEMS);
 }
 
+const MEMORY_VISUALS=[
+  [/\b(apple|maca)\b/,'🍎'],[/\b(banana)\b/,'🍌'],[/\b(orange|laranja)\b/,'🍊'],
+  [/\b(strawberry|morango)\b/,'🍓'],[/\b(grape|uva)\b/,'🍇'],[/\b(watermelon|melancia)\b/,'🍉'],
+  [/\b(coconut|coco)\b/,'🥥'],[/\b(milk|leite)\b/,'🥛'],[/\b(water|agua)\b/,'💧'],
+  [/\b(coffee|cafe)\b/,'☕'],[/\b(beer|cerveja)\b/,'🍺'],[/\b(honey|mel)\b/,'🍯'],
+  [/\b(cookie|cookies|biscuit|biscoito)\b/,'🍪'],[/\b(sugar|acucar)\b/,'🍬'],[/\b(salt|sal)\b/,'🧂'],
+  [/\b(bread|pao)\b/,'🍞'],[/\b(cheese|queijo)\b/,'🧀'],[/\b(egg|ovo)\b/,'🥚'],
+  [/\b(fish|peixe)\b/,'🐟'],[/\b(chicken|frango)\b/,'🍗'],[/\b(rice|arroz)\b/,'🍚'],
+  [/\b(cake|bolo)\b/,'🍰'],[/\b(pizza)\b/,'🍕'],[/\b(recipe|receita|cook|cooking|cozinhar)\b/,'👩‍🍳'],
+  [/\b(breakfast|cafe da manha)\b/,'🥐'],[/\b(lunch|almoco|almoçar)\b/,'🍽️'],[/\b(dinner|jantar)\b/,'🍲'],
+  [/\b(dog|cachorro|cao)\b/,'🐶'],[/\b(cat|gato)\b/,'🐱'],[/\b(bird|passaro)\b/,'🐦'],
+  [/\b(horse|cavalo)\b/,'🐴'],[/\b(lion|leao)\b/,'🦁'],[/\b(monkey|macaco)\b/,'🐵'],
+  [/\b(father|dad|pai)\b/,'👨'],[/\b(mother|mom|mae)\b/,'👩'],[/\b(baby|bebe)\b/,'👶'],
+  [/\b(family|familia)\b/,'👨‍👩‍👧'],[/\b(friend|amigo|amiga)\b/,'🤝'],[/\b(teacher|professor|professora)\b/,'🧑‍🏫'],
+  [/\b(student|aluno|aluna)\b/,'🧑‍🎓'],[/\b(doctor|medico|medica)\b/,'🧑‍⚕️'],[/\b(work|job|trabalho)\b/,'💼'],
+  [/\b(home|house|casa)\b/,'🏠'],[/\b(school|escola)\b/,'🏫'],[/\b(beach|praia)\b/,'🏖️'],
+  [/\b(city|cidade)\b/,'🏙️'],[/\b(hospital)\b/,'🏥'],[/\b(restaurant|restaurante)\b/,'🍽️'],
+  [/\b(airport|aeroporto)\b/,'✈️'],[/\b(car|carro)\b/,'🚗'],[/\b(bus|onibus)\b/,'🚌'],
+  [/\b(train|trem)\b/,'🚆'],[/\b(bike|bicycle|bicicleta)\b/,'🚲'],[/\b(plane|airplane|aviao)\b/,'✈️'],
+  [/\b(phone|telephone|celular|telefone|call|ligar)\b/,'📱'],[/\b(computer|computador)\b/,'💻'],[/\b(book|livro|read|ler)\b/,'📖'],
+  [/\b(write|escrever|note|notes|anotar)\b/,'✍️'],[/\b(study|estudar|learn|aprender)\b/,'📚'],[/\b(music|musica|song|cancao)\b/,'🎵'],
+  [/\b(game|jogo)\b/,'🎮'],[/\b(ball|bola|football|soccer|futebol)\b/,'⚽'],[/\b(movie|film|filme)\b/,'🎬'],
+  [/\b(sun|sol|sunny)\b/,'☀️'],[/\b(rain|chuva|rainy)\b/,'🌧️'],[/\b(cloud|nuvem|cloudy)\b/,'☁️'],
+  [/\b(snow|neve)\b/,'❄️'],[/\b(moon|lua|night|noite)\b/,'🌙'],[/\b(morning|manha)\b/,'🌅'],
+  [/\b(clock|time|tempo|hora)\b/,'⏰'],[/\b(today|hoje)\b/,'📅'],[/\b(yesterday|ontem)\b/,'⏪'],
+  [/\b(tomorrow|amanha)\b/,'⏩'],[/\b(sleep|dormir|bed|cama)\b/,'😴'],[/\b(wake|acordar)\b/,'⏰'],
+  [/\b(run|correr)\b/,'🏃'],[/\b(walk|andar|caminhar)\b/,'🚶'],[/\b(swim|nadar)\b/,'🏊'],
+  [/\b(eat|comer)\b/,'😋'],[/\b(drink|beber)\b/,'🥤'],[/\b(listen|ouvir|escutar)\b/,'👂'],
+  [/\b(speak|talk|falar)\b/,'🗣️'],[/\b(look|see|watch|ver|olhar|assistir)\b/,'👀'],[/\b(buy|comprar|shop|shopping)\b/,'🛍️'],
+  [/\b(money|dinheiro)\b/,'💰'],[/\b(gift|presente)\b/,'🎁'],[/\b(love|amor|amar)\b/,'❤️'],
+  [/\b(happy|feliz)\b/,'😊'],[/\b(sad|triste)\b/,'😢'],[/\b(angry|bravo|raiva)\b/,'😠'],
+  [/\b(afraid|scared|medo)\b/,'😨'],[/\b(tired|cansado|cansada)\b/,'🥱'],[/\b(good|bom|boa)\b/,'👍'],
+  [/\b(bad|ruim)\b/,'👎'],[/\b(hot|quente)\b/,'🔥'],[/\b(cold|frio|fria)\b/,'🥶'],
+  [/\b(shirt|camisa)\b/,'👕'],[/\b(dress|vestido)\b/,'👗'],[/\b(shoe|shoes|sapato|sapatos)\b/,'👟'],
+  [/\b(eye|olho)\b/,'👁️'],[/\b(hand|mao)\b/,'✋'],[/\b(heart|coracao)\b/,'🫀']
+];
+
+function normalizeMemoryText(value){
+  return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase();
+}
+
+function memoryVisualFor(item){
+  const text=normalizeMemoryText(`${item?.en||''} ${item?.pt||''}`);
+  const match=MEMORY_VISUALS.find(([pattern])=>pattern.test(text));
+  return match?{emoji:match[1],meaningful:true}:{emoji:'🧩',meaningful:false};
+}
+
+function selectMemoryItems(items,limit=6){
+  const seen=new Set();
+  return (items||[]).map(item=>{
+    const en=cleanGameText(item?.en);
+    const pt=cleanGameText(item?.pt);
+    const visual=memoryVisualFor({en,pt});
+    const wordCount=(en.match(/[A-Za-zÀ-ÿ]+/g)||[]).length;
+    return {...item,en,pt,_memoryVisual:visual.meaningful,_memoryOrder:Math.random(),_memoryWords:wordCount};
+  }).filter(item=>{
+    if(!item.en||!item.pt)return false;
+    const key=`${normalizeMemoryText(item.en)}|${normalizeMemoryText(item.pt)}`;
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+  }).sort((a,b)=>{
+    if(a._memoryVisual!==b._memoryVisual)return a._memoryVisual?-1:1;
+    const aShort=a._memoryWords<=5?1:0,bShort=b._memoryWords<=5?1:0;
+    if(aShort!==bShort)return bShort-aShort;
+    return a._memoryOrder-b._memoryOrder;
+  }).slice(0,limit).map(({_memoryVisual,_memoryOrder,_memoryWords,...item})=>item);
+}
+
 function startSemanaGame(rKey,idx,type){
   const sem=DATABASE.semanas[rKey][idx];
   if(!sem)return;
@@ -4935,7 +5034,7 @@ function startSemanaGame(rKey,idx,type){
   else if(type==='chunks') q=[...sem.chunks];
   else if(type==='ditado') q=[...sem.ditado];
   else if(type==='erros') q=[...sem.erros];
-  else if(type==='memoria') q=[...(sem.vocab||[]),...(sem.chunks||[])].sort(()=>Math.random()-.5).slice(0,8);
+  else if(type==='memoria') q=selectMemoryItems([...(sem.vocab||[]),...(sem.chunks||[])]);
   else if(type==='quiz'){
     q=buildSemanaQuizQueue(sem);
   }
@@ -5193,30 +5292,96 @@ function handleGrammar(btn,isCorrect,exp,correct,wrong){
 }
 
 /* ══ ENGINE: MEMORY ══ */
-let memState={flipped:[],matched:0,lock:false};
+let memState={flipped:[],matched:0,lock:false,lastMatch:null};
+
+function buildMemoryDeck(words){
+  const cards=[];
+  words.forEach((word,index)=>{
+    const visual=memoryVisualFor(word);
+    const shared={id:String(index),en:word.en,pt:word.pt,emoji:visual.emoji};
+    if(visual.meaningful){
+      cards.push({...shared,kind:'visual'},{...shared,kind:'en'});
+    }else{
+      cards.push({...shared,kind:'en'},{...shared,kind:'pt'});
+    }
+  });
+  return cards.sort(()=>Math.random()-.5);
+}
+
+function normalizeMemoryCard(card,words){
+  const id=String(card?.id??'');
+  const word=words[Number(id)]||{};
+  const en=cleanGameText(card?.en||word.en||((card?.t||card?.kind)==='en'?card?.txt:''));
+  const pt=cleanGameText(card?.pt||word.pt||((card?.t||card?.kind)==='pt'?card?.txt:''));
+  const visual=memoryVisualFor({en,pt});
+  let kind=card?.kind||card?.t||'pt';
+  if(!card?.kind&&kind==='pt'&&visual.meaningful)kind='visual';
+  return {id,en,pt,kind,emoji:card?.emoji||visual.emoji};
+}
+
+function memoryCardFace(card){
+  if(card.kind==='visual')return `<span class="mem-card-emoji">${htmlSafe(card.emoji)}</span><span class="mem-card-tag">Imagem</span>`;
+  const text=card.kind==='en'?card.en:card.pt;
+  return `<span class="mem-card-text">${htmlSafe(text)}</span><span class="mem-card-tag">${card.kind==='en'?'English':'Português'}</span>`;
+}
+
+function showMemoryMatch(card){
+  const feedback=document.getElementById('memory-feedback');
+  if(!feedback)return;
+  memState.lastMatch={en:card.en,pt:card.pt};
+  feedback.classList.remove('waiting');
+  feedback.innerHTML=`
+    <div class="memory-feedback-emoji">${htmlSafe(card.emoji||'✅')}</div>
+    <div style="flex:1;min-width:0">
+      <div class="memory-feedback-en">${htmlSafe(card.en)}</div>
+      <div class="memory-feedback-pt">${htmlSafe(card.pt)}</div>
+    </div>
+    <button class="memory-feedback-listen" type="button" onclick="playMemoryMatchAudio()" aria-label="Ouvir ${htmlSafe(card.en)}"><i class="fa-solid fa-volume-high"></i></button>`;
+}
+
+function playMemoryMatchAudio(){
+  if(memState.lastMatch?.en)playTTS(memState.lastMatch.en,0.78,'en-US');
+}
+
+function updateMemoryProgress(){
+  const total=Math.max(1,Number(activeGame.total)||1);
+  const matched=Math.min(total,Math.max(0,Number(memState.matched)||0));
+  const bar=document.getElementById('game-progress-bar');
+  const label=document.getElementById('game-progress-label');
+  const score=document.getElementById('game-score-label');
+  if(bar)bar.style.width=((matched/total)*100)+'%';
+  if(label)label.textContent=`${matched} / ${total}`;
+  if(score)score.textContent=`✓ ${activeGame.score}`;
+}
+
 function engineMemory(){
   const words=activeGame.queue.slice(0,6);
   const savedDeck=Array.isArray(activeGame.memoryDeck)&&activeGame.memoryDeck.length===words.length*2?activeGame.memoryDeck:null;
-  const deck=savedDeck||[
-    ...words.map((w,index)=>({id:String(index),txt:w.en,t:'en'})),
-    ...words.map((w,index)=>({id:String(index),txt:w.pt,t:'pt'}))
-  ].sort(()=>Math.random()-.5);
+  const deck=(savedDeck||buildMemoryDeck(words)).map(card=>normalizeMemoryCard(card,words));
   activeGame.memoryDeck=deck;
   activeGame.memoryMatches=Array.isArray(activeGame.memoryMatches)?activeGame.memoryMatches:[];
   const matchedIds=new Set(activeGame.memoryMatches.map(String));
-  memState={flipped:[],matched:matchedIds.size,lock:false};
+  memState={flipped:[],matched:matchedIds.size,lock:false,lastMatch:null};
   const body=document.getElementById('game-body');
   body.innerHTML=`
     <div class="anim-fade-up" style="flex:1">
-      <p style="text-align:center;font-size:12px;color:var(--slate);font-weight:700;margin-bottom:14px;letter-spacing:.04em;text-transform:uppercase">Encontre os pares EN ↔ PT</p>
+      <div class="memory-legend">Encontre os pares: <strong>imagem ↔ inglês</strong> ou <strong>inglês ↔ português</strong>.</div>
       <div class="memory-grid" id="mem-grid">
         ${deck.map((c,i)=>{
           const matched=matchedIds.has(String(c.id));
-          return `<div class="mem-card${matched?' matched':''}" id="mc-${i}" data-id="${esc(c.id)}" data-t="${c.t}" data-txt="${esc(c.txt)}" onclick="flipMem(this)">${matched?c.txt:'&nbsp;'}</div>`;
+          return `<button type="button" class="mem-card kind-${c.kind}${matched?' matched':''}" id="mc-${i}" data-card="${i}" data-id="${esc(c.id)}" data-kind="${c.kind}" onclick="flipMem(this)" aria-label="${matched?'Par encontrado':'Carta fechada'}" aria-expanded="${matched?'true':'false'}">
+            <span class="mem-card-back"><span class="mem-card-back-icon">✦</span><span class="mem-card-back-label">MEMORY</span></span>
+            <span class="mem-card-face">${memoryCardFace(c)}</span>
+          </button>`;
         }).join('')}
+      </div>
+      <div id="memory-feedback" class="memory-feedback waiting">
+        <div class="memory-feedback-emoji">🧠</div>
+        <div><div class="memory-feedback-en">Treine sua memória</div><div class="memory-feedback-pt">Ao acertar, você verá a tradução e ouvirá a pronúncia.</div></div>
       </div>
     </div>`;
   activeGame.total=words.length;
+  updateMemoryProgress();
   if(memState.matched>=activeGame.total&&activeGame.total>0){
     activeGame.index=activeGame.total-1;
     setTimeout(nextStep,600);
@@ -5225,26 +5390,29 @@ function engineMemory(){
 function flipMem(el){
   if(memState.lock||el.classList.contains('matched')||memState.flipped.includes(el))return;
   el.classList.add('flip');
-  el.textContent=el.dataset.txt;
-  if(el.dataset.t==='en')playTTS(el.dataset.txt,0.8,'en-US');
+  el.setAttribute('aria-expanded','true');
   memState.flipped.push(el);
   if(memState.flipped.length===2){
     memState.lock=true;
     const[a,b]=memState.flipped;
-    if(a.dataset.id===b.dataset.id&&a.dataset.t!==b.dataset.t){
+    if(a.dataset.id===b.dataset.id&&a.dataset.kind!==b.dataset.kind){
       setTimeout(()=>{
         a.classList.replace('flip','matched');b.classList.replace('flip','matched');
+        a.setAttribute('aria-label','Par encontrado');b.setAttribute('aria-label','Par encontrado');
         memState.matched++;memState.flipped=[];memState.lock=false;
         registerCorrectAnswer(`memory:${a.dataset.id}`);
         if(!activeGame.memoryMatches.includes(a.dataset.id))activeGame.memoryMatches.push(a.dataset.id);
-        updateGameProgress();
+        const matchedCard=activeGame.memoryDeck[Number(a.dataset.card)]||activeGame.memoryDeck[Number(b.dataset.card)];
+        showMemoryMatch(matchedCard);
+        playTTS(matchedCard.en,0.78,'en-US');
+        updateMemoryProgress();
         persistActiveGameSession();
         if(memState.matched>=activeGame.total){activeGame.index=activeGame.total-1;setTimeout(nextStep,600);}
       },500);
     } else {
       setTimeout(()=>{
         a.classList.remove('flip');b.classList.remove('flip');
-        a.textContent='\u00a0';b.textContent='\u00a0';
+        a.setAttribute('aria-expanded','false');b.setAttribute('aria-expanded','false');
         memState.flipped=[];memState.lock=false;
       },950);
     }
