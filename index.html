@@ -5185,15 +5185,16 @@ const MEMORY_VISUALS=[
   [/\b(family|familia)\b/,'👨‍👩‍👧'],[/\b(friend|amigo|amiga)\b/,'🤝'],[/\b(teacher|professor|professora)\b/,'🧑‍🏫'],
   [/\b(student|aluno|aluna)\b/,'🧑‍🎓'],[/\b(doctor|medico|medica)\b/,'🧑‍⚕️'],[/\b(work|job|trabalho)\b/,'💼'],
   [/\b(home|house|casa)\b/,'🏠'],[/\b(school|escola)\b/,'🏫'],[/\b(beach|praia)\b/,'🏖️'],
-  [/\b(city|cidade)\b/,'🏙️'],[/\b(hospital)\b/,'🏥'],[/\b(restaurant|restaurante)\b/,'🍽️'],
-  [/\b(airport|aeroporto)\b/,'✈️'],[/\b(car|carro)\b/,'🚗'],[/\b(bus|onibus)\b/,'🚌'],
+  [/\b(city|cidade)\b/,'🏙️'],[/\b(hospital)\b/,'🏥'],[/\b(restaurant|restaurante)\b/,'🍴'],
+  [/\b(airport|aeroporto)\b/,'🛫'],[/\b(car|carro)\b/,'🚗'],[/\b(bus|onibus)\b/,'🚌'],
   [/\b(train|trem)\b/,'🚆'],[/\b(bike|bicycle|bicicleta)\b/,'🚲'],[/\b(plane|airplane|aviao)\b/,'✈️'],
   [/\b(phone|telephone|celular|telefone|call|ligar)\b/,'📱'],[/\b(computer|computador)\b/,'💻'],[/\b(book|livro|read|ler)\b/,'📖'],
   [/\b(write|escrever|note|notes|anotar)\b/,'✍️'],[/\b(study|estudar|learn|aprender)\b/,'📚'],[/\b(music|musica|song|cancao)\b/,'🎵'],
   [/\b(game|jogo)\b/,'🎮'],[/\b(ball|bola|football|soccer|futebol)\b/,'⚽'],[/\b(movie|film|filme)\b/,'🎬'],
   [/\b(sun|sol|sunny)\b/,'☀️'],[/\b(rain|chuva|rainy)\b/,'🌧️'],[/\b(cloud|nuvem|cloudy)\b/,'☁️'],
-  [/\b(snow|neve)\b/,'❄️'],[/\b(moon|lua|night|noite)\b/,'🌙'],[/\b(morning|manha)\b/,'🌅'],
-  [/\b(clock|time|tempo|hora)\b/,'⏰'],[/\b(today|hoje)\b/,'📅'],[/\b(yesterday|ontem)\b/,'⏪'],
+  [/\b(snow|neve)\b/,'❄️'],[/\b(midnight|meia[- ]noite)\b/,'🕛'],[/\b(evening)\b/,'🌆'],
+  [/\b(afternoon|tarde)\b/,'🌇'],[/\b(moon|lua|night|noite)\b/,'🌙'],[/\b(morning|manha)\b/,'🌅'],
+  [/\b(clock|time|tempo|hora)\b/,'🕒'],[/\b(today|hoje)\b/,'📅'],[/\b(yesterday|ontem)\b/,'⏪'],
   [/\b(tomorrow|amanha)\b/,'⏩'],[/\b(sleep|dormir|bed|cama)\b/,'😴'],[/\b(wake|acordar)\b/,'⏰'],
   [/\b(run|correr)\b/,'🏃'],[/\b(walk|andar|caminhar)\b/,'🚶'],[/\b(swim|nadar)\b/,'🏊'],
   [/\b(eat|comer)\b/,'😋'],[/\b(drink|beber)\b/,'🥤'],[/\b(listen|ouvir|escutar)\b/,'👂'],
@@ -5218,12 +5219,12 @@ function memoryVisualFor(item){
 
 function selectMemoryItems(items,limit=6){
   const seen=new Set();
-  return (items||[]).map(item=>{
+  const candidates=(items||[]).map(item=>{
     const en=cleanGameText(item?.en);
     const pt=cleanGameText(item?.pt);
     const visual=memoryVisualFor({en,pt});
     const wordCount=(en.match(/[A-Za-zÀ-ÿ]+/g)||[]).length;
-    return {...item,en,pt,_memoryVisual:visual.meaningful,_memoryOrder:Math.random(),_memoryWords:wordCount};
+    return {...item,en,pt,_memoryVisual:visual.meaningful,_memoryEmoji:visual.meaningful?visual.emoji:'',_memoryOrder:Math.random(),_memoryWords:wordCount};
   }).filter(item=>{
     if(!item.en||!item.pt)return false;
     const key=`${normalizeMemoryText(item.en)}|${normalizeMemoryText(item.pt)}`;
@@ -5235,7 +5236,19 @@ function selectMemoryItems(items,limit=6){
     const aShort=a._memoryWords<=5?1:0,bShort=b._memoryWords<=5?1:0;
     if(aShort!==bShort)return bShort-aShort;
     return a._memoryOrder-b._memoryOrder;
-  }).slice(0,limit).map(({_memoryVisual,_memoryOrder,_memoryWords,...item})=>item);
+  });
+
+  const usedEmojis=new Set();
+  const uniqueVisuals=[];
+  const textFallbacks=[];
+  candidates.forEach(item=>{
+    const target=item._memoryVisual&&!usedEmojis.has(item._memoryEmoji)?uniqueVisuals:textFallbacks;
+    if(target===uniqueVisuals)usedEmojis.add(item._memoryEmoji);
+    target.push(item);
+  });
+
+  return [...uniqueVisuals,...textFallbacks].slice(0,limit)
+    .map(({_memoryVisual,_memoryEmoji,_memoryOrder,_memoryWords,...item})=>item);
 }
 
 function startSemanaGame(rKey,idx,type){
@@ -5509,16 +5522,30 @@ let memState={flipped:[],matched:0,lock:false,lastMatch:null};
 
 function buildMemoryDeck(words){
   const cards=[];
+  const usedEmojis=new Set();
   words.forEach((word,index)=>{
     const visual=memoryVisualFor(word);
-    const shared={id:String(index),en:word.en,pt:word.pt,emoji:visual.emoji};
-    if(visual.meaningful){
+    const useVisual=visual.meaningful&&!usedEmojis.has(visual.emoji);
+    if(useVisual)usedEmojis.add(visual.emoji);
+    const shared={id:String(index),en:word.en,pt:word.pt,emoji:useVisual?visual.emoji:'🧩'};
+    if(useVisual){
       cards.push({...shared,kind:'visual'},{...shared,kind:'en'});
     }else{
       cards.push({...shared,kind:'en'},{...shared,kind:'pt'});
     }
   });
   return cards.sort(()=>Math.random()-.5);
+}
+
+function memoryDeckHasUniqueVisuals(deck){
+  const seen=new Set();
+  return (deck||[]).every(card=>{
+    if((card?.kind||card?.t)!=='visual')return true;
+    const emoji=String(card?.emoji||'');
+    if(!emoji||seen.has(emoji))return false;
+    seen.add(emoji);
+    return true;
+  });
 }
 
 function normalizeMemoryCard(card,words){
@@ -5569,7 +5596,10 @@ function updateMemoryProgress(){
 
 function engineMemory(){
   const words=activeGame.queue.slice(0,6);
-  const savedDeck=Array.isArray(activeGame.memoryDeck)&&activeGame.memoryDeck.length===words.length*2?activeGame.memoryDeck:null;
+  const savedDeck=Array.isArray(activeGame.memoryDeck)
+    &&activeGame.memoryDeck.length===words.length*2
+    &&memoryDeckHasUniqueVisuals(activeGame.memoryDeck)
+      ?activeGame.memoryDeck:null;
   const deck=(savedDeck||buildMemoryDeck(words)).map(card=>normalizeMemoryCard(card,words));
   activeGame.memoryDeck=deck;
   activeGame.memoryMatches=Array.isArray(activeGame.memoryMatches)?activeGame.memoryMatches:[];
