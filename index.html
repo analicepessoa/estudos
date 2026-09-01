@@ -1092,9 +1092,22 @@ select.input { appearance: none; cursor: pointer; }
   font-family: 'JetBrains Mono', monospace; font-size: 11px;
   color: var(--slate); text-align: center; margin-top: 8px;
 }
+.dictation-audio-options {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.dictation-audio-btn {
+  min-height: 42px; padding: 8px 7px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--ink2);
+  font: inherit; font-size: 11px; font-weight: 800; cursor: pointer;
+  transition: all .2s var(--ease-out);
+}
+.dictation-audio-btn:hover,.dictation-audio-btn.playing {
+  border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark);
+}
 .dictation-feedback {
   padding: 14px 18px; border-radius: var(--radius);
   font-size: 14px; font-weight: 600; margin-top: 14px;
+  line-height: 1.55;
 }
 .dictation-feedback.ok {
   background: var(--teal-light); color: var(--teal-dark);
@@ -1104,6 +1117,14 @@ select.input { appearance: none; cursor: pointer; }
   background: var(--rose-light); color: var(--rose);
   border: 1px solid rgba(220,38,38,.1);
 }
+.dictation-feedback.hint {
+  background: #FFFBEB; color: #92400E;
+  border: 1px solid rgba(217,119,6,.2);
+}
+.dictation-hint-detail {
+  display: block; margin-top: 8px; padding: 9px 11px; border-radius: 10px;
+  background: rgba(255,255,255,.65); color: var(--ink2); font-size: 12px;
+}
 .dictation-choice-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1111,6 +1132,7 @@ select.input { appearance: none; cursor: pointer; }
 }
 @media (max-width: 390px) {
   .dictation-choice-actions { grid-template-columns: 1fr; }
+  .dictation-audio-options { grid-template-columns: 1fr; }
 }
 
 /* ── Game: Grammar / Ache o Erro ── */
@@ -4821,14 +4843,24 @@ function playTTS(text,rate=0.8,language='auto',context=''){
   window.speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);
   const targetLanguage=language==='auto'?detectSpeechLanguage(text,context):language;
-  u.lang=targetLanguage; u.rate=rate;
+  u.lang=targetLanguage; u.rate=rate; u.pitch=1; u.volume=1;
   const voices=window.speechSynthesis.getVoices();
   const normalizedTarget=targetLanguage.replace('_','-').toLocaleLowerCase();
   const baseLanguage=normalizedTarget.split('-')[0];
-  const v=voices.find(voice=>voice.lang.replace('_','-').toLocaleLowerCase()===normalizedTarget)
-    ||voices.find(voice=>voice.lang.replace('_','-').toLocaleLowerCase().startsWith(baseLanguage));
+  const matchingVoices=voices.filter(voice=>voice.lang.replace('_','-').toLocaleLowerCase().startsWith(baseLanguage));
+  const v=matchingVoices.sort((a,b)=>{
+    const score=voice=>{
+      const lang=voice.lang.replace('_','-').toLocaleLowerCase();
+      const name=voice.name.toLocaleLowerCase();
+      return (lang===normalizedTarget?100:0)+(voice.localService?10:0)
+        +(/google|microsoft|natural|premium|samantha/.test(name)?6:0)
+        -(/compact|espeak/.test(name)?4:0);
+    };
+    return score(b)-score(a);
+  })[0];
   if(v)u.voice=v;
   window.speechSynthesis.speak(u);
+  return u;
 }
 
 const GAME_SESSION_VERSION=1;
@@ -5386,17 +5418,134 @@ function handleQuiz(btn,ans,correct,language='auto'){
 /* ══ ENGINE: DICTATION ══ */
 let dictPlayCount=0;
 let dictationLocked=false;
+let dictAttemptCount=0;
+let dictationLastHint='';
+
+const DICTATION_NORMALIZATIONS=[
+  [/\bcan't\b/g,'cannot'],[/\bwon't\b/g,'will not'],[/\bshan't\b/g,'shall not'],
+  [/\bdon't\b/g,'do not'],[/\bdoesn't\b/g,'does not'],[/\bdidn't\b/g,'did not'],
+  [/\bisn't\b/g,'is not'],[/\baren't\b/g,'are not'],[/\bwasn't\b/g,'was not'],[/\bweren't\b/g,'were not'],
+  [/\bhaven't\b/g,'have not'],[/\bhasn't\b/g,'has not'],[/\bhadn't\b/g,'had not'],
+  [/\bcouldn't\b/g,'could not'],[/\bwouldn't\b/g,'would not'],[/\bshouldn't\b/g,'should not'],[/\bmustn't\b/g,'must not'],
+  [/\bi'm\b/g,'i am'],[/\b(you|we|they)'re\b/g,'$1 are'],[/\b(he|she|it|that|there|what|who)'s\b/g,'$1 is'],
+  [/\b(i|you|we|they)'ve\b/g,'$1 have'],[/\b(i|you|he|she|it|we|they)'ll\b/g,'$1 will'],
+  [/\b(i|you|he|she|it|we|they)'d\b/g,'$1 would'],[/\blet's\b/g,'let us'],
+  [/(^|\s)'cause\b/g,'$1because'],[/\b(?:cuz|cos)\b/g,'because'],[/\bwanna\b/g,'want to'],[/\bgonna\b/g,'going to'],
+  [/\bgotta\b/g,'got to'],[/\blemme\b/g,'let me'],[/\bgimme\b/g,'give me'],
+  [/\bkinda\b/g,'kind of'],[/\bsorta\b/g,'sort of']
+];
+
+const DICTATION_EQUIVALENCES=[
+  [/\bim\b/g,'i am'],[/\byoure\b/g,'you are'],[/\bhes\b/g,'he is'],[/\bshes\b/g,'she is'],[/\bits\b/g,'it is'],[/\btheyre\b/g,'they are'],
+  [/\bive\b/g,'i have'],[/\byouve\b/g,'you have'],[/\bweve\b/g,'we have'],[/\btheyve\b/g,'they have'],
+  [/\bcant\b/g,'cannot'],[/\bwont\b/g,'will not'],[/\bdont\b/g,'do not'],[/\bdoesnt\b/g,'does not'],[/\bdidnt\b/g,'did not'],
+  [/\bisnt\b/g,'is not'],[/\barent\b/g,'are not'],[/\bwasnt\b/g,'was not'],[/\bwerent\b/g,'were not'],
+  [/\bhavent\b/g,'have not'],[/\bhasnt\b/g,'has not'],[/\bhadnt\b/g,'had not'],
+  [/\bcouldnt\b/g,'could not'],[/\bwouldnt\b/g,'would not'],[/\bshouldnt\b/g,'should not'],[/\bmustnt\b/g,'must not'],
+  [/\bet cetera\b/g,'etc'],[/\betcetera\b/g,'etc'],[/\bokay\b/g,'ok'],
+  [/\bmister\b/g,'mr'],[/\bmissus\b/g,'mrs'],[/\bdoctor\b/g,'dr'],
+  [/\btelevision\b/g,'tv'],[/\bavenue\b/g,'ave'],[/\broad\b/g,'rd'],[/\bstreet\b/g,'st'],
+  [/\bapartment\b/g,'apt'],[/\bapproximately\b/g,'approx'],
+  [/\bkilograms?\b/g,'kg'],[/\bkilometers?\b/g,'km'],[/\bcentimeters?\b/g,'cm'],
+  [/\bcolour\b/g,'color'],[/\bfavourite\b/g,'favorite'],[/\bcentre\b/g,'center'],[/\btheatre\b/g,'theater'],
+  [/\btravelling\b/g,'traveling'],[/\btravelled\b/g,'traveled']
+];
+
+const DICTATION_NUMBERS={
+  '0':'zero','1':'one','2':'two','3':'three','4':'four','5':'five','6':'six','7':'seven','8':'eight','9':'nine','10':'ten',
+  '11':'eleven','12':'twelve','13':'thirteen','14':'fourteen','15':'fifteen','16':'sixteen','17':'seventeen','18':'eighteen','19':'nineteen','20':'twenty'
+};
+
+function normalizeDictationText(value){
+  let text=String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toLocaleLowerCase().replace(/[’‘`]/g,"'").replace(/\./g,'');
+  DICTATION_NORMALIZATIONS.forEach(([pattern,replacement])=>{text=text.replace(pattern,replacement);});
+  text=text.replace(/[^a-z0-9'\s-]/g,' ').replace(/-/g,' ');
+  DICTATION_EQUIVALENCES.forEach(([pattern,replacement])=>{text=text.replace(pattern,replacement);});
+  text=text.replace(/\b(?:0|[1-9]|1[0-9]|20)\b/g,number=>DICTATION_NUMBERS[number]||number);
+  return text.replace(/'/g,'').replace(/\s+/g,' ').trim();
+}
+
+function dictationEditDistance(a,b){
+  const left=String(a||''),right=String(b||'');
+  const row=Array.from({length:right.length+1},(_,index)=>index);
+  for(let i=1;i<=left.length;i++){
+    let diagonal=row[0];
+    row[0]=i;
+    for(let j=1;j<=right.length;j++){
+      const previous=row[j];
+      row[j]=left[i-1]===right[j-1]?diagonal:Math.min(diagonal,row[j-1],row[j])+1;
+      diagonal=previous;
+    }
+  }
+  return row[right.length];
+}
+
+function compareDictationWords(correct,input){
+  const expected=normalizeDictationText(correct).split(' ').filter(Boolean);
+  const actual=normalizeDictationText(input).split(' ').filter(Boolean);
+  const rows=expected.length+1,cols=actual.length+1;
+  const matrix=Array.from({length:rows},()=>Array(cols).fill(0));
+  for(let i=0;i<rows;i++)matrix[i][0]=i;
+  for(let j=0;j<cols;j++)matrix[0][j]=j;
+  for(let i=1;i<rows;i++)for(let j=1;j<cols;j++){
+    matrix[i][j]=expected[i-1]===actual[j-1]
+      ?matrix[i-1][j-1]
+      :Math.min(matrix[i-1][j-1],matrix[i-1][j],matrix[i][j-1])+1;
+  }
+  const edits=[];
+  let matches=0,i=expected.length,j=actual.length;
+  while(i>0||j>0){
+    if(i>0&&j>0&&expected[i-1]===actual[j-1]){matches++;i--;j--;continue;}
+    if(i>0&&j>0&&matrix[i][j]===matrix[i-1][j-1]+1){
+      edits.push({type:'replace',index:i-1,expected:expected[i-1],actual:actual[j-1]});i--;j--;continue;
+    }
+    if(i>0&&matrix[i][j]===matrix[i-1][j]+1){
+      edits.push({type:'missing',index:i-1,expected:expected[i-1],actual:''});i--;continue;
+    }
+    edits.push({type:'extra',index:Math.max(0,i),expected:'',actual:actual[j-1]});j--;
+  }
+  return {expected,actual,edits:edits.reverse(),matches,distance:matrix[expected.length][actual.length]};
+}
+
+function dictationWordClue(word,attempt=1){
+  const clean=String(word||'');
+  if(!clean)return '';
+  if(attempt>=2&&clean.length>2)return `“${clean[0].toUpperCase()}${'•'.repeat(clean.length-2)}${clean.at(-1)}” (${clean.length} letras)`;
+  return `começa com “${clean[0].toUpperCase()}” e tem ${clean.length} ${clean.length===1?'letra':'letras'}`;
+}
+
+function buildDictationHint(comparison){
+  const first=comparison.edits[0];
+  if(!first)return 'Confira os espaços entre as palavras e tente novamente.';
+  const position=first.index+1;
+  if(comparison.edits.length===1){
+    if(first.type==='extra')return `Você colocou uma palavra a mais perto da ${position}ª posição. Escute esse trecho novamente.`;
+    if(first.type==='missing')return `Falta apenas uma palavra na ${position}ª posição: ela ${dictationWordClue(first.expected,dictAttemptCount)}.`;
+    return `Apenas a ${position}ª palavra precisa de ajuste. A palavra correta ${dictationWordClue(first.expected,dictAttemptCount)}.`;
+  }
+  const total=Math.max(1,comparison.expected.length);
+  const firstClue=first.expected?` Ela ${dictationWordClue(first.expected,dictAttemptCount)}.`:'';
+  return `Você acertou ${comparison.matches} de ${total} palavras. A primeira diferença está perto da ${position}ª palavra.${firstClue}`;
+}
 function engineDictation(){
   const frase=activeGame.queue[activeGame.index];
   dictPlayCount=0;
   dictationLocked=false;
+  dictAttemptCount=0;
+  dictationLastHint='';
   const body=document.getElementById('game-body');
   body.innerHTML=`
     <div class="anim-fade-up" style="flex:1;display:flex;flex-direction:column;gap:16px">
-      <button class="dictation-play" id="dict-play-btn" onclick="handleDictPlay('${esc(frase)}')">
+      <button class="dictation-play" id="dict-play-btn" onclick="handleDictPlay('${esc(frase)}','slow')" aria-label="Ouvir ditado devagar">
         <i class="fa-solid fa-headphones"></i>
       </button>
-      <div class="dictation-counter" id="dict-count">Toque para ouvir (velocidade reduzida)</div>
+      <div class="dictation-counter" id="dict-count">Preparando o áudio...</div>
+      <div class="dictation-audio-options">
+        <button type="button" class="dictation-audio-btn" onclick="handleDictPlay('${esc(frase)}','slow',this)"><i class="fa-solid fa-turtle"></i> Devagar</button>
+        <button type="button" class="dictation-audio-btn" onclick="handleDictPlay('${esc(frase)}','normal',this)"><i class="fa-solid fa-volume-high"></i> Normal</button>
+        <button type="button" class="dictation-audio-btn" onclick="handleDictPlay('${esc(frase)}','words',this)"><i class="fa-solid fa-spell-check"></i> Palavra por palavra</button>
+      </div>
       <div>
         <label class="label">Escreva o que ouviu:</label>
         <textarea class="input" id="dict-input" rows="2" placeholder="Digite aqui..." style="font-size:16px"></textarea>
@@ -5409,16 +5558,24 @@ function engineDictation(){
       </button>
       <div id="dict-actions" class="manual-next-wrap hidden"></div>
     </div>`;
-  setTimeout(()=>playTTS(frase,0.65,'en-US'),400);
+  setTimeout(()=>handleDictPlay(frase,'slow'),450);
 }
-function handleDictPlay(text){
+function handleDictPlay(text,mode='slow',sourceButton=null){
   dictPlayCount++;
   const btn=document.getElementById('dict-play-btn');
   const counter=document.getElementById('dict-count');
-  btn.classList.toggle('playing',true);
-  playTTS(text,0.65,'en-US');
-  counter.textContent=`Ouvido ${dictPlayCount}x (pode ouvir quantas vezes quiser)`;
-  setTimeout(()=>btn&&btn.classList.remove('playing'),2500);
+  document.querySelectorAll('.dictation-play,.dictation-audio-btn').forEach(button=>button.classList.remove('playing'));
+  (sourceButton||btn)?.classList.add('playing');
+  const settings={
+    slow:{rate:0.62,label:'devagar',text},
+    normal:{rate:0.82,label:'normal',text},
+    words:{rate:0.58,label:'palavra por palavra',text:String(text).replace(/[.,!?;:]+/g,'').split(/\s+/).join(', ')}
+  }[mode]||{rate:0.62,label:'devagar',text};
+  const utterance=playTTS(settings.text,settings.rate,'en-US');
+  counter.textContent=`Ouvido ${dictPlayCount}x · modo ${settings.label} · repita quantas vezes precisar`;
+  const finish=()=>document.querySelectorAll('.dictation-play,.dictation-audio-btn').forEach(button=>button.classList.remove('playing'));
+  if(utterance)utterance.onend=utterance.onerror=finish;
+  else finish();
 }
 function retryDictation(text){
   dictationLocked=false;
@@ -5428,35 +5585,48 @@ function retryDictation(text){
   const checkBtn=document.getElementById('dict-check-btn');
   input.disabled=false;
   input.focus();
-  input.select();
-  fb.style.display='none';
-  fb.innerHTML='';
+  input.setSelectionRange(input.value.length,input.value.length);
+  fb.style.display='block';
+  fb.className='dictation-feedback hint';
+  fb.innerHTML=`<strong>💡 Dica para corrigir:</strong><span class="dictation-hint-detail">${dictationLastHint}</span>`;
   actions.classList.add('hidden');
   actions.innerHTML='';
   checkBtn.classList.remove('hidden');
-  handleDictPlay(text);
+  handleDictPlay(text,'slow');
 }
 function checkDictation(correct){
   if(dictationLocked)return;
   const inputEl=document.getElementById('dict-input');
   const rawInput=inputEl.value.trim();
-  const input=rawInput.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
-  const clean=correct.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
   const fb=document.getElementById('dict-fb');
   fb.style.display='block';
-  if(!input){
+  if(!rawInput){
     fb.className='dictation-feedback err';
     fb.innerHTML='⚠️ Escreva a frase que você ouviu antes de verificar.';
     return;
   }
+  dictAttemptCount++;
+  const normalizedInput=normalizeDictationText(rawInput);
+  const normalizedCorrect=normalizeDictationText(correct);
+  const literalInput=String(rawInput).toLocaleLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
+  const literalCorrect=String(correct).toLocaleLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
+  const comparison=compareDictationWords(correct,rawInput);
+  const singleTypo=comparison.edits.length===1&&comparison.edits[0].type==='replace'
+    &&dictationEditDistance(comparison.edits[0].expected,comparison.edits[0].actual)===1;
+  const accepted=normalizedInput===normalizedCorrect||singleTypo;
   dictationLocked=true;
   inputEl.disabled=true;
   document.getElementById('dict-check-btn').classList.add('hidden');
   const actions=document.getElementById('dict-actions');
   const advanceLabel=activeGame.index>=activeGame.total-1?'Ver resultado':'Próxima frase';
-  if(input===clean){
+  if(accepted){
+    const flexibleMessage=literalInput!==literalCorrect
+      ?singleTypo
+        ?'<br><span style="font-size:12px">Aceitei um pequeno erro de digitação em uma palavra.</span>'
+        :'<br><span style="font-size:12px">Contrações, abreviações e formas equivalentes também são aceitas.</span>'
+      :'';
     fb.className='dictation-feedback ok';
-    fb.innerHTML=`<i class="fa-solid fa-check-circle"></i> <strong>Perfeito, você acertou!</strong><br><br><strong>Frase correta:</strong><br>${correct}`;
+    fb.innerHTML=`<i class="fa-solid fa-check-circle"></i> <strong>Perfeito, você acertou!</strong>${flexibleMessage}<br><br><strong>Frase correta:</strong><br>${correct}`;
     registerCorrectAnswer();
     actions.innerHTML=`
       <button class="btn btn-primary w-full btn-lg" onclick="nextStep()">
@@ -5464,8 +5634,9 @@ function checkDictation(correct){
       </button>`;
     playTTS(correct,0.75,'en-US');
   } else {
-    fb.className='dictation-feedback err';
-    fb.innerHTML='<strong>❌ Ainda não está correto.</strong><br>Você pode escutar e tentar novamente ou seguir para a próxima frase.';
+    dictationLastHint=buildDictationHint(comparison);
+    fb.className='dictation-feedback hint';
+    fb.innerHTML=`<strong>💡 Quase! Vamos ajustar.</strong><span class="dictation-hint-detail">${dictationLastHint}</span><span style="font-size:12px">A frase correta ainda não será mostrada. Escute novamente e tente corrigir.</span>`;
     actions.innerHTML=`
       <div class="dictation-choice-actions">
         <button class="btn btn-teal btn-lg" onclick="retryDictation('${esc(correct)}')"><i class="fa-solid fa-rotate-left"></i> Tentar novamente</button>
