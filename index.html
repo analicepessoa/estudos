@@ -923,13 +923,28 @@ select.input { appearance: none; cursor: pointer; }
   animation: slideUp .35s var(--ease-out);
 }
 .game-modal-header {
-  padding: 18px 22px; display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px; display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 12px;
   border-bottom: 1px solid var(--border-light);
   background: linear-gradient(180deg, var(--white) 0%, var(--surface) 100%);
 }
 .game-modal-title {
   font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800;
   letter-spacing: .1em; text-transform: uppercase; color: var(--slate);
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;
+}
+.game-back {
+  min-width: 74px; height: 36px; padding: 0 11px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--white); color: var(--ink2);
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  font: inherit; font-size: 11px; font-weight: 850; cursor: pointer;
+  transition: all .2s var(--ease-out);
+}
+.game-back:hover:not(:disabled) {
+  border-color: var(--teal); color: var(--teal-dark); background: var(--teal-light);
+  transform: translateX(-2px);
+}
+.game-back:disabled {
+  opacity: .35; cursor: not-allowed;
 }
 .game-close {
   background: var(--surface2); border: none; width: 34px; height: 34px; border-radius: 50%;
@@ -2322,6 +2337,9 @@ select.input { appearance: none; cursor: pointer; }
 <div id="game-overlay" class="hidden" style="align-items:flex-start">
   <div class="game-modal">
     <div class="game-modal-header">
+      <button id="game-back-btn" type="button" class="game-back" onclick="previousStep()" disabled aria-label="Voltar para a pergunta anterior">
+        <i class="fa-solid fa-arrow-left"></i><span>Voltar</span>
+      </button>
       <span id="game-title" class="game-modal-title">Atividade</span>
       <button onclick="closeGame()" class="game-close"><i class="fa-solid fa-xmark"></i></button>
     </div>
@@ -4986,6 +5004,12 @@ function updateGameProgress(){
   document.getElementById('game-progress-bar').style.width=pct+'%';
   document.getElementById('game-progress-label').textContent=`${activeGame.index} / ${activeGame.total}`;
   document.getElementById('game-score-label').textContent=`✓ ${activeGame.score}`;
+  const backButton=document.getElementById('game-back-btn');
+  if(backButton){
+    const canGoBack=activeGame.index>0&&!String(activeGame.type||'').includes('memoria');
+    backButton.disabled=!canGoBack;
+    backButton.title=canGoBack?'Voltar para a pergunta anterior':'Você está na primeira pergunta';
+  }
 }
 
 function cleanGameText(value){
@@ -5317,10 +5341,12 @@ function dispatchGameStep(){
 }
 
 function registerCorrectAnswer(key=activeGame.index){
-  activeGame.score++;
   activeGame.correctItems=Array.isArray(activeGame.correctItems)?activeGame.correctItems:[];
   const itemKey=String(key);
-  if(!activeGame.correctItems.includes(itemKey))activeGame.correctItems.push(itemKey);
+  if(activeGame.correctItems.includes(itemKey))return false;
+  activeGame.correctItems.push(itemKey);
+  activeGame.score++;
+  return true;
 }
 
 function nextStep(){
@@ -5329,6 +5355,19 @@ function nextStep(){
   if(activeGame.index>=activeGame.total){removeGameSession(activeGame.sessionId);endGame();return;}
   dispatchGameStep();
   persistActiveGameSession();
+}
+
+function previousStep(){
+  if(activeGame.index<=0||String(activeGame.type||'').includes('memoria'))return;
+  window.speechSynthesis?.cancel();
+  activeGame.index--;
+  dispatchGameStep();
+  persistActiveGameSession();
+}
+
+function completeFlashcard(){
+  registerCorrectAnswer();
+  nextStep();
 }
 
 /* ══ ENGINE: FLASHCARD ══ */
@@ -5344,7 +5383,7 @@ function engineFlashcard(){
         <div style="font-size:16px; color:var(--slate); background:var(--orange-pale); border:1px solid rgba(245,124,0,.2); padding:20px; border-radius:var(--radius-lg); line-height:1.6;">${item.exp}</div>
       </div>
       <div style="padding:0 24px 20px">
-        <button class="btn btn-primary w-full btn-lg" onclick="activeGame.score++;nextStep()">
+        <button class="btn btn-primary w-full btn-lg" onclick="completeFlashcard()">
           Entendi <i class="fa-solid fa-thumbs-up ml-2"></i>
         </button>
       </div>`;
@@ -5360,7 +5399,7 @@ function engineFlashcard(){
         ${item.ctx?`<div class="flashcard-ctx">${item.ctx}</div>`:''}
       </div>
       <div style="padding:0 24px 20px">
-        <button class="btn btn-primary w-full btn-lg" onclick="activeGame.score++;nextStep()">
+        <button class="btn btn-primary w-full btn-lg" onclick="completeFlashcard()">
           Entendi, próximo <i class="fa-solid fa-arrow-right"></i>
         </button>
       </div>`;
