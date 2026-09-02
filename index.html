@@ -2300,7 +2300,7 @@ select.input { appearance: none; cursor: pointer; }
               <option value="basic01">Livro 1 · Basic 01</option>
               <option value="basic02">Livro 1 · Basic 02</option>
             </select>
-            <div class="text-xs text-muted" style="margin-top:7px">Escolha o módulo e marque um ou mais áudios desta aula. Os alunos só verão os áudios já liberados e os módulos anteriores.</div>
+            <div class="text-xs text-muted" style="margin-top:7px">Escolha o módulo e marque um ou mais áudios desta aula. Somente os áudios marcados por você ficarão disponíveis para esta turma e continuarão na biblioteca para revisão.</div>
             <div id="admin-book-audio-picker" class="book-audio-picker hidden"></div>
           </div>
           <div><label class="label" style="color:#4F46E5">📖 Vocabulário (inglês | pt | pronúncia)</label><textarea id="admin-semana-vocab" class="input" placeholder="apple | maçã | /æp.əl/&#10;car | carro | /kɑːr/"></textarea></div>
@@ -4872,12 +4872,7 @@ function accessibleBookAudioItems(){
   if(currentUser?.role==='teacher')return catalog;
   const weeks=visibleBookAudioWeeks();
   const assigned=new Set(weeks.flatMap(week=>Array.isArray(week.bookAudioIds)?week.bookAudioIds:[]));
-  const ranks=weeks.map(week=>BOOK_AUDIO_LEVELS[week.bookLevel]?.rank||0).filter(Boolean);
-  const currentRank=ranks.length?Math.max(...ranks):0;
-  return catalog.filter(item=>{
-    const rank=BOOK_AUDIO_LEVELS[item.level]?.rank||99;
-    return assigned.has(item.id)||(currentRank>0&&rank<currentRank);
-  });
+  return catalog.filter(item=>assigned.has(item.id));
 }
 
 function refreshBookAudioLibraryCta(){
