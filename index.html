@@ -1920,6 +1920,70 @@ select.input { appearance: none; cursor: pointer; }
   .auth-orb { display: none; }
   .result-confetti { display: none; }
 }
+
+/* ── Áudios do Livro ── */
+.book-audio-library-cta {
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  margin-bottom:16px;padding:16px 18px;border:1px solid rgba(79,70,229,.16);
+  border-radius:var(--radius-lg);background:linear-gradient(135deg,#EEF2FF,#F5F3FF);
+  box-shadow:var(--shadow-xs);
+}
+.book-audio-library-cta strong { display:block;color:#3730A3;font-size:15px; }
+.book-audio-library-cta span { display:block;color:var(--slate);font-size:12px;margin-top:3px; }
+.game-tile.book-audio { border-color:rgba(79,70,229,.18);background:linear-gradient(135deg,#EEF2FF,#F5F3FF); }
+.game-tile.book-audio:hover { border-color:rgba(79,70,229,.36); }
+.book-audio-admin-box { padding:14px;border:1px solid rgba(79,70,229,.16);border-radius:16px;background:#F8FAFF; }
+.book-audio-picker { display:grid;gap:7px;max-height:260px;overflow:auto;padding:4px;margin-top:10px; }
+.book-audio-check { display:flex;gap:10px;align-items:flex-start;padding:10px 11px;border:1px solid var(--border);border-radius:12px;background:white;cursor:pointer; }
+.book-audio-check:hover { border-color:rgba(79,70,229,.35); }
+.book-audio-check input { width:18px;height:18px;accent-color:#4F46E5;flex:none;margin-top:1px; }
+.book-audio-check strong { display:block;font-size:13px;color:var(--ink); }
+.book-audio-check span { display:block;font-size:11px;color:var(--slate);margin-top:2px; }
+#book-audio-overlay { position:fixed;inset:0;z-index:1200;background:#F7F8FC;overflow:auto; }
+.book-audio-topbar { position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--border);backdrop-filter:blur(12px); }
+.book-audio-topbar-title { min-width:0;flex:1;font-weight:900;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.book-audio-page { width:min(760px,100%);margin:0 auto;padding:20px 16px 48px; }
+.book-audio-intro { padding:18px;border-radius:20px;background:linear-gradient(135deg,#4338CA,#7C3AED);color:white;margin-bottom:16px;box-shadow:0 12px 30px rgba(79,70,229,.2); }
+.book-audio-intro h2 { font-size:22px;margin-bottom:5px; }
+.book-audio-intro p { font-size:13px;opacity:.9;line-height:1.5; }
+.book-audio-group { margin-top:20px; }
+.book-audio-group-title { display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;font-weight:900;color:var(--ink); }
+.book-audio-list { display:grid;gap:10px; }
+.book-audio-card { display:flex;align-items:center;gap:13px;width:100%;padding:13px;text-align:left;border:1px solid var(--border);border-radius:16px;background:white;box-shadow:var(--shadow-xs);cursor:pointer; }
+.book-audio-card:hover { border-color:rgba(79,70,229,.32);transform:translateY(-1px); }
+.book-audio-card-icon { display:grid;place-items:center;width:44px;height:44px;flex:none;border-radius:14px;background:#EEF2FF;color:#4F46E5;font-size:18px; }
+.book-audio-card-main { min-width:0;flex:1; }
+.book-audio-card-title { font-size:14px;font-weight:850;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.book-audio-card-meta { margin-top:3px;font-size:11px;color:var(--slate); }
+.book-audio-card-status { flex:none;color:#4F46E5;font-size:18px; }
+.book-audio-study-head { margin-bottom:14px; }
+.book-audio-study-head h2 { font-size:22px;color:var(--ink);line-height:1.2;margin-bottom:5px; }
+.book-audio-study-head p { font-size:12px;color:var(--slate); }
+.book-audio-player { padding:17px;border-radius:20px;background:linear-gradient(145deg,#312E81,#5B21B6);color:white;box-shadow:0 14px 34px rgba(49,46,129,.22); }
+.book-audio-player audio { width:100%;margin-top:13px; }
+.book-audio-speed { display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:12px; }
+.book-audio-speed button { border:1px solid rgba(255,255,255,.32);border-radius:999px;background:rgba(255,255,255,.1);color:white;padding:7px 12px;font-size:12px;font-weight:800;cursor:pointer; }
+.book-audio-speed button.active { background:white;color:#4338CA; }
+.book-audio-unlock { margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.12);font-size:12px;line-height:1.45; }
+.book-audio-locked { margin-top:16px;padding:28px 20px;text-align:center;border:1px dashed rgba(79,70,229,.28);border-radius:18px;background:white;color:var(--slate); }
+.book-audio-locked i { display:block;font-size:28px;color:#6366F1;margin-bottom:10px; }
+.book-audio-section { margin-top:14px;padding:17px;border:1px solid var(--border);border-radius:18px;background:white;box-shadow:var(--shadow-xs); }
+.book-audio-section h3 { display:flex;align-items:center;gap:8px;font-size:16px;color:var(--ink);margin-bottom:11px; }
+.book-audio-goal { color:var(--slate);font-size:14px;line-height:1.55; }
+.book-audio-vocab-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
+.book-audio-vocab { padding:10px;border-radius:12px;background:#F8FAFC; }
+.book-audio-vocab strong { display:block;font-size:13px;color:#3730A3; }
+.book-audio-vocab span { display:block;font-size:12px;color:var(--slate);margin-top:2px; }
+.book-audio-expression { padding:10px 0;border-bottom:1px solid var(--border); }
+.book-audio-expression:last-child { border-bottom:0;padding-bottom:0; }
+.book-audio-expression strong { display:block;color:#0F766E;font-size:14px; }
+.book-audio-expression span { display:block;color:var(--slate);font-size:12px;margin-top:3px;line-height:1.45; }
+.book-audio-transcript { white-space:pre-wrap;color:var(--slate);font-size:14px;line-height:1.65; }
+@media (max-width:520px) {
+  .book-audio-library-cta { align-items:flex-start;flex-direction:column; }
+  .book-audio-library-cta .btn { width:100%; }
+  .book-audio-vocab-grid { grid-template-columns:1fr; }
+}
 </style>
 </head>
 <body>
@@ -2092,6 +2156,10 @@ select.input { appearance: none; cursor: pointer; }
         <p>Conteúdo semanal com jogos variados</p>
       </div>
       <div id="daily-word-container" class="hidden"></div>
+      <div id="book-audio-library-cta" class="book-audio-library-cta hidden">
+        <div><strong>🎧 Áudios do Livro</strong><span>Ouça novamente as aulas já liberadas.</span></div>
+        <button class="btn btn-ghost" type="button" onclick="openBookAudioLibrary()"><i class="fa-solid fa-clock-rotate-left"></i> Rever áudios</button>
+      </div>
       <div id="semanas-container"></div>
     </section>
 
@@ -2225,6 +2293,16 @@ select.input { appearance: none; cursor: pointer; }
             <div><label class="label">Título</label><input type="text" id="admin-semana-title" class="input" placeholder="Semana 12"></div>
           </div>
           <div><label class="label">📅 Publicar em (opcional)</label><input type="datetime-local" id="admin-semana-publish-at" class="input"><div class="text-xs text-muted" style="margin-top:5px">A aula ficará invisível para os alunos até esta data e horário.</div></div>
+          <div class="book-audio-admin-box">
+            <label class="label" style="color:#4338CA">🎧 Áudio do Livro (opcional)</label>
+            <select id="admin-semana-book-level" class="input" onchange="changeAdminBookLevel(this.value)">
+              <option value="">Esta semana não tem áudio do livro</option>
+              <option value="basic01">Livro 1 · Basic 01</option>
+              <option value="basic02">Livro 1 · Basic 02</option>
+            </select>
+            <div class="text-xs text-muted" style="margin-top:7px">Escolha o módulo e marque um ou mais áudios desta aula. Os alunos só verão os áudios já liberados e os módulos anteriores.</div>
+            <div id="admin-book-audio-picker" class="book-audio-picker hidden"></div>
+          </div>
           <div><label class="label" style="color:#4F46E5">📖 Vocabulário (inglês | pt | pronúncia)</label><textarea id="admin-semana-vocab" class="input" placeholder="apple | maçã | /æp.əl/&#10;car | carro | /kɑːr/"></textarea></div>
           <div><label class="label" style="color:#B45309">🎯 Chunks (inglês | pt | contexto)</label><textarea id="admin-semana-chunks" class="input" placeholder="I like | Eu gosto | Opinião"></textarea></div>
           <div><label class="label" style="color:#B91C1C">❌ Ache o Erro (errado | certo | regra)</label><textarea id="admin-semana-erros" class="input" placeholder="He have | He has | He, She, It usa has"></textarea></div>
@@ -2291,6 +2369,16 @@ select.input { appearance: none; cursor: pointer; }
       </div>
     </div>
   </main>
+</div>
+
+<!-- ══ ÁUDIOS DO LIVRO ══ -->
+<div id="book-audio-overlay" class="hidden">
+  <div class="book-audio-topbar">
+    <button id="book-audio-back" class="btn-icon hidden" type="button" onclick="renderBookAudioLibrary()" aria-label="Voltar para a biblioteca"><i class="fa-solid fa-arrow-left"></i></button>
+    <div id="book-audio-overlay-title" class="book-audio-topbar-title">Áudios do Livro</div>
+    <button class="btn-icon" type="button" onclick="closeBookAudioLibrary()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div id="book-audio-content" class="book-audio-page"></div>
 </div>
 
 <!-- ══ MUSIC PLAYER OVERLAY ══ -->
@@ -2365,6 +2453,7 @@ select.input { appearance: none; cursor: pointer; }
   <button onclick="closeResult()" class="btn btn-orange btn-lg">Continuar</button>
 </div>
 
+<script src="book-audio-data.js"></script>
 <script>
 /* ══════════════════════════════════════════════
    CONFIG & GLOBALS
@@ -4743,10 +4832,192 @@ async function studyDailyWord(activityKey){
   renderDailyWord();
 }
 
+/* ══════════════════════════════════════════════
+   ÁUDIOS DO LIVRO
+══════════════════════════════════════════════ */
+const BOOK_AUDIO_LEVELS={
+  basic01:{label:'Basic 01',rank:1,book:'Livro 1'},
+  basic02:{label:'Basic 02',rank:2,book:'Livro 1'},
+  intermediate01:{label:'Intermediate 01',rank:3,book:'Livro 2'},
+  intermediate02:{label:'Intermediate 02',rank:4,book:'Livro 2'}
+};
+let bookAudioLibraryFocus=[];
+let activeBookAudioId='';
+let adminSelectedBookAudioIds=new Set();
+
+function bookAudioItem(id){
+  return (typeof BOOK_AUDIO_CATALOG==='undefined'?[]:BOOK_AUDIO_CATALOG).find(item=>item.id===id);
+}
+
+function bookAudioMarker(id){return `book_audio__atividade_${id}_listened`;}
+
+function bookAudioLessonLabel(item){
+  const unit=String(item?.unit||'');
+  return /^Revisão/i.test(unit)?unit:`Unidade ${unit} · Lição ${item?.lesson||'—'}`;
+}
+
+function isBookAudioListened(id){
+  return currentUser?.role==='teacher'||Boolean(currentUser?.unlockedFases?.includes(bookAudioMarker(id)));
+}
+
+function visibleBookAudioWeeks(){
+  if(currentUser?.role==='teacher'){
+    return Object.values(DATABASE.semanas||{}).flat();
+  }
+  return (DATABASE.semanas[currentUser?.turma]||[]).filter(week=>isContentPublished(week)&&!week.locked);
+}
+
+function accessibleBookAudioItems(){
+  const catalog=typeof BOOK_AUDIO_CATALOG==='undefined'?[]:BOOK_AUDIO_CATALOG;
+  if(currentUser?.role==='teacher')return catalog;
+  const weeks=visibleBookAudioWeeks();
+  const assigned=new Set(weeks.flatMap(week=>Array.isArray(week.bookAudioIds)?week.bookAudioIds:[]));
+  const ranks=weeks.map(week=>BOOK_AUDIO_LEVELS[week.bookLevel]?.rank||0).filter(Boolean);
+  const currentRank=ranks.length?Math.max(...ranks):0;
+  return catalog.filter(item=>{
+    const rank=BOOK_AUDIO_LEVELS[item.level]?.rank||99;
+    return assigned.has(item.id)||(currentRank>0&&rank<currentRank);
+  });
+}
+
+function refreshBookAudioLibraryCta(){
+  const cta=document.getElementById('book-audio-library-cta');
+  if(cta)cta.classList.toggle('hidden',accessibleBookAudioItems().length===0);
+}
+
+function openBookAudioLibrary(ids=[]){
+  const allowed=new Set(accessibleBookAudioItems().map(item=>item.id));
+  bookAudioLibraryFocus=(ids||[]).filter(id=>allowed.has(id));
+  document.getElementById('book-audio-overlay')?.classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  renderBookAudioLibrary();
+}
+
+function closeBookAudioLibrary(){
+  const player=document.getElementById('book-audio-el');
+  if(player)player.pause();
+  activeBookAudioId='';
+  document.getElementById('book-audio-overlay')?.classList.add('hidden');
+  document.body.style.overflow='';
+}
+
+function renderBookAudioLibrary(){
+  activeBookAudioId='';
+  const content=document.getElementById('book-audio-content');
+  const title=document.getElementById('book-audio-overlay-title');
+  const back=document.getElementById('book-audio-back');
+  if(!content)return;
+  if(title)title.textContent=bookAudioLibraryFocus.length?'Áudio desta aula':'Áudios do Livro';
+  if(back)back.classList.add('hidden');
+  const allowed=accessibleBookAudioItems();
+  const focus=new Set(bookAudioLibraryFocus);
+  const list=focus.size?allowed.filter(item=>focus.has(item.id)):allowed;
+  if(!list.length){
+    content.innerHTML='<div class="book-audio-locked"><i class="fa-solid fa-headphones"></i>Nenhum áudio foi liberado para esta turma ainda.</div>';
+    return;
+  }
+  const groups={};
+  list.forEach(item=>{
+    const key=item.level;
+    (groups[key]=groups[key]||[]).push(item);
+  });
+  content.innerHTML=`
+    <div class="book-audio-intro">
+      <h2>${bookAudioLibraryFocus.length?'Áudios desta aula':'Sua biblioteca de escuta'}</h2>
+      <p>Ouça no seu ritmo. Ao terminar cada faixa, o vocabulário, as expressões importantes e o texto do áudio serão liberados.</p>
+    </div>`+
+    Object.keys(groups).sort((a,b)=>(BOOK_AUDIO_LEVELS[a]?.rank||99)-(BOOK_AUDIO_LEVELS[b]?.rank||99)).map(level=>{
+      const meta=BOOK_AUDIO_LEVELS[level]||{label:level,book:''};
+      return `<section class="book-audio-group">
+        <div class="book-audio-group-title"><span>${htmlSafe(meta.book)} · ${htmlSafe(meta.label)}</span><span class="badge badge-violet">${groups[level].length} áudio(s)</span></div>
+        <div class="book-audio-list">${groups[level].map(item=>{
+          const done=isBookAudioListened(item.id);
+          return `<button class="book-audio-card" type="button" onclick="openBookAudioDetail('${esc(item.id)}')">
+            <span class="book-audio-card-icon"><i class="fa-solid fa-${done?'circle-check':'headphones'}"></i></span>
+            <span class="book-audio-card-main"><span class="book-audio-card-title">${htmlSafe(item.title)}</span><span class="book-audio-card-meta">${htmlSafe(bookAudioLessonLabel(item))}${item.page?` · Página ${htmlSafe(item.page)}`:''}</span></span>
+            <span class="book-audio-card-status"><i class="fa-solid fa-chevron-right"></i></span>
+          </button>`;
+        }).join('')}</div>
+      </section>`;
+    }).join('');
+}
+
+function openBookAudioDetail(id){
+  const item=bookAudioItem(id);
+  if(!item||!accessibleBookAudioItems().some(audio=>audio.id===id))return;
+  activeBookAudioId=id;
+  const content=document.getElementById('book-audio-content');
+  const title=document.getElementById('book-audio-overlay-title');
+  const back=document.getElementById('book-audio-back');
+  const listened=isBookAudioListened(id);
+  if(title)title.textContent=item.title;
+  if(back)back.classList.remove('hidden');
+  const study=listened?`
+    <section class="book-audio-section"><h3>🎯 O que aprender</h3><div class="book-audio-goal">${htmlSafe(item.goal||'Treinar a compreensão auditiva e reconhecer o vocabulário da lição em contexto.')}</div></section>
+    <section class="book-audio-section"><h3>📖 Vocabulário do áudio</h3><div class="book-audio-vocab-grid">${(item.vocab||[]).map(word=>`<div class="book-audio-vocab"><strong>${htmlSafe(word.en)}</strong><span>${htmlSafe(word.pt)}</span></div>`).join('')||'<div class="book-audio-goal">Escute novamente e anote as palavras que reconhecer.</div>'}</div></section>
+    <section class="book-audio-section"><h3>💬 Palavras e expressões importantes</h3>${(item.expressions||[]).map(exp=>`<div class="book-audio-expression"><strong>${htmlSafe(exp.en)}</strong><span>${htmlSafe(exp.pt)}${exp.use?` · ${htmlSafe(exp.use)}`:''}</span></div>`).join('')||'<div class="book-audio-goal">Observe como as palavras se unem durante a fala.</div>'}</section>
+    <section class="book-audio-section"><h3>👂 Dicas de escuta</h3><div class="book-audio-goal">${htmlSafe(item.tip||'Primeiro escute sem ler. Depois acompanhe o texto e repita as frases, imitando o ritmo e as pausas.')}</div></section>
+    <details class="book-audio-section"><summary style="cursor:pointer;font-weight:850;color:var(--ink)">📝 Ver texto do áudio</summary><div class="book-audio-transcript" style="margin-top:12px">${htmlSafe(item.transcript||'Texto em preparação.')}</div></details>`:
+    `<div class="book-audio-locked"><i class="fa-solid fa-lock"></i><strong>Estudo ainda bloqueado</strong><div style="margin-top:6px;font-size:13px">Ouça o áudio até o final para liberar o vocabulário, as expressões e o texto.</div></div>`;
+  content.innerHTML=`
+    <div class="book-audio-study-head"><h2>${htmlSafe(item.title)}</h2><p>${htmlSafe(BOOK_AUDIO_LEVELS[item.level]?.book||'')} · ${htmlSafe(BOOK_AUDIO_LEVELS[item.level]?.label||item.level)} · ${htmlSafe(bookAudioLessonLabel(item))}${item.page?` · Página ${htmlSafe(item.page)}`:''}</p></div>
+    <div class="book-audio-player">
+      <div style="font-weight:850"><i class="fa-solid fa-headphones"></i> Ouça com atenção</div>
+      <audio id="book-audio-el" controls preload="metadata" src="${htmlSafe(encodeURI(item.file))}" onended="completeBookAudioListen()"></audio>
+      <div class="book-audio-speed"><span style="font-size:12px;margin-right:2px">Velocidade:</span><button type="button" onclick="setBookAudioSpeed(.75,this)">0,75×</button><button type="button" class="active" onclick="setBookAudioSpeed(1,this)">Normal</button><button type="button" onclick="setBookAudioSpeed(1.25,this)">1,25×</button></div>
+      <div class="book-audio-unlock">${listened?'<i class="fa-solid fa-circle-check"></i> Áudio concluído · conteúdo de estudo liberado':'<i class="fa-solid fa-lock-open"></i> O conteúdo será liberado quando o áudio terminar.'}</div>
+    </div>${study}`;
+  content.scrollTo?.({top:0});
+  document.getElementById('book-audio-overlay')?.scrollTo?.({top:0});
+}
+
+function setBookAudioSpeed(rate,button){
+  const audio=document.getElementById('book-audio-el');
+  if(audio)audio.playbackRate=rate;
+  button?.parentElement?.querySelectorAll('button').forEach(el=>el.classList.toggle('active',el===button));
+}
+
+async function completeBookAudioListen(){
+  const id=activeBookAudioId;
+  if(!id||currentUser?.role==='teacher'||isBookAudioListened(id))return;
+  currentUser.unlockedFases=currentUser.unlockedFases||[];
+  currentUser.unlockedFases.push(bookAudioMarker(id));
+  openBookAudioDetail(id);
+  await saveStudentProgress({silent:true});
+}
+
+function changeAdminBookLevel(level){
+  adminSelectedBookAudioIds=new Set([...adminSelectedBookAudioIds].filter(id=>bookAudioItem(id)?.level===level));
+  renderAdminBookAudioPicker();
+}
+
+function toggleAdminBookAudio(id,checked){
+  if(checked)adminSelectedBookAudioIds.add(id);
+  else adminSelectedBookAudioIds.delete(id);
+}
+
+function renderAdminBookAudioPicker(){
+  const picker=document.getElementById('admin-book-audio-picker');
+  const level=document.getElementById('admin-semana-book-level')?.value||'';
+  if(!picker)return;
+  const items=(typeof BOOK_AUDIO_CATALOG==='undefined'?[]:BOOK_AUDIO_CATALOG).filter(item=>item.level===level);
+  picker.classList.toggle('hidden',!level);
+  if(!level)return void (picker.innerHTML='');
+  if(!items.length){
+    picker.innerHTML='<div class="text-xs text-muted">Os áudios deste módulo ainda não foram cadastrados.</div>';
+    return;
+  }
+  picker.innerHTML=items.map(item=>`<label class="book-audio-check">
+    <input type="checkbox" ${adminSelectedBookAudioIds.has(item.id)?'checked':''} onchange="toggleAdminBookAudio('${esc(item.id)}',this.checked)">
+    <span><strong>${htmlSafe(item.title)}</strong><span>${htmlSafe(bookAudioLessonLabel(item))}${item.page?` · página ${htmlSafe(item.page)}`:''}</span></span>
+  </label>`).join('');
+}
+
 function renderStudentSemanas(){
   const cont=document.getElementById('semanas-container');
   cont.innerHTML='';
   renderDailyWord();
+  refreshBookAudioLibraryCta();
   let list=[];
   if(currentUser.role==='teacher'){
     Object.keys(DATABASE.semanas).forEach(k=>{
@@ -4818,6 +5089,11 @@ function renderStudentSemanas(){
           <div class="tile-label">Quiz da Aula</div>
           <div class="tile-sub">Até 25 perguntas</div>
         </div>
+        ${(sem.bookAudioIds||[]).length?`<div class="game-tile book-audio" onclick='openBookAudioLibrary(${JSON.stringify(sem.bookAudioIds)})'>
+          <div class="tile-icon">🎧</div>
+          <div class="tile-label">Áudio do Livro</div>
+          <div class="tile-sub">${sem.bookAudioIds.length} faixa${sem.bookAudioIds.length===1?'':'s'} · ${htmlSafe(BOOK_AUDIO_LEVELS[sem.bookLevel]?.label||'')}</div>
+        </div>`:''}
       </div>`;
     cont.appendChild(div);
   });
@@ -6147,7 +6423,7 @@ function dispatchReport(act,result){
 /* ══════════════════════════════════════════════
    TEACHER PANEL
 ══════════════════════════════════════════════ */
-function initTeacherPanel(){showView('teacher');renderAdminRooms();updateAdminSelects();renderAdminSemanas();renderAdminTrilhas();renderAdminMusicas();initTrilhaFormExtras();showTeacherTab('salas');}
+function initTeacherPanel(){showView('teacher');renderAdminRooms();updateAdminSelects();renderAdminSemanas();renderAdminTrilhas();renderAdminMusicas();renderAdminBookAudioPicker();initTrilhaFormExtras();showTeacherTab('salas');}
 
 function showTeacherTab(tab){
   ['salas','trilha-admin','aulas-admin','semanas-lista','musicas-admin','dashboard'].forEach(t=>{
@@ -6840,6 +7116,8 @@ function adminSaveSemana(){
   const rKey=document.getElementById('admin-semana-room').value;
   const title=document.getElementById('admin-semana-title').value.trim();
   const publishAt=publishAtFromInput('admin-semana-publish-at');
+  const bookLevel=document.getElementById('admin-semana-book-level').value;
+  const bookAudioIds=bookLevel?[...adminSelectedBookAudioIds].filter(id=>bookAudioItem(id)?.level===bookLevel):[];
   if(!rKey||!title)return alert("Selecione a turma e dê um título.");
   const parseLines=(id,keys)=>document.getElementById(id).value.trim().split('\n').filter(Boolean).map(l=>{
     const p=l.split('|');const obj={};keys.forEach((k,i)=>obj[k]=(p[i]||'').trim());return obj;
@@ -6848,6 +7126,8 @@ function adminSaveSemana(){
   const novaSemana = {
     title,
     publishAt,
+    bookLevel,
+    bookAudioIds,
     vocab:parseLines('admin-semana-vocab',['en','pt','pron']),
     chunks:parseLines('admin-semana-chunks',['en','pt','ctx']),
     erros:parseLines('admin-semana-erros',['errado','certo','exp']),
@@ -6877,6 +7157,9 @@ function adminEditSemana(rKey, idx) {
   document.getElementById('admin-semana-room').value = rKey;
   document.getElementById('admin-semana-title').value = sem.title;
   document.getElementById('admin-semana-publish-at').value = publishAtToInput(sem.publishAt);
+  document.getElementById('admin-semana-book-level').value = sem.bookLevel||'';
+  adminSelectedBookAudioIds=new Set(sem.bookAudioIds||[]);
+  renderAdminBookAudioPicker();
   
   document.getElementById('admin-semana-vocab').value = (sem.vocab||[]).map(x => `${x.en} | ${x.pt} | ${x.pron}`).join('\n');
   document.getElementById('admin-semana-chunks').value = (sem.chunks||[]).map(x => `${x.en} | ${x.pt} | ${x.ctx}`).join('\n');
@@ -6893,6 +7176,9 @@ function adminCancelEditSemana() {
   document.getElementById('admin-semana-idx').value = '';
   document.getElementById('admin-semana-title').value = '';
   document.getElementById('admin-semana-publish-at').value = '';
+  document.getElementById('admin-semana-book-level').value = '';
+  adminSelectedBookAudioIds=new Set();
+  renderAdminBookAudioPicker();
   document.getElementById('admin-semana-vocab').value = '';
   document.getElementById('admin-semana-chunks').value = '';
   document.getElementById('admin-semana-erros').value = '';
@@ -6914,7 +7200,7 @@ function renderAdminSemanas(){
         const scheduled=!isContentPublished(s);
         return `
         <div class="admin-item" style="margin-bottom:8px${lock||scheduled?';opacity:.72':''}">
-          <div><div class="admin-item-name">${lock?'🔒 ':''}${scheduled?'📅 ':''}${s.title}</div><div class="admin-item-sub">${(s.vocab||[]).length} vocab · ${(s.chunks||[]).length} chunks · ${(s.ditado||[]).length} ditado${lock?' · TRAVADA':''}${scheduledAdminLabel(s)}</div></div>
+          <div><div class="admin-item-name">${lock?'🔒 ':''}${scheduled?'📅 ':''}${s.title}</div><div class="admin-item-sub">${(s.vocab||[]).length} vocab · ${(s.chunks||[]).length} chunks · ${(s.ditado||[]).length} ditado${(s.bookAudioIds||[]).length?` · 🎧 ${s.bookAudioIds.length} áudio(s) ${BOOK_AUDIO_LEVELS[s.bookLevel]?.label||''}`:''}${lock?' · TRAVADA':''}${scheduledAdminLabel(s)}</div></div>
           <div style="display:flex;gap:4px">
             <button class="admin-edit" title="${lock?'Liberar para os alunos':'Travar (esconder dos alunos)'}" onclick="adminToggleLockSemana('${k}',${i})"><i class="fa-solid fa-${lock?'lock':'lock-open'}"></i></button>
             <button class="admin-edit" title="Copiar para outra turma" onclick="adminCopySemana('${k}',${i})"><i class="fa-solid fa-copy"></i></button>
