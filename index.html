@@ -641,6 +641,28 @@ select.input { appearance: none; cursor: pointer; }
 }
 .app-logo span { color: var(--ink); }
 
+.student-preview-bar {
+  position: relative; z-index: 35;
+  background: linear-gradient(135deg,#4C1D95,#6D28D9);
+  color: white; padding: 10px 16px;
+  box-shadow: 0 5px 18px rgba(76,29,149,.18);
+}
+.student-preview-inner {
+  max-width: 920px; margin: 0 auto;
+  display: grid; grid-template-columns: minmax(190px,1fr) minmax(180px,280px);
+  gap: 12px; align-items: center;
+}
+.student-preview-title { font-size: 13px; font-weight: 900; }
+.student-preview-sub { font-size: 11px; color: rgba(255,255,255,.78); margin-top: 2px; }
+.student-preview-select {
+  width: 100%; border: 1px solid rgba(255,255,255,.35); border-radius: 10px;
+  background: white; color: var(--ink); padding: 9px 12px;
+  font: 700 13px 'Inter',sans-serif;
+}
+@media(max-width:600px){
+  .student-preview-inner { grid-template-columns: 1fr; gap: 8px; }
+}
+
 .app-main { max-width: 600px; margin: 0 auto; padding: 28px 16px 100px; }
 
 /* ══════════════════════════════════════════
@@ -2125,11 +2147,21 @@ select.input { appearance: none; cursor: pointer; }
   <header class="app-header">
     <div class="app-logo"><span style="color:var(--orange)">All</span><span style="color:var(--ink)">Net</span> <span style="font-size:13px;font-weight:600;color:var(--slate)">Inglês</span></div>
     <div style="display:flex;align-items:center;gap:10px">
-      <button id="btn-back-admin" onclick="showView('teacher')" class="btn btn-ghost btn-sm hidden"><i class="fa-solid fa-gear"></i> Admin</button>
+      <button id="btn-back-admin" onclick="exitStudentPreview()" class="btn btn-ghost btn-sm hidden"><i class="fa-solid fa-arrow-left"></i> Admin</button>
       <div class="badge" style="background:linear-gradient(135deg,var(--orange),var(--orange-light));color:white;border:none;box-shadow:0 2px 8px rgba(245,124,0,.2);padding:5px 14px"><i class="fa-solid fa-bolt"></i> <span id="student-xp">0</span> XP</div>
       <button onclick="doLogout()" class="btn-icon" style="background:none;border:none;cursor:pointer;color:var(--slate);font-size:16px;transition:color .2s" onmouseover="this.style.color='var(--rose)'" onmouseout="this.style.color='var(--slate)'"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
   </header>
+
+  <div id="student-preview-bar" class="student-preview-bar hidden">
+    <div class="student-preview-inner">
+      <div>
+        <div class="student-preview-title"><i class="fa-solid fa-eye"></i> Prévia fiel da turma</div>
+        <div class="student-preview-sub">Conteúdo publicado e bloqueios reais · progresso de um aluno novo</div>
+      </div>
+      <select id="student-preview-room" class="student-preview-select" onchange="changeStudentPreviewRoom(this.value)" aria-label="Turma da pré-visualização"></select>
+    </div>
+  </div>
 
   <main class="app-main">
     <!-- TRILHA TAB -->
@@ -2191,7 +2223,7 @@ select.input { appearance: none; cursor: pointer; }
   <header class="app-header">
     <div class="app-logo">Analice<span> Pessoa</span> <span style="font-size:12px;color:var(--slate);font-weight:600;font-family:'Inter',sans-serif">Admin</span></div>
     <div style="display:flex;align-items:center;gap:10px">
-      <button onclick="previewAsStudent()" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i> Pré-visualizar</button>
+      <button onclick="previewAsStudent()" class="btn btn-ghost btn-sm"><i class="fa-solid fa-eye"></i> Ver como a turma</button>
       <button onclick="doLogout()" class="btn-icon" style="background:none;border:none;cursor:pointer;color:var(--slate);font-size:16px;transition:color .2s" onmouseover="this.style.color='var(--rose)'" onmouseout="this.style.color='var(--slate)'"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
   </header>
@@ -4422,6 +4454,7 @@ function doLogout(){
   localStorage.removeItem('teacher_unlocked');
   if(sbClient)sbClient.auth.signOut();
   document.getElementById('btn-back-admin').classList.add('hidden');
+  document.getElementById('student-preview-bar')?.classList.add('hidden');
   showView('auth');
 }
 
@@ -4458,11 +4491,53 @@ function updateXpLevel(){
   if(el) el.textContent=`Nível ${level}`;
 }
 
-function previewAsStudent(){
-  currentUser.unlockedFases=Object.values(DATABASE.trilhas).flat().flatMap(t=>[t.id,t.id+"_done"]);
+function isTeacherPreview(){
+  return currentUser?.role==='teacher'&&Boolean(currentUser.previewMode);
+}
+
+function isTeacherAdmin(){
+  return currentUser?.role==='teacher'&&!isTeacherPreview();
+}
+
+function previewRoomOptions(selectedRoom){
+  return Object.keys(DATABASE.turmas||{}).map(key=>
+    `<option value="${htmlSafe(key)}" ${key===selectedRoom?'selected':''}>${htmlSafe(DATABASE.turmas[key]?.name||key)}</option>`
+  ).join('');
+}
+
+function previewAsStudent(roomKey=adminSelectedRoom){
+  const availableRooms=Object.keys(DATABASE.turmas||{});
+  const selected=DATABASE.turmas?.[roomKey]?roomKey:availableRooms[0];
+  if(!selected)return alert('Cadastre uma turma antes de abrir a pré-visualização.');
+  adminSelectedRoom=selected;
+  localStorage.setItem('ap_admin_selected_room',selected);
+  currentUser={
+    role:'teacher',previewMode:true,turma:selected,name:'Prévia da turma',
+    xp:0,unlockedFases:[],notas:{},xpAwards:{}
+  };
+  const roomSelect=document.getElementById('student-preview-room');
+  if(roomSelect)roomSelect.innerHTML=previewRoomOptions(selected);
+  document.getElementById('student-preview-bar')?.classList.remove('hidden');
   document.getElementById('btn-back-admin').classList.remove('hidden');
+  document.getElementById('student-xp').textContent='0';
+  document.getElementById('xp-num').textContent='0';
+  updateXpLevel();
   switchStudentTab('trilha');
   showView('student');
+}
+
+function changeStudentPreviewRoom(roomKey){
+  if(!DATABASE.turmas?.[roomKey])return;
+  previewAsStudent(roomKey);
+}
+
+function exitStudentPreview(){
+  closeBookAudioLibrary();
+  closeMusicPlayer();
+  currentUser={role:'teacher',name:'Prof. Analice'};
+  document.getElementById('student-preview-bar')?.classList.add('hidden');
+  document.getElementById('btn-back-admin').classList.add('hidden');
+  initTeacherPanel();
 }
 
 /* ══════════════════════════════════════════════
@@ -4525,7 +4600,7 @@ function renderStudentTrilha(){
   const unlocked=currentUser.unlockedFases||[];
 
   let trilhasToRender = [];
-  if (currentUser.role === 'teacher') {
+  if (isTeacherAdmin()) {
       Object.keys(DATABASE.trilhas).forEach(k => {
           if (!DATABASE.turmas[k]) return;
           (DATABASE.trilhas[k] || []).forEach(t => trilhasToRender.push({...t, turmaName: DATABASE.turmas[k]?.name, rKey: k}));
@@ -4553,8 +4628,8 @@ function renderStudentTrilha(){
         cont.appendChild(levelHeader);
     }
 
-    const lockedByTeacher = fase.locked && currentUser.role!=='teacher';
-    const isUnlocked=!lockedByTeacher && (unlocked.includes(fase.id)||i===0||currentUser.role==='teacher');
+    const lockedByTeacher = fase.locked && !isTeacherAdmin();
+    const isUnlocked=!lockedByTeacher && (unlocked.includes(fase.id)||i===0||isTeacherAdmin());
     const passedPhase=Number(currentUser.notas?.[fase.id]||0)>=8;
     const isDone=!lockedByTeacher && (unlocked.includes(fase.id+"_done")||passedPhase);
     const dotCls=lockedByTeacher?'locked':isDone?'done':isUnlocked?'unlocked':'locked';
@@ -4564,13 +4639,13 @@ function renderStudentTrilha(){
     const starsHtml=[1,2,3].map(s=>`<span class="star${s<=starsEarned?' lit':''}" style="font-size:14px">${s<=starsEarned?'★':'☆'}</span>`).join('');
 
     const gameButtons=isUnlocked?buildFaseButtons(fase):'';
-    const teacherLockTag = currentUser.role==='teacher'&&fase.locked ? '<span class="badge" style="background:#FEF2F2;color:#991B1B;font-size:10px;margin-left:6px">🔒 travada</span>' : '';
-    const teacherScheduleTag = currentUser.role==='teacher'&&!isContentPublished(fase) ? `<span class="badge" style="background:#F5F3FF;color:#7C3AED;font-size:10px;margin-left:6px">📅 ${formatPublishAt(fase.publishAt)}</span>` : '';
-    const badge = currentUser.role === 'teacher' ? `<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${fase.turmaName||''}</span>${teacherLockTag}${teacherScheduleTag}` : '';
-    const sequence=currentUser.role==='teacher'
+    const teacherLockTag = isTeacherAdmin()&&fase.locked ? '<span class="badge" style="background:#FEF2F2;color:#991B1B;font-size:10px;margin-left:6px">🔒 travada</span>' : '';
+    const teacherScheduleTag = isTeacherAdmin()&&!isContentPublished(fase) ? `<span class="badge" style="background:#F5F3FF;color:#7C3AED;font-size:10px;margin-left:6px">📅 ${formatPublishAt(fase.publishAt)}</span>` : '';
+    const badge = isTeacherAdmin() ? `<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${fase.turmaName||''}</span>${teacherLockTag}${teacherScheduleTag}` : '';
+    const sequence=isTeacherAdmin()
       ? Math.max(1,(DATABASE.trilhas[fase.rKey]||[]).findIndex(item=>item.id===fase.id)+1)
       : i+1;
-    const sequenceTotal=currentUser.role==='teacher'?(DATABASE.trilhas[fase.rKey]||[]).length:trilhasToRender.length;
+    const sequenceTotal=isTeacherAdmin()?(DATABASE.trilhas[fase.rKey]||[]).length:trilhasToRender.length;
 
     const node=document.createElement('div');
     node.className='fase-node';
@@ -4739,7 +4814,7 @@ function findDailyWordExample(candidate,sources){
 }
 
 function buildDailyWord(){
-  if(!currentUser||currentUser.role!=='student'||!currentUser.turma)return null;
+  if(!currentUser||(!isTeacherPreview()&&currentUser.role!=='student')||!currentUser.turma)return null;
   const level=currentTrailLevel();
   const date=dailyWordDate();
   const cacheKey=`${currentUser.id||currentUser.email||'student'}|${currentUser.turma}|${level}|${date.key}`;
@@ -4881,11 +4956,11 @@ function bookAudioLessonLabel(item){
 }
 
 function isBookAudioListened(id){
-  return currentUser?.role==='teacher'||Boolean(currentUser?.unlockedFases?.includes(bookAudioMarker(id)));
+  return isTeacherAdmin()||Boolean(currentUser?.unlockedFases?.includes(bookAudioMarker(id)));
 }
 
 function visibleBookAudioWeeks(){
-  if(currentUser?.role==='teacher'){
+  if(isTeacherAdmin()){
     return Object.values(DATABASE.semanas||{}).flat();
   }
   return (DATABASE.semanas[currentUser?.turma]||[]).filter(week=>isContentPublished(week)&&!week.locked);
@@ -4893,7 +4968,7 @@ function visibleBookAudioWeeks(){
 
 function accessibleBookAudioItems(){
   const catalog=typeof BOOK_AUDIO_CATALOG==='undefined'?[]:BOOK_AUDIO_CATALOG;
-  if(currentUser?.role==='teacher')return catalog;
+  if(isTeacherAdmin())return catalog;
   const weeks=visibleBookAudioWeeks();
   const assigned=new Set(weeks.flatMap(week=>Array.isArray(week.bookAudioIds)?week.bookAudioIds:[]));
   const reviewIds=[
@@ -5094,7 +5169,7 @@ function renderStudentSemanas(){
   renderDailyWord();
   refreshBookAudioLibraryCta();
   let list=[];
-  if(currentUser.role==='teacher'){
+  if(isTeacherAdmin()){
     Object.keys(DATABASE.semanas).forEach(k=>{
       DATABASE.semanas[k].forEach((s,i)=>list.push({...s,rKey:k,realIdx:i,turmaName:DATABASE.turmas[k]?.name||k}));
     });
@@ -5105,7 +5180,7 @@ function renderStudentSemanas(){
   }
   if(list.length===0){cont.innerHTML='<div class="card card-body text-center text-muted">Nenhuma aula cadastrada ainda.</div>';return;}
   [...list].reverse().forEach(sem=>{
-    const isTeacher=currentUser.role==='teacher';
+    const isTeacher=isTeacherAdmin();
     const lockedByTeacher=sem.locked && !isTeacher;
     const badge=isTeacher?`<span class="badge badge-violet">${sem.turmaName}</span>`:'';
     const lockTag=isTeacher&&sem.locked?'<span class="badge" style="background:#FEF2F2;color:#991B1B;margin-left:6px">🔒 travada</span>':'';
@@ -5494,7 +5569,7 @@ function buildFillBlankQueue(fase){
 function startTrilhaGame(faseId,mode,turmaKey){
   const fase=(DATABASE.trilhas[turmaKey]||[]).find(f=>f.id===faseId);
   if(!fase)return;
-  if(currentUser.role!=='teacher'&&!isContentPublished(fase))return alert('Esta fase será liberada pela professora em breve.');
+  if(!isTeacherAdmin()&&!isContentPublished(fase))return alert('Esta fase será liberada pela professora em breve.');
   let queue;
   if(mode==='teoria') queue=(fase.teoria||[]).filter(x=>x.exp);
   else if(mode==='vocab') queue=(fase.teoria||[]).filter(x=>x.en||x.pt);
@@ -5661,7 +5736,7 @@ function selectMemoryItems(items,limit=6){
 function startSemanaGame(rKey,idx,type){
   const sem=DATABASE.semanas[rKey][idx];
   if(!sem)return;
-  if(currentUser.role!=='teacher'&&!isContentPublished(sem))return alert('Esta aula será liberada pela professora em breve.');
+  if(!isTeacherAdmin()&&!isContentPublished(sem))return alert('Esta aula será liberada pela professora em breve.');
   let q=[];
   if(type==='vocab') q=[...sem.vocab];
   else if(type==='chunks') q=[...sem.chunks];
@@ -7425,7 +7500,7 @@ function renderStudentMusicas() {
   cont.innerHTML = '';
   let list = [];
   
-  if (currentUser.role === 'teacher') {
+  if (isTeacherAdmin()) {
     Object.keys(DATABASE.musicas).forEach(k => {
       (DATABASE.musicas[k] || []).forEach(m => list.push({...m, rKey: k, turmaName: DATABASE.turmas[k]?.name || k}));
     });
@@ -7444,7 +7519,7 @@ function renderStudentMusicas() {
       <div class="music-icon"><i class="fa-solid fa-play"></i></div>
       <div class="music-info">
         <div class="music-title">${m.title}</div>
-        <div class="music-artist">${m.artist||'Desconhecido'} ${currentUser.role==='teacher'?`<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${m.turmaName}</span>${!isContentPublished(m)?`<span class="badge" style="font-size:10px;margin-left:6px;background:#F5F3FF;color:#7C3AED">📅 ${formatPublishAt(m.publishAt)}</span>`:''}`:''}</div>
+        <div class="music-artist">${m.artist||'Desconhecido'} ${isTeacherAdmin()?`<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${m.turmaName}</span>${!isContentPublished(m)?`<span class="badge" style="font-size:10px;margin-left:6px;background:#F5F3FF;color:#7C3AED">📅 ${formatPublishAt(m.publishAt)}</span>`:''}`:''}</div>
       </div>
     </div>
   `).join('');
@@ -7502,7 +7577,7 @@ function trackMusicListening(audio){
 function openMusicPlayer(rKey, id) {
   const m = (DATABASE.musicas[rKey]||[]).find(x => x.id === id);
   if(!m) return;
-  if(currentUser.role!=='teacher'&&!isContentPublished(m))return alert('Esta música será liberada pela professora em breve.');
+  if(!isTeacherAdmin()&&!isContentPublished(m))return alert('Esta música será liberada pela professora em breve.');
   activeMusicObj = {...m,rKey};
   activeMusicState={listenSeconds:0,lastAudioTime:0,listenAwarded:false,studySeconds:0,studyAwarded:false,currentTab:'letra',tabsSeen:['letra']};
   if(activeMusicStudyInterval)clearInterval(activeMusicStudyInterval);
