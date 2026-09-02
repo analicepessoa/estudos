@@ -5078,10 +5078,11 @@ function setBookAudioSpeed(rate,button){
 
 async function completeBookAudioListen(){
   const id=activeBookAudioId;
-  if(!id||currentUser?.role==='teacher'||isBookAudioListened(id))return;
+  if(!id||isTeacherAdmin()||isBookAudioListened(id))return;
   currentUser.unlockedFases=currentUser.unlockedFases||[];
   currentUser.unlockedFases.push(bookAudioMarker(id));
   openBookAudioDetail(id);
+  if(isTeacherPreview())return;
   await saveStudentProgress({silent:true});
 }
 
