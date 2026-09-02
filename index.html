@@ -2554,6 +2554,7 @@ let sbClient = null;
 let currentUser = null;
 let activeGame = { type:'', queue:[], index:0, score:0, total:0, context:null };
 let scheduledContentRefreshTimer = null;
+let studentAccessCheckTimer = null;
 let adminSelectedRoom = localStorage.getItem('ap_admin_selected_room') || '';
 let progressSaveChain = Promise.resolve();
 let progressRetryTimer = null;
@@ -4485,6 +4486,7 @@ function doLogout(){
   if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
   progressRetryAttempts=0;
   if(scheduledContentRefreshTimer){clearInterval(scheduledContentRefreshTimer);scheduledContentRefreshTimer=null;}
+  if(studentAccessCheckTimer){clearInterval(studentAccessCheckTimer);studentAccessCheckTimer=null;}
   dailyWordCurrent=null;
   dailyWordCache={key:'',word:null};
   dailyWordListened.clear();
@@ -4504,6 +4506,7 @@ async function setupUserSession(user){
   dailyWordCache={key:'',word:null};
   dailyWordListened.clear();
   if(scheduledContentRefreshTimer)clearInterval(scheduledContentRefreshTimer);
+  if(studentAccessCheckTimer)clearInterval(studentAccessCheckTimer);
   const m=user.user_metadata||{};
   const control=DATABASE.studentControls?.[user.id]||{};
   if(control.disabled){
@@ -4522,6 +4525,7 @@ async function setupUserSession(user){
   },30000);
   currentUser={id:user.id,email:user.email,role:'student',name:control.name||m.name||"Aluno",
     turma:control.turma||m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{},xpAwards:m.xpAwards||{}};
+  studentAccessCheckTimer=setInterval(refreshCurrentStudentControl,60000);
   await saveStudentProgress({silent:true});
   document.getElementById('student-xp').textContent=currentUser.xp;
   document.getElementById('xp-num').textContent=currentUser.xp;
@@ -4540,6 +4544,37 @@ function updateXpLevel(){
 
 function isTeacherPreview(){
   return currentUser?.role==='teacher'&&Boolean(currentUser.previewMode);
+}
+
+async function refreshCurrentStudentControl(){
+  if(!currentUser?.id||currentUser.role!=='student'||!sbClient)return;
+  try{
+    const studentId=currentUser.id;
+    const {data,error}=await withTimeout(
+      sbClient.from('app_content').select('data').eq('id','student_controls').maybeSingle(),8000
+    );
+    if(error||!data?.data?.students)return;
+    DATABASE.studentControls={...DATABASE.studentControls,...data.data.students};
+    const control=DATABASE.studentControls[studentId]||{};
+    if(control.disabled){
+      if(studentAccessCheckTimer){clearInterval(studentAccessCheckTimer);studentAccessCheckTimer=null;}
+      document.getElementById('game-overlay')?.classList.add('hidden');
+      document.getElementById('result-overlay')?.classList.add('hidden');
+      closeBookAudioLibrary();
+      closeMusicPlayer();
+      await sbClient.auth.signOut();
+      currentUser=null;
+      showView('auth');
+      alert('Seu acesso ao portal foi desativado. Fale com a professora caso precise de ajuda.');
+      return;
+    }
+    const changed=(control.name&&control.name!==currentUser.name)||(control.turma&&control.turma!==currentUser.turma);
+    if(changed){
+      if(control.name)currentUser.name=control.name;
+      if(control.turma)currentUser.turma=control.turma;
+      switchStudentTab('trilha');
+    }
+  }catch(error){console.warn('Verificação de acesso aguardando conexão:',error);}
 }
 
 function isTeacherAdmin(){
