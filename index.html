@@ -2300,7 +2300,7 @@ select.input { appearance: none; cursor: pointer; }
               <option value="basic01">Livro 1 · Basic 01</option>
               <option value="basic02">Livro 1 · Basic 02</option>
             </select>
-            <div class="text-xs text-muted" style="margin-top:7px">Escolha o módulo e marque um ou mais áudios desta aula. Somente os áudios marcados por você ficarão disponíveis para esta turma e continuarão na biblioteca para revisão.</div>
+            <div class="text-xs text-muted" style="margin-top:7px">Escolha o módulo e marque um ou mais áudios desta aula. Eles aparecerão dentro da semana e também continuarão disponíveis para revisão.</div>
             <div id="admin-book-audio-picker" class="book-audio-picker hidden"></div>
           </div>
           <div><label class="label" style="color:#4F46E5">📖 Vocabulário (inglês | pt | pronúncia)</label><textarea id="admin-semana-vocab" class="input" placeholder="apple | maçã | /æp.əl/&#10;car | carro | /kɑːr/"></textarea></div>
@@ -2312,6 +2312,26 @@ select.input { appearance: none; cursor: pointer; }
             <button onclick="adminSaveSemana()" id="btn-save-semana" class="btn btn-teal w-full btn-lg">Gerar Jogos da Semana ✨</button>
             <button onclick="adminCancelEditSemana()" id="btn-cancel-semana" class="btn btn-ghost hidden">Cancelar</button>
           </div>
+        </div>
+      </div>
+
+      <div class="card admin-section">
+        <div class="card-body">
+          <div>
+            <div class="admin-section-title">🎧 Biblioteca de revisão da turma</div>
+            <div class="admin-section-sub">Libere áudios antigos sem colocá-los dentro de uma aula</div>
+          </div>
+          <div class="book-audio-admin-box">
+            <label class="label" style="color:#4338CA">Módulo dos áudios antigos</label>
+            <select id="admin-book-review-level" class="input" onchange="renderAdminBookReviewPicker()">
+              <option value="basic01">Livro 1 · Basic 01</option>
+              <option value="basic02">Livro 1 · Basic 02</option>
+            </select>
+            <div class="text-xs text-muted" style="margin-top:7px">Marque os áudios que esta turma poderá encontrar no botão “Rever áudios”. Eles não serão adicionados a nenhuma semana.</div>
+            <div id="admin-book-review-picker" class="book-audio-picker"></div>
+          </div>
+          <div id="admin-book-review-count" class="text-xs text-muted"></div>
+          <button id="btn-save-book-review" class="btn btn-primary w-full" type="button" onclick="adminSaveBookReview()"><i class="fa-solid fa-headphones"></i> Salvar biblioteca de revisão</button>
         </div>
       </div>
     </div>
@@ -2808,6 +2828,9 @@ Por que é boa: A letra conta uma história simples, usa frases curtas e repete 
 };
 
 let DATABASE = {
+  audioRevisao: {
+    "iq15": [], "iq1904": [], "is08": [], "iq1907": [], "room_1781212946093": []
+  },
   musicas: {
     "iq15": [{ id:"music_pretty_woman_iq15", ...PRETTY_WOMAN_MUSIC }],
     "iq1904": [{ id:"music_traitor_iq1904", ...TRAITOR_MUSIC }, { id:"music_die_with_a_smile_iq1904", ...DIE_WITH_A_SMILE_MUSIC }],
@@ -4844,6 +4867,7 @@ const BOOK_AUDIO_LEVELS={
 let bookAudioLibraryFocus=[];
 let activeBookAudioId='';
 let adminSelectedBookAudioIds=new Set();
+let adminSelectedBookReviewIds=new Set();
 
 function bookAudioItem(id){
   return (typeof BOOK_AUDIO_CATALOG==='undefined'?[]:BOOK_AUDIO_CATALOG).find(item=>item.id===id);
@@ -4872,7 +4896,12 @@ function accessibleBookAudioItems(){
   if(currentUser?.role==='teacher')return catalog;
   const weeks=visibleBookAudioWeeks();
   const assigned=new Set(weeks.flatMap(week=>Array.isArray(week.bookAudioIds)?week.bookAudioIds:[]));
-  return catalog.filter(item=>assigned.has(item.id));
+  const reviewIds=[
+    ...(Array.isArray(DATABASE.audioRevisao?.[currentUser?.turma])?DATABASE.audioRevisao[currentUser.turma]:[]),
+    ...(Array.isArray(DATABASE.turmas?.[currentUser?.turma]?.bookAudioReviewIds)?DATABASE.turmas[currentUser.turma].bookAudioReviewIds:[])
+  ];
+  const allowed=new Set([...assigned,...reviewIds]);
+  return catalog.filter(item=>allowed.has(item.id));
 }
 
 function refreshBookAudioLibraryCta(){
@@ -5006,6 +5035,57 @@ function renderAdminBookAudioPicker(){
     <input type="checkbox" ${adminSelectedBookAudioIds.has(item.id)?'checked':''} onchange="toggleAdminBookAudio('${esc(item.id)}',this.checked)">
     <span><strong>${htmlSafe(item.title)}</strong><span>${htmlSafe(bookAudioLessonLabel(item))}${item.page?` · página ${htmlSafe(item.page)}`:''}</span></span>
   </label>`).join('');
+}
+
+function loadAdminBookReviewSelection(){
+  adminSelectedBookReviewIds=new Set([
+    ...(DATABASE.audioRevisao?.[adminSelectedRoom]||[]),
+    ...(DATABASE.turmas?.[adminSelectedRoom]?.bookAudioReviewIds||[])
+  ].filter(id=>bookAudioItem(id)));
+  renderAdminBookReviewPicker();
+}
+
+function toggleAdminBookReview(id,checked){
+  if(checked)adminSelectedBookReviewIds.add(id);
+  else adminSelectedBookReviewIds.delete(id);
+  renderAdminBookReviewCount();
+}
+
+function renderAdminBookReviewCount(){
+  const count=document.getElementById('admin-book-review-count');
+  if(count)count.textContent=`${adminSelectedBookReviewIds.size} áudio(s) selecionado(s) para revisão nesta turma.`;
+}
+
+function renderAdminBookReviewPicker(){
+  const picker=document.getElementById('admin-book-review-picker');
+  const level=document.getElementById('admin-book-review-level')?.value||'basic01';
+  if(!picker)return;
+  const items=(typeof BOOK_AUDIO_CATALOG==='undefined'?[]:BOOK_AUDIO_CATALOG).filter(item=>item.level===level);
+  picker.innerHTML=items.map(item=>`<label class="book-audio-check">
+    <input type="checkbox" ${adminSelectedBookReviewIds.has(item.id)?'checked':''} onchange="toggleAdminBookReview('${esc(item.id)}',this.checked)">
+    <span><strong>${htmlSafe(item.title)}</strong><span>${htmlSafe(bookAudioLessonLabel(item))}${item.page?` · página ${htmlSafe(item.page)}`:''}</span></span>
+  </label>`).join('')||'<div class="text-xs text-muted">Nenhum áudio cadastrado neste módulo.</div>';
+  renderAdminBookReviewCount();
+}
+
+async function adminSaveBookReview(){
+  if(!adminSelectedRoom||!DATABASE.turmas[adminSelectedRoom])return alert('Selecione uma turma.');
+  DATABASE.audioRevisao=DATABASE.audioRevisao||{};
+  const previous=[...(DATABASE.audioRevisao[adminSelectedRoom]||[])];
+  const previousRoom=[...(DATABASE.turmas[adminSelectedRoom].bookAudioReviewIds||[])];
+  DATABASE.audioRevisao[adminSelectedRoom]=[...adminSelectedBookReviewIds].filter(id=>bookAudioItem(id));
+  DATABASE.turmas[adminSelectedRoom].bookAudioReviewIds=[...DATABASE.audioRevisao[adminSelectedRoom]];
+  const button=document.getElementById('btn-save-book-review');
+  if(button){button.disabled=true;button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';}
+  const saved=await saveCloudDB();
+  if(!saved){
+    DATABASE.audioRevisao[adminSelectedRoom]=previous;
+    DATABASE.turmas[adminSelectedRoom].bookAudioReviewIds=previousRoom;
+    saveLocalDB();
+    adminSelectedBookReviewIds=new Set(previous);
+    renderAdminBookReviewPicker();
+  }else alert('Biblioteca de revisão atualizada para esta turma!');
+  if(button){button.disabled=false;button.innerHTML='<i class="fa-solid fa-headphones"></i> Salvar biblioteca de revisão';}
 }
 
 function renderStudentSemanas(){
@@ -6418,7 +6498,7 @@ function dispatchReport(act,result){
 /* ══════════════════════════════════════════════
    TEACHER PANEL
 ══════════════════════════════════════════════ */
-function initTeacherPanel(){showView('teacher');renderAdminRooms();updateAdminSelects();renderAdminSemanas();renderAdminTrilhas();renderAdminMusicas();renderAdminBookAudioPicker();initTrilhaFormExtras();showTeacherTab('salas');}
+function initTeacherPanel(){showView('teacher');renderAdminRooms();updateAdminSelects();renderAdminSemanas();renderAdminTrilhas();renderAdminMusicas();renderAdminBookAudioPicker();loadAdminBookReviewSelection();initTrilhaFormExtras();showTeacherTab('salas');}
 
 function showTeacherTab(tab){
   ['salas','trilha-admin','aulas-admin','semanas-lista','musicas-admin','dashboard'].forEach(t=>{
@@ -6430,6 +6510,7 @@ function showTeacherTab(tab){
   const roomFocus=document.getElementById('admin-room-focus');
   if(roomFocus)roomFocus.classList.toggle('hidden',tab==='salas');
   if(tab==='trilha-admin')renderAdminTrilhas();
+  if(tab==='aulas-admin')loadAdminBookReviewSelection();
   if(tab==='semanas-lista')renderAdminSemanas();
   if(tab==='musicas-admin')renderAdminMusicas();
   if(tab==='dashboard')renderDashboard();
@@ -6468,6 +6549,7 @@ function changeAdminRoom(roomKey){
   renderAdminTrilhas();
   renderAdminSemanas();
   renderAdminMusicas();
+  loadAdminBookReviewSelection();
   if(!document.getElementById('ttab-dashboard')?.classList.contains('hidden'))renderDashboard();
 }
 
@@ -6712,7 +6794,7 @@ async function saveCloudDB(){
   // Save to Supabase cloud
   try {
     if(!sbClient) sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const cloudData = { turmas: DATABASE.turmas, semanas: DATABASE.semanas, trilhas: DATABASE.trilhas, musicas: DATABASE.musicas };
+    const cloudData = { turmas: DATABASE.turmas, semanas: DATABASE.semanas, trilhas: DATABASE.trilhas, musicas: DATABASE.musicas, audioRevisao: DATABASE.audioRevisao };
     const { data, error } = await sbClient.from('app_content').upsert({ id: 'main', data: cloudData, updated_at: new Date().toISOString() });
     if (error) {
       console.error('❌ Erro Supabase ao salvar:', error);
@@ -6743,6 +6825,7 @@ async function loadCloudDB(){
         });
       }
       if(p.turmas) Object.keys(p.turmas).forEach(k => DATABASE.turmas[k] = p.turmas[k]);
+      if(p.audioRevisao) DATABASE.audioRevisao = {...DATABASE.audioRevisao,...p.audioRevisao};
       if(p.semanas) Object.keys(p.semanas).forEach(k => {
         if(!DATABASE.semanas[k]) DATABASE.semanas[k] = [];
         (p.semanas[k]||[]).forEach(sem => {
@@ -6765,6 +6848,7 @@ async function loadCloudDB(){
     if(!error && data && data.data) {
       const cloud = data.data;
       if(cloud.turmas) DATABASE.turmas = { ...DATABASE.turmas, ...cloud.turmas };
+      if(cloud.audioRevisao) DATABASE.audioRevisao = {...DATABASE.audioRevisao,...cloud.audioRevisao};
       if(cloud.semanas) {
         Object.keys(cloud.semanas).forEach(k => DATABASE.semanas[k] = cloud.semanas[k]);
       }
@@ -6789,7 +6873,7 @@ function adminAddRoom(){
   const pass=document.getElementById('admin-room-pass').value.trim();
   if(!name||!pass)return alert("Preencha nome e senha.");
   const key='room_'+Date.now();
-  DATABASE.turmas[key]={name,pass};DATABASE.semanas[key]=[];
+  DATABASE.turmas[key]={name,pass,bookAudioReviewIds:[]};DATABASE.semanas[key]=[];DATABASE.audioRevisao[key]=[];
   adminSelectedRoom=key;
   localStorage.setItem('ap_admin_selected_room',key);
   saveCloudDB();renderAdminRooms();updateAdminSelects();
@@ -6797,7 +6881,7 @@ function adminAddRoom(){
 }
 function adminDeleteRoom(k){
   if(!confirm('Remover esta sala?'))return;
-  delete DATABASE.turmas[k];delete DATABASE.semanas[k];
+  delete DATABASE.turmas[k];delete DATABASE.semanas[k];delete DATABASE.audioRevisao[k];
   saveCloudDB();renderAdminRooms();updateAdminSelects();
 }
 function renderAdminRooms(){
