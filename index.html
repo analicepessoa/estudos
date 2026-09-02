@@ -1469,6 +1469,22 @@ select.input { appearance: none; cursor: pointer; }
   padding: 8px; border-radius: 10px; transition: all .2s var(--ease-out);
 }
 .admin-edit:hover { background: var(--teal-light); color: var(--teal); transform: scale(1.1); }
+.student-admin-overlay {
+  position: fixed; inset: 0; z-index: 1500;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(8,14,28,.72); backdrop-filter: blur(8px);
+}
+.student-admin-modal {
+  width: min(440px,100%); background: var(--white); border-radius: 22px;
+  box-shadow: 0 24px 80px rgba(8,14,28,.28); overflow: hidden;
+}
+.student-admin-modal-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 18px 20px; border-bottom: 1px solid var(--border-light);
+}
+.student-admin-modal-body { padding: 20px; display: grid; gap: 15px; }
+.student-admin-actions { display: flex; gap: 10px; margin-top: 4px; }
+.student-admin-actions .btn { flex: 1; }
 .admin-trail-item { align-items: flex-start; }
 .admin-phase-main { display: flex; align-items: center; gap: 11px; min-width: 0; flex: 1; }
 .admin-phase-sequence {
@@ -2377,7 +2393,7 @@ select.input { appearance: none; cursor: pointer; }
     <!-- DASHBOARD ALUNOS -->
     <div id="ttab-dashboard" class="hidden">
       <div class="section-header" style="display:flex;justify-content:space-between;align-items:center">
-        <h2>Acompanhamento dos Alunos</h2>
+        <div><h2>Acompanhamento dos Alunos</h2><p>Use o lápis para editar e o ícone de bloqueio para desativar um acesso</p></div>
         <button class="btn btn-ghost" style="padding:6px 12px" onclick="renderDashboard()"><i class="fa-solid fa-rotate"></i> Atualizar</button>
       </div>
       <div id="dashboard-summary" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px"></div>
@@ -2505,6 +2521,26 @@ select.input { appearance: none; cursor: pointer; }
   <button onclick="closeResult()" class="btn btn-orange btn-lg">Continuar</button>
 </div>
 
+<!-- ══ GERENCIAR ALUNO ══ -->
+<div id="student-admin-overlay" class="student-admin-overlay hidden" onclick="if(event.target===this)closeAdminStudentEditor()">
+  <div class="student-admin-modal" role="dialog" aria-modal="true" aria-labelledby="student-admin-title">
+    <div class="student-admin-modal-head">
+      <div><div id="student-admin-title" class="admin-section-title">Editar aluno</div><div class="admin-section-sub">A conta e todo o progresso serão preservados</div></div>
+      <button type="button" class="btn-icon" onclick="closeAdminStudentEditor()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="student-admin-modal-body">
+      <input type="hidden" id="student-admin-id">
+      <div><label class="label" for="student-admin-name">Nome do aluno</label><input id="student-admin-name" class="input" type="text"></div>
+      <div><label class="label" for="student-admin-room">Turma</label><select id="student-admin-room" class="input"></select></div>
+      <div id="student-admin-status" class="text-xs text-muted"></div>
+      <div class="student-admin-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeAdminStudentEditor()">Cancelar</button>
+        <button id="student-admin-save" type="button" class="btn btn-primary" onclick="adminSaveStudentEdit()"><i class="fa-solid fa-check"></i> Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="book-audio-data.js"></script>
 <script>
 /* ══════════════════════════════════════════════
@@ -2525,6 +2561,7 @@ let progressRetryAttempts = 0;
 let dailyWordCurrent = null;
 let dailyWordCache = {key:'',word:null};
 const dailyWordListened = new Set();
+let dashboardStudentCache = {};
 
 const withTimeout = (p, ms=5000) => Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
 
@@ -2860,6 +2897,7 @@ Por que é boa: A letra conta uma história simples, usa frases curtas e repete 
 };
 
 let DATABASE = {
+  studentControls: {},
   audioRevisao: {
     "iq15": [], "iq1904": [], "is08": [], "iq1907": [], "room_1781212946093": []
   },
@@ -4466,15 +4504,24 @@ async function setupUserSession(user){
   dailyWordCache={key:'',word:null};
   dailyWordListened.clear();
   if(scheduledContentRefreshTimer)clearInterval(scheduledContentRefreshTimer);
+  const m=user.user_metadata||{};
+  const control=DATABASE.studentControls?.[user.id]||{};
+  if(control.disabled){
+    scheduledContentRefreshTimer=null;
+    await sbClient?.auth.signOut();
+    currentUser=null;
+    showView('auth');
+    alert('Seu acesso ao portal foi desativado. Fale com a professora caso precise de ajuda.');
+    return;
+  }
   scheduledContentRefreshTimer=setInterval(()=>{
     if(currentUser?.role!=='student')return;
     if(!document.getElementById('stab-trilha')?.classList.contains('hidden'))renderStudentTrilha();
     else if(!document.getElementById('stab-semanas')?.classList.contains('hidden'))renderStudentSemanas();
     else if(!document.getElementById('stab-musica')?.classList.contains('hidden'))renderStudentMusicas();
   },30000);
-  const m=user.user_metadata||{};
-  currentUser={id:user.id,email:user.email,role:'student',name:m.name||"Aluno",
-    turma:m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{},xpAwards:m.xpAwards||{}};
+  currentUser={id:user.id,email:user.email,role:'student',name:control.name||m.name||"Aluno",
+    turma:control.turma||m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{},xpAwards:m.xpAwards||{}};
   await saveStudentProgress({silent:true});
   document.getElementById('student-xp').textContent=currentUser.xp;
   document.getElementById('xp-num').textContent=currentUser.xp;
@@ -6792,6 +6839,99 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
   return tableOk||authOk;
 }
 
+function effectiveStudentProfile(student){
+  const control=DATABASE.studentControls?.[student?.id]||{};
+  return {...student,name:control.name||student.name,turma:control.turma||student.turma,_disabled:Boolean(control.disabled)};
+}
+
+function openAdminStudentEditor(studentId){
+  const student=dashboardStudentCache[studentId];
+  if(!student)return;
+  document.getElementById('student-admin-id').value=studentId;
+  document.getElementById('student-admin-name').value=student.name||'Aluno';
+  document.getElementById('student-admin-room').innerHTML=Object.keys(DATABASE.turmas||{}).map(key=>
+    `<option value="${htmlSafe(key)}" ${key===student.turma?'selected':''}>${htmlSafe(DATABASE.turmas[key]?.name||key)}</option>`
+  ).join('');
+  document.getElementById('student-admin-status').textContent='O progresso, as notas e o XP não serão alterados.';
+  document.getElementById('student-admin-overlay').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+
+function closeAdminStudentEditor(){
+  document.getElementById('student-admin-overlay')?.classList.add('hidden');
+  document.body.style.overflow='';
+}
+
+async function saveStudentControlsCloud(){
+  saveLocalDB();
+  try{
+    if(!sbClient)sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    const {error}=await withTimeout(sbClient.from('app_content').upsert({
+      id:'student_controls',data:{students:DATABASE.studentControls||{}},updated_at:new Date().toISOString()
+    }),8000);
+    if(error)throw error;
+    return true;
+  }catch(error){
+    console.warn('Não foi possível salvar a gestão dos alunos:',error);
+    alert('Não foi possível salvar esta alteração agora. Tente novamente.');
+    return false;
+  }
+}
+
+async function adminSaveStudentEdit(){
+  const studentId=document.getElementById('student-admin-id').value;
+  const name=document.getElementById('student-admin-name').value.trim();
+  const turma=document.getElementById('student-admin-room').value;
+  const student=dashboardStudentCache[studentId];
+  if(!student||!name||!DATABASE.turmas?.[turma])return alert('Preencha o nome e escolha a turma.');
+  DATABASE.studentControls=DATABASE.studentControls||{};
+  const previous=DATABASE.studentControls[studentId]?{...DATABASE.studentControls[studentId]}:null;
+  DATABASE.studentControls[studentId]={...previous,name,turma,disabled:Boolean(previous?.disabled),updatedAt:new Date().toISOString()};
+  const button=document.getElementById('student-admin-save');
+  button.disabled=true;
+  button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+  const saved=await saveStudentControlsCloud();
+  if(!saved){
+    if(previous)DATABASE.studentControls[studentId]=previous;else delete DATABASE.studentControls[studentId];
+    saveLocalDB();
+    button.disabled=false;
+    button.innerHTML='<i class="fa-solid fa-check"></i> Salvar';
+    return;
+  }
+  try{
+    await withTimeout(sbClient.from('student_progress').update({name,turma}).eq('id',studentId),7000);
+  }catch(error){console.warn('O cadastro será sincronizado quando o aluno entrar novamente:',error);}
+  closeAdminStudentEditor();
+  button.disabled=false;
+  button.innerHTML='<i class="fa-solid fa-check"></i> Salvar';
+  await renderDashboard();
+  alert('Dados do aluno atualizados. O progresso foi mantido.');
+}
+
+async function adminSetStudentAccess(studentId,allowAccess){
+  const student=dashboardStudentCache[studentId];
+  if(!student)return;
+  const action=allowAccess?'reativar':'desativar';
+  const message=allowAccess
+    ? `Reativar o acesso de ${student.name||'este aluno'}?`
+    : `Desativar o acesso de ${student.name||'este aluno'}?\n\nO aluno sairá do ranking e não conseguirá entrar no portal. O progresso ficará guardado.`;
+  if(!confirm(message))return;
+  DATABASE.studentControls=DATABASE.studentControls||{};
+  const previous=DATABASE.studentControls[studentId]?{...DATABASE.studentControls[studentId]}:null;
+  DATABASE.studentControls[studentId]={
+    ...previous,name:previous?.name||student.name||'Aluno',turma:previous?.turma||student.turma,
+    disabled:!allowAccess,updatedAt:new Date().toISOString()
+  };
+  const saved=await saveStudentControlsCloud();
+  if(!saved){
+    if(previous)DATABASE.studentControls[studentId]=previous;else delete DATABASE.studentControls[studentId];
+    saveLocalDB();
+    return;
+  }
+  await renderDashboard();
+  alert(`Acesso ${action==='desativar'?'desativado':'reativado'} com sucesso. O progresso foi preservado.`);
+}
+
 async function renderDashboard(){
   const cont=document.getElementById('dashboard-content');
   const summary=document.getElementById('dashboard-summary');
@@ -6802,60 +6942,57 @@ async function renderDashboard(){
     const selectedRoom=adminSelectedRoom;
     const {data:allData,error}=await withTimeout(sbClient.from('student_progress').select('*'),8000);
     if(error){
-      cont.innerHTML=`<div class="card card-body" style="text-align:center;color:var(--slate)">Não consegui carregar os dados.<br>Verifique se a tabela <b>student_progress</b> existe no Supabase.<br><br><span style="font-size:11px;opacity:.7">${error.message}</span></div>`;
+      cont.innerHTML=`<div class="card card-body" style="text-align:center;color:var(--slate)">Não consegui carregar os dados dos alunos.<br><br><span style="font-size:11px;opacity:.7">${htmlSafe(error.message)}</span></div>`;
       return;
     }
-    const data=(allData||[]).filter(student=>!selectedRoom||student.turma===selectedRoom);
-    if(data.length===0){
-      cont.innerHTML='<div class="card card-body" style="text-align:center;color:var(--slate)">Nenhum aluno desta turma registrou atividade ainda.<br><span style="font-size:12px">Os dados aparecem aqui assim que os alunos começarem a estudar.</span></div>';
-      return;
-    }
-
+    const managed=(allData||[]).map(effectiveStudentProfile);
+    dashboardStudentCache=Object.fromEntries(managed.filter(student=>student.id).map(student=>[student.id,student]));
+    const data=managed.filter(student=>!student._disabled&&(!selectedRoom||student.turma===selectedRoom));
+    const disabledData=managed.filter(student=>student._disabled&&(!selectedRoom||student.turma===selectedRoom));
     const now=Date.now();
-    const diasDesde=(d)=> d? Math.floor((now-new Date(d).getTime())/86400000) : null;
+    const diasDesde=(d)=>d?Math.max(0,Math.floor((now-new Date(d).getTime())/86400000)):null;
     const ativos=data.filter(a=>{const dd=diasDesde(a.updated_at);return dd!==null&&dd<=7;}).length;
 
     summary.innerHTML=`
-      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px">
-        <div style="font-size:24px;font-weight:900;color:var(--orange)">${data.length}</div>
-        <div style="font-size:12px;color:var(--slate)">alunos no app</div>
-      </div>
-      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px">
-        <div style="font-size:24px;font-weight:900;color:var(--teal)">${ativos}</div>
-        <div style="font-size:12px;color:var(--slate)">ativos (7 dias)</div>
-      </div>`;
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--orange)">${data.length}</div><div style="font-size:12px;color:var(--slate)">alunos no ranking</div></div>
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--teal)">${ativos}</div><div style="font-size:12px;color:var(--slate)">ativos (7 dias)</div></div>
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--slate)">${disabledData.length}</div><div style="font-size:12px;color:var(--slate)">acessos desativados</div></div>`;
 
-    // agrupa por turma
-    const turmas={};
-    data.forEach(a=>{(turmas[a.turma]=turmas[a.turma]||[]).push(a);});
+    const studentCard=(a,disabled=false)=>{
+      const notas=a.notas&&typeof a.notas==='object'?Object.values(a.notas):[];
+      const numNotas=notas.length;
+      const atividades=(Array.isArray(a.unlocked)?a.unlocked:[]).filter(value=>String(value).includes('__atividade_')).length;
+      const media=numNotas?(notas.reduce((sum,n)=>sum+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
+      const nivel=Math.floor((a.xp||0)/200)+1;
+      const dd=diasDesde(a.updated_at);
+      const quando=dd===null?'nunca':dd===0?'hoje':dd===1?'ontem':`há ${dd} dias`;
+      const ativo=dd!==null&&dd<=7;
+      const mediaColor=media==='—'?'var(--slate)':parseFloat(media)>=8?'var(--teal)':parseFloat(media)>=5?'var(--orange)':'#DC2626';
+      return `<div class="admin-item" style="margin-bottom:8px${disabled?';opacity:.68':''}">
+        <div style="flex:1;min-width:0"><div class="admin-item-name">${disabled?'🚫':ativo?'🟢':'⚪'} ${htmlSafe(a.name||'Aluno')}</div><div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · visto ${quando}</div></div>
+        <div style="text-align:center;min-width:48px"><div style="font-size:20px;font-weight:900;color:${mediaColor}">${media}</div><div style="font-size:10px;color:var(--slate)">média</div></div>
+        <div style="display:flex;gap:2px">
+          <button class="admin-edit" title="Editar nome ou turma" onclick="openAdminStudentEditor('${esc(a.id)}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="${disabled?'admin-edit':'admin-delete'}" title="${disabled?'Reativar acesso':'Desativar acesso'}" onclick="adminSetStudentAccess('${esc(a.id)}',${disabled?'true':'false'})"><i class="fa-solid fa-${disabled?'user-check':'user-slash'}"></i></button>
+        </div>
+      </div>`;
+    };
+
     let html='';
-    Object.keys(turmas).sort().forEach(tk=>{
-      const nome=DATABASE.turmas[tk]?.name||tk||'Sem turma';
-      const alunos=turmas[tk].sort((a,b)=>(b.xp||0)-(a.xp||0));
-      html+=`<div class="label" style="margin-top:16px;margin-bottom:8px">${nome} · ${alunos.length} aluno(s)</div>`;
-      alunos.forEach(a=>{
-        const notas=a.notas&&typeof a.notas==='object'?Object.values(a.notas):[];
-        const numNotas=notas.length;
-        const atividades=(Array.isArray(a.unlocked)?a.unlocked:[]).filter(value=>String(value).includes('__atividade_')).length;
-        const media=numNotas?(notas.reduce((s,n)=>s+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
-        const nivel=Math.floor((a.xp||0)/200)+1;
-        const dd=diasDesde(a.updated_at);
-        const quando=dd===null?'nunca':dd===0?'hoje':dd===1?'ontem':`há ${dd} dias`;
-        const ativo=dd!==null&&dd<=7;
-        const mediaColor=media==='—'?'var(--slate)':parseFloat(media)>=8?'var(--teal)':parseFloat(media)>=5?'var(--orange)':'#DC2626';
-        html+=`
-        <div class="admin-item" style="margin-bottom:8px">
-          <div style="flex:1">
-            <div class="admin-item-name">${ativo?'🟢':'⚪'} ${a.name||'Aluno'}</div>
-            <div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · visto ${quando}</div>
-          </div>
-          <div style="text-align:center;min-width:54px">
-            <div style="font-size:20px;font-weight:900;color:${mediaColor}">${media}</div>
-            <div style="font-size:10px;color:var(--slate)">média</div>
-          </div>
-        </div>`;
+    if(data.length){
+      const turmas={};
+      data.forEach(a=>{(turmas[a.turma]=turmas[a.turma]||[]).push(a);});
+      Object.keys(turmas).sort().forEach(tk=>{
+        const nome=DATABASE.turmas[tk]?.name||tk||'Sem turma';
+        const alunos=turmas[tk].sort((a,b)=>(b.xp||0)-(a.xp||0));
+        html+=`<div class="label" style="margin-top:16px;margin-bottom:8px">${htmlSafe(nome)} · ${alunos.length} aluno(s)</div>${alunos.map(a=>studentCard(a)).join('')}`;
       });
-    });
+    }else{
+      html='<div class="card card-body" style="text-align:center;color:var(--slate)">Nenhum aluno ativo desta turma registrou atividade ainda.</div>';
+    }
+    if(disabledData.length){
+      html+=`<details class="card" style="margin-top:18px"><summary style="cursor:pointer;padding:16px;font-weight:850;color:var(--slate)">🚫 Acessos desativados (${disabledData.length})</summary><div style="padding:0 12px 12px">${disabledData.sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(a=>studentCard(a,true)).join('')}</div></details>`;
+    }
     cont.innerHTML=html;
   }catch(e){
     cont.innerHTML='<div class="card card-body" style="text-align:center;color:var(--slate)">Servidor lento. Toque em Atualizar para tentar de novo.</div>';
@@ -6870,7 +7007,7 @@ async function saveCloudDB(){
   // Save to Supabase cloud
   try {
     if(!sbClient) sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const cloudData = { turmas: DATABASE.turmas, semanas: DATABASE.semanas, trilhas: DATABASE.trilhas, musicas: DATABASE.musicas, audioRevisao: DATABASE.audioRevisao };
+    const cloudData = { turmas: DATABASE.turmas, semanas: DATABASE.semanas, trilhas: DATABASE.trilhas, musicas: DATABASE.musicas, audioRevisao: DATABASE.audioRevisao, studentControls: DATABASE.studentControls };
     const { data, error } = await sbClient.from('app_content').upsert({ id: 'main', data: cloudData, updated_at: new Date().toISOString() });
     if (error) {
       console.error('❌ Erro Supabase ao salvar:', error);
@@ -6902,6 +7039,7 @@ async function loadCloudDB(){
       }
       if(p.turmas) Object.keys(p.turmas).forEach(k => DATABASE.turmas[k] = p.turmas[k]);
       if(p.audioRevisao) DATABASE.audioRevisao = {...DATABASE.audioRevisao,...p.audioRevisao};
+      if(p.studentControls) DATABASE.studentControls = {...DATABASE.studentControls,...p.studentControls};
       if(p.semanas) Object.keys(p.semanas).forEach(k => {
         if(!DATABASE.semanas[k]) DATABASE.semanas[k] = [];
         (p.semanas[k]||[]).forEach(sem => {
@@ -6925,6 +7063,7 @@ async function loadCloudDB(){
       const cloud = data.data;
       if(cloud.turmas) DATABASE.turmas = { ...DATABASE.turmas, ...cloud.turmas };
       if(cloud.audioRevisao) DATABASE.audioRevisao = {...DATABASE.audioRevisao,...cloud.audioRevisao};
+      if(cloud.studentControls) DATABASE.studentControls = {...DATABASE.studentControls,...cloud.studentControls};
       if(cloud.semanas) {
         Object.keys(cloud.semanas).forEach(k => DATABASE.semanas[k] = cloud.semanas[k]);
       }
@@ -6940,6 +7079,13 @@ async function loadCloudDB(){
       // Update local cache with cloud data
       saveLocalDB();
       console.log('☁️ Dados carregados da nuvem!');
+    }
+    const {data:controlsRow,error:controlsError}=await withTimeout(
+      sbClient.from('app_content').select('data').eq('id','student_controls').maybeSingle(),8000
+    );
+    if(!controlsError&&controlsRow?.data?.students){
+      DATABASE.studentControls={...DATABASE.studentControls,...controlsRow.data.students};
+      saveLocalDB();
     }
   } catch(e) { console.warn('Nuvem indisponível, usando cache local:', e); }
 }
