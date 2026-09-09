@@ -817,6 +817,102 @@ select.input { appearance: none; cursor: pointer; }
 .reading-coming h2 { margin-top:13px; font-size:29px; color:var(--ink); }
 .reading-coming p { max-width:370px; margin-top:10px; color:var(--slate); font-size:15px; line-height:1.6; }
 
+/* Biblioteca de leitura guiada */
+.reading-library { display:grid; gap:18px; }
+.reading-book-card {
+  display:grid; grid-template-columns:120px minmax(0,1fr); gap:20px; padding:18px;
+  border:1px solid rgba(87,52,36,.18); border-radius:26px; background:linear-gradient(145deg,#FFFCF7,#F4ECE2);
+  box-shadow:var(--shadow-md); overflow:hidden;
+}
+.reading-book-cover { width:120px; aspect-ratio:2/3; object-fit:cover; border-radius:16px; box-shadow:0 12px 28px rgba(45,28,20,.25); }
+.reading-book-copy { min-width:0; display:flex; flex-direction:column; justify-content:center; }
+.reading-book-eyebrow { color:#7C2D12; font-size:10px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+.reading-book-copy h3 { margin-top:5px; color:#2E211A; font:900 24px/1.08 'Nunito',sans-serif; }
+.reading-book-copy p { margin-top:8px; color:#6B5A50; font-size:13px; line-height:1.5; }
+.reading-progress-line { height:8px; margin-top:14px; border-radius:999px; overflow:hidden; background:rgba(87,52,36,.12); }
+.reading-progress-line span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#7C2D12,#C2410C); }
+.reading-book-meta { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; color:#7C6A5F; font-size:11px; font-weight:750; }
+.reading-book-card .btn { margin-top:14px; align-self:flex-start; background:#4A2318; color:white; border-color:#4A2318; }
+.reading-weeks { display:grid; gap:10px; }
+.reading-week-row { display:flex; align-items:center; gap:13px; padding:14px; border:1px solid var(--border); border-radius:17px; background:white; }
+.reading-week-number { width:42px; height:42px; flex:none; display:grid; place-items:center; border-radius:13px; background:#F4ECE2; color:#7C2D12; font-weight:900; }
+.reading-week-copy { min-width:0; flex:1; }
+.reading-week-copy strong { display:block; color:var(--ink); font-size:14px; }
+.reading-week-copy span { display:block; margin-top:3px; color:var(--slate); font-size:11px; }
+.reading-week-row.locked { opacity:.64; }
+.reading-week-lock { color:var(--slate-light); }
+
+#reading-overlay { position:fixed; inset:0; z-index:1250; overflow:auto; background:#F4F0EA; color:#2E211A; }
+.reading-topbar { position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid rgba(87,52,36,.14); background:rgba(255,252,247,.96); backdrop-filter:blur(12px); }
+.reading-topbar-copy { min-width:0; flex:1; }
+.reading-topbar-copy strong { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:14px; }
+.reading-topbar-copy span { display:block; margin-top:2px; color:#806E62; font-size:10px; }
+.reading-page { width:min(760px,100%); margin:0 auto; padding:22px 16px 64px; }
+.reading-hero { display:grid; grid-template-columns:180px minmax(0,1fr); gap:26px; align-items:center; padding:26px; border-radius:28px; color:#FFF8EF; background:radial-gradient(circle at 100% 0%,rgba(209,142,85,.22),transparent 35%),linear-gradient(145deg,#241712,#4A2318); box-shadow:0 18px 42px rgba(45,28,20,.22); }
+.reading-hero img { width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:17px; box-shadow:0 15px 32px rgba(0,0,0,.35); }
+.reading-hero-kicker { color:#E7B98F; font-size:10px; font-weight:900; letter-spacing:.11em; text-transform:uppercase; }
+.reading-hero h1 { margin-top:6px; color:white; font:900 31px/1.06 'Nunito',sans-serif; }
+.reading-hero h2 { margin-top:6px; color:#E7B98F; font-size:17px; }
+.reading-hero p { margin-top:12px; color:rgba(255,248,239,.76); font-size:13px; line-height:1.55; }
+.reading-hero .btn { margin-top:18px; background:#FFF8EF; color:#4A2318; border-color:#FFF8EF; }
+.reading-overview-card { margin-top:15px; padding:18px; border:1px solid rgba(87,52,36,.14); border-radius:20px; background:#FFFCF7; }
+.reading-overview-card h3 { color:#4A2318; font-size:16px; }
+.reading-overview-card p { margin-top:6px; color:#6B5A50; font-size:13px; line-height:1.55; }
+.reading-part-map { display:grid; grid-template-columns:repeat(6,1fr); gap:7px; margin-top:14px; }
+.reading-part-dot { min-height:39px; border:1px solid rgba(87,52,36,.16); border-radius:11px; background:white; color:#806E62; font-weight:850; cursor:pointer; }
+.reading-part-dot.done { border-color:#A7D8C8; background:#E8F7F1; color:#0F766E; }
+.reading-part-dot.current { border-color:#9A5A3A; background:#F4E5D8; color:#7C2D12; }
+.reading-reader-head { margin-bottom:14px; }
+.reading-reader-head h1 { color:#2E211A; font:900 27px/1.1 'Nunito',sans-serif; }
+.reading-reader-head p { margin-top:5px; color:#806E62; font-size:12px; }
+.reading-story-image { width:100%; max-height:390px; object-fit:cover; border-radius:23px; box-shadow:0 13px 30px rgba(45,28,20,.17); }
+.reading-listen { width:100%; min-height:48px; margin:13px 0; border:1px solid rgba(87,52,36,.17); border-radius:15px; background:#FFFCF7; color:#7C2D12; font:850 13px 'Inter',sans-serif; cursor:pointer; }
+.reading-text { padding:24px 22px; border:1px solid rgba(87,52,36,.13); border-radius:23px; background:#FFFCF7; box-shadow:0 7px 22px rgba(45,28,20,.07); }
+.reading-text p { margin:0 0 15px; color:#382922; font:600 17px/1.82 'Nunito',sans-serif; }
+.reading-text p:last-child { margin-bottom:0; }
+.reading-checkpoint { margin-top:16px; padding:20px; border:1px solid rgba(124,45,18,.18); border-radius:21px; background:#F7EDE3; }
+.reading-checkpoint h3 { color:#7C2D12; font-size:16px; }
+.reading-checkpoint p { margin-top:6px; color:#5F4B40; font-size:14px; line-height:1.5; }
+.reading-gate-note { display:flex; align-items:center; gap:8px; margin-top:12px; color:#806E62; font-size:11px; font-weight:750; }
+.reading-answer-grid { display:grid; gap:8px; margin-top:13px; }
+.reading-answer { width:100%; padding:12px 14px; border:1px solid rgba(87,52,36,.17); border-radius:13px; background:#FFFCF7; color:#382922; text-align:left; font:750 13px 'Inter',sans-serif; cursor:pointer; }
+.reading-answer:hover { border-color:#9A5A3A; }
+.reading-answer:disabled { cursor:not-allowed; opacity:.55; }
+.reading-answer.correct { border-color:#5BAA8B; background:#E8F7F1; color:#0F6B55; opacity:1; }
+.reading-answer.wrong { border-color:#D08C76; background:#FCEAE5; color:#9F2F22; opacity:1; }
+.reading-feedback { margin-top:11px; padding:10px 12px; border-radius:12px; font-size:12px; font-weight:750; line-height:1.45; }
+.reading-feedback.ok { color:#0F6B55; background:#E8F7F1; }
+.reading-feedback.retry { color:#9F2F22; background:#FCEAE5; }
+.reading-next { margin-top:13px; }
+.reading-quiz-list { display:grid; gap:12px; margin-top:16px; }
+.reading-quiz-item { padding:16px; border:1px solid rgba(87,52,36,.14); border-radius:17px; background:#FFFCF7; }
+.reading-quiz-item p { color:#382922; font-size:14px; font-weight:750; line-height:1.45; }
+.reading-tf-buttons { display:flex; gap:8px; margin-top:11px; }
+.reading-tf-buttons button { flex:1; min-height:40px; border:1px solid rgba(87,52,36,.16); border-radius:11px; background:white; color:#5F4B40; font-weight:850; cursor:pointer; }
+.reading-tf-buttons button.selected { border-color:#7C2D12; background:#F4E5D8; color:#7C2D12; }
+.reading-tf-buttons button.correct { border-color:#5BAA8B; background:#E8F7F1; color:#0F6B55; }
+.reading-tf-buttons button.wrong { border-color:#D08C76; background:#FCEAE5; color:#9F2F22; }
+.reading-complete { text-align:center; padding:28px 18px; border-radius:25px; color:white; background:linear-gradient(145deg,#264E43,#3E7A68); box-shadow:0 15px 34px rgba(38,78,67,.22); }
+.reading-complete-icon { width:70px; height:70px; margin:0 auto 13px; display:grid; place-items:center; border-radius:50%; color:#265746; background:#DDF4EB; font-size:30px; }
+.reading-complete h1 { color:white; font-size:27px; }
+.reading-complete p { max-width:480px; margin:8px auto 0; color:rgba(255,255,255,.8); font-size:13px; line-height:1.55; }
+.reading-study-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin-top:13px; }
+.reading-vocab { padding:11px; border-radius:13px; background:#F7F1EA; cursor:pointer; }
+.reading-vocab strong { display:block; color:#7C2D12; font-size:13px; }
+.reading-vocab span { display:block; margin-top:3px; color:#806E62; font-size:11px; }
+.reading-notebook { width:100%; min-height:105px; margin-top:12px; padding:13px; border:1px solid rgba(87,52,36,.2); border-radius:14px; background:white; color:#382922; font:600 14px/1.55 'Inter',sans-serif; resize:vertical; }
+
+@media(max-width:600px){
+  .reading-book-card { grid-template-columns:92px minmax(0,1fr); gap:15px; padding:14px; }
+  .reading-book-cover { width:92px; }
+  .reading-book-copy h3 { font-size:20px; }
+  .reading-hero { grid-template-columns:105px minmax(0,1fr); gap:17px; padding:19px; }
+  .reading-hero h1 { font-size:24px; }
+  .reading-hero h2 { font-size:14px; }
+  .reading-text { padding:20px 18px; }
+  .reading-text p { font-size:16px; line-height:1.75; }
+}
+
 @media(max-width:420px){
   .home-welcome h1 { font-size:26px; }
   .home-avatar { width:56px; height:56px; flex-basis:56px; border-radius:19px; font-size:24px; }
@@ -2376,9 +2472,9 @@ select.input { appearance: none; cursor: pointer; }
           <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
           <div class="home-card-copy">
             <span class="home-card-kicker">Biblioteca de leitura</span>
-            <h2>Leia em inglês</h2>
-            <span class="home-card-detail">Histórias adaptadas para você praticar no seu nível.</span>
-            <span class="home-card-status started"><i class="fa-solid fa-wand-magic-sparkles"></i> Em breve</span>
+            <h2 id="home-reading-title">Leia em inglês</h2>
+            <span class="home-card-detail" id="home-reading-detail">Histórias adaptadas para você praticar no seu nível.</span>
+            <span class="home-card-status todo" id="home-reading-status"><i class="fa-regular fa-circle"></i> Pronto para começar</span>
           </div>
           <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
         </button>
@@ -2454,11 +2550,8 @@ select.input { appearance: none; cursor: pointer; }
         <h2>Biblioteca de Leitura 📚</h2>
         <p>Histórias em inglês adaptadas para o seu nível</p>
       </div>
-      <div class="reading-coming">
-        <div class="reading-coming-icon" aria-hidden="true"><i class="fa-solid fa-book-open-reader"></i></div>
-        <div class="reading-coming-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Em breve</div>
-        <h2>Novas leituras estão chegando</h2>
-        <p>Estamos preparando histórias especiais para você ler em inglês, aprender novas palavras e acompanhar seu progresso.</p>
+      <div id="reading-library" class="reading-library">
+        <div class="reading-coming"><div class="reading-coming-icon" aria-hidden="true"><i class="fa-solid fa-book-open-reader"></i></div><h2>Preparando sua biblioteca...</h2></div>
       </div>
     </section>
 
@@ -2709,6 +2802,16 @@ select.input { appearance: none; cursor: pointer; }
   <div id="book-audio-content" class="book-audio-page"></div>
 </div>
 
+<!-- ══ LEITURA GUIADA ══ -->
+<div id="reading-overlay" class="hidden">
+  <div class="reading-topbar">
+    <button class="btn-icon" type="button" onclick="readingBack()" aria-label="Voltar"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="reading-topbar-copy"><strong id="reading-overlay-title">The Metamorphosis</strong><span id="reading-overlay-subtitle">Week 1 · A Strange Morning</span></div>
+    <button class="btn-icon" type="button" onclick="closeReadingBook()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div id="reading-content" class="reading-page"></div>
+</div>
+
 <!-- ══ MUSIC PLAYER OVERLAY ══ -->
 <div id="view-music-player" class="hidden">
   <div class="music-player-header">
@@ -2802,6 +2905,7 @@ select.input { appearance: none; cursor: pointer; }
 </div>
 
 <script src="book-audio-data.js"></script>
+<script src="./livros/a%20metamorfose/reading-data.js"></script>
 <script>
 /* ══════════════════════════════════════════════
    CONFIG & GLOBALS
@@ -5044,6 +5148,7 @@ async function setupUserSession(user){
     else if(!document.getElementById('stab-trilha')?.classList.contains('hidden'))renderStudentTrilha();
     else if(!document.getElementById('stab-semanas')?.classList.contains('hidden'))renderStudentSemanas();
     else if(!document.getElementById('stab-audios')?.classList.contains('hidden'))renderStudentAudios();
+    else if(!document.getElementById('stab-leitura')?.classList.contains('hidden'))renderReadingLibrary();
     else if(!document.getElementById('stab-musica')?.classList.contains('hidden'))renderStudentMusicas();
   },30000);
   currentUser={id:user.id,email:user.email,role:'student',name:control.name||m.name||"Aluno",
@@ -5148,6 +5253,311 @@ function exitStudentPreview(){
 /* ══════════════════════════════════════════════
    STUDENT UI
 ══════════════════════════════════════════════ */
+const READING_BASE='livros/a%20metamorfose/';
+const READING_PARTS=[
+  {start:0,end:12,title:'A different morning',question:'What is different when Gregor wakes up?',options:["Gregor's body","The bedroom","The window"],answer:0},
+  {start:12,end:27,title:'The clock and the job',question:'Why does Gregor look worried?',options:['He cannot find his clothes','He is late for work','His room is empty'],answer:1},
+  {start:27,end:37,title:'Responsibility',question:'Why can Gregor not simply leave his job?',options:['He loves traveling','His manager is his father','His family needs money'],answer:2},
+  {start:37,end:51,title:'Voices behind the door',question:"What is strange about Gregor's answer?",options:['He speaks very loudly','His voice sounds different','He answers in Portuguese'],answer:1},
+  {start:51,end:64,title:'Time is passing',question:'What new sound does Gregor hear?',options:['A train','The window opening','The doorbell'],answer:2},
+  {start:64,end:74,title:'Work comes to Gregor',question:'Who is the visitor?',options:["The chief clerk from Gregor's office",'A doctor','A train conductor'],answer:0}
+];
+let readingData=null;
+let readingDataPromise=null;
+let readingGateTimer=null;
+let readingState={mode:'overview',part:0,completed:new Set(),quizAnswers:{}};
+let readingSessionOwner='';
+
+function readingAsset(path){return `${READING_BASE}${String(path||'').replace(/^\.\//,'')}`;}
+function readingPartMarker(index){return `reading__metamorphosis_w1_part_${index+1}`;}
+const READING_COMPLETE_MARKER='reading__metamorphosis_w1_complete';
+const READING_ANSWERS_MARKER='reading__metamorphosis_w1_answers_sent';
+function syncReadingSessionOwner(){
+  const owner=currentUser?.id||`${currentUser?.role||'guest'}:${currentUser?.turma||''}:${currentUser?.name||''}`;
+  if(owner===readingSessionOwner)return;
+  readingSessionOwner=owner;
+  readingState.completed=new Set();
+  readingState.quizAnswers={};
+}
+function hasReadingMarker(marker){syncReadingSessionOwner();return readingState.completed.has(marker)||(currentUser?.unlockedFases||[]).includes(marker);}
+function readingIsComplete(){return hasReadingMarker(READING_COMPLETE_MARKER);}
+function readingPartsDone(){return READING_PARTS.filter((_,index)=>hasReadingMarker(readingPartMarker(index))).length;}
+function readingProgress(){return {done:readingPartsDone()+(readingIsComplete()?1:0),total:READING_PARTS.length+1};}
+
+async function loadReadingData(){
+  if(readingData)return readingData;
+  if(window.METAMORPHOSIS_WEEK1){
+    readingData=window.METAMORPHOSIS_WEEK1;
+    return readingData;
+  }
+  if(!readingDataPromise)readingDataPromise=fetch(`${READING_BASE}week1_app_content.json`).then(response=>{
+    if(!response.ok)throw new Error(`Leitura indisponível (${response.status})`);
+    return response.json();
+  }).then(data=>readingData=data).finally(()=>readingDataPromise=null);
+  return readingDataPromise;
+}
+
+async function renderReadingLibrary(){
+  const container=document.getElementById('reading-library');
+  if(!container)return;
+  try{
+    const data=await loadReadingData();
+    const progress=readingProgress();
+    const percent=Math.round((progress.done/progress.total)*100);
+    const nextPart=READING_PARTS.findIndex((_,index)=>!hasReadingMarker(readingPartMarker(index)));
+    const status=readingIsComplete()?'Capítulo concluído':progress.done?'Leitura em andamento':'Pronto para começar';
+    container.innerHTML=`
+      <article class="reading-book-card">
+        <img class="reading-book-cover" src="${readingAsset(data.book.cover_asset)}" alt="Capa de ${htmlSafe(data.book.title)}">
+        <div class="reading-book-copy">
+          <div class="reading-book-eyebrow">${htmlSafe(data.book.cefr)} · clássico adaptado</div>
+          <h3>${htmlSafe(data.book.title)}</h3>
+          <p>${htmlSafe(data.book.author)} · Semana 1 de 6<br>${htmlSafe(data.week.title)}</p>
+          <div class="reading-progress-line"><span style="width:${percent}%"></span></div>
+          <div class="reading-book-meta"><span>${status}</span><span>${percent}%</span></div>
+          <button class="btn btn-sm" type="button" onclick="openReadingBook()"><i class="fa-solid fa-book-open"></i> ${readingIsComplete()?'Revisar capítulo':nextPart>0?'Continuar leitura':'Começar a ler'}</button>
+        </div>
+      </article>
+      <div class="reading-weeks">
+        <div class="reading-week-row"><div class="reading-week-number">01</div><div class="reading-week-copy"><strong>A Strange Morning</strong><span>${status} · To Be + adjectives</span></div><i class="fa-solid fa-${readingIsComplete()?'circle-check':'chevron-right'}" style="color:${readingIsComplete()?'#0F766E':'#7C2D12'}"></i></div>
+        ${[2,3,4,5,6].map(number=>`<div class="reading-week-row locked"><div class="reading-week-number">0${number}</div><div class="reading-week-copy"><strong>Próximo capítulo</strong><span>Será liberado pela professora</span></div><i class="fa-solid fa-lock reading-week-lock"></i></div>`).join('')}
+      </div>`;
+  }catch(error){
+    container.innerHTML=`<div class="reading-coming"><div class="reading-coming-icon"><i class="fa-solid fa-book-open-reader"></i></div><h2>Não foi possível abrir o livro</h2><p>Verifique sua conexão e tente novamente.</p><button class="btn btn-primary" style="margin-top:16px" onclick="renderReadingLibrary()">Tentar novamente</button></div>`;
+    console.warn('Falha ao carregar leitura:',error);
+  }
+}
+
+async function openReadingBook(){
+  try{
+    await loadReadingData();
+    syncReadingSessionOwner();
+    readingState.completed=new Set((currentUser?.unlockedFases||[]).filter(value=>String(value).startsWith('reading__metamorphosis')));
+    document.getElementById('reading-overlay')?.classList.remove('hidden');
+    renderReadingOverview();
+  }catch(error){alert('Não foi possível abrir o livro agora. Tente novamente em alguns instantes.');}
+}
+
+function closeReadingBook(){
+  if(readingGateTimer){clearInterval(readingGateTimer);readingGateTimer=null;}
+  window.speechSynthesis?.cancel();
+  document.getElementById('reading-overlay')?.classList.add('hidden');
+  renderReadingLibrary();
+  renderStudentHome();
+}
+
+function readingBack(){
+  if(readingState.mode==='overview')return closeReadingBook();
+  renderReadingOverview();
+}
+
+function readingScrollTop(){document.getElementById('reading-overlay')?.scrollTo({top:0,behavior:'smooth'});}
+
+function renderReadingOverview(){
+  if(!readingData)return;
+  readingState.mode='overview';
+  if(readingGateTimer){clearInterval(readingGateTimer);readingGateTimer=null;}
+  const content=document.getElementById('reading-content');
+  const progress=readingProgress();
+  const percent=Math.round((progress.done/progress.total)*100);
+  let nextPart=READING_PARTS.findIndex((_,index)=>!hasReadingMarker(readingPartMarker(index)));
+  if(nextPart<0)nextPart=READING_PARTS.length;
+  content.innerHTML=`
+    <section class="reading-hero">
+      <img src="${readingAsset(readingData.book.cover_asset)}" alt="Capa de ${htmlSafe(readingData.book.title)}">
+      <div><div class="reading-hero-kicker">Week 1 of 6 · ${htmlSafe(readingData.book.cefr)}</div><h1>${htmlSafe(readingData.book.title)}</h1><h2>${htmlSafe(readingData.week.title)}</h2><p>${htmlSafe(readingData.book.adaptation_note_pt)}</p><button class="btn" type="button" onclick="${readingIsComplete()?'renderReadingStudy()':nextPart<READING_PARTS.length?`renderReadingPart(${nextPart})`:'renderReadingQuiz()'}"><i class="fa-solid fa-${nextPart?'bookmark':'book-open'}"></i> ${readingIsComplete()?'Revisar e escrever':nextPart?'Continuar de onde parei':'Começar capítulo'}</button></div>
+    </section>
+    <section class="reading-overview-card"><h3>Seu progresso · ${percent}%</h3><p>Leia cada parte com calma. Para avançar, responda a uma pergunta sobre o trecho. Você também pode ouvir o texto e acompanhar a leitura.</p><div class="reading-progress-line"><span style="width:${percent}%"></span></div><div class="reading-part-map">${READING_PARTS.map((_,index)=>`<button class="reading-part-dot ${hasReadingMarker(readingPartMarker(index))?'done':''}" type="button" ${hasReadingMarker(readingPartMarker(index))?`onclick="renderReadingPart(${index})"`:'disabled'} aria-label="Parte ${index+1}">${hasReadingMarker(readingPartMarker(index))?'<i class="fa-solid fa-check"></i>':index+1}</button>`).join('')}</div></section>
+    <section class="reading-overview-card"><h3>Before you read</h3><p>${readingData.week.before_you_read.map((question,index)=>`${index+1}. ${htmlSafe(question)}`).join('<br>')}</p></section>
+    <section class="reading-overview-card"><h3>Como a conclusão é validada?</h3><p>O capítulo tem seis blocos curtos. Cada bloco termina com uma checagem de compreensão baseada no texto. Depois, há uma revisão final de verdadeiro ou falso. A conclusão e o XP ficam salvos no seu progresso.</p></section>`;
+  readingScrollTop();
+}
+
+function readingStoryHtml(sentences){
+  const paragraphs=[];
+  for(let index=0;index<sentences.length;index+=3)paragraphs.push(`<p>${sentences.slice(index,index+3).map(htmlSafe).join(' ')}</p>`);
+  return paragraphs.join('');
+}
+
+function renderReadingPart(index){
+  if(!readingData||!READING_PARTS[index])return;
+  const firstIncomplete=READING_PARTS.findIndex((_,partIndex)=>!hasReadingMarker(readingPartMarker(partIndex)));
+  if(index>firstIncomplete&&firstIncomplete>=0)return;
+  readingState.mode='part'; readingState.part=index;
+  if(readingGateTimer){clearInterval(readingGateTimer);readingGateTimer=null;}
+  const part=READING_PARTS[index];
+  const sentences=readingData.week.story.slice(part.start,part.end);
+  const alreadyDone=hasReadingMarker(readingPartMarker(index));
+  const content=document.getElementById('reading-content');
+  content.innerHTML=`
+    <div class="reading-reader-head"><h1>Part ${index+1} · ${htmlSafe(part.title)}</h1><p>Chapter 1 · ${part.end-part.start} frases curtas</p></div>
+    ${index===0?`<img class="reading-story-image" src="${readingAsset(readingData.week.opening_illustration.asset)}" alt="${htmlSafe(readingData.week.opening_illustration.alt_text)}">`:''}
+    <button class="reading-listen" type="button" onclick="listenReadingPart()"><i class="fa-solid fa-volume-high"></i> Ouvir e acompanhar este trecho</button>
+    <article class="reading-text">${readingStoryHtml(sentences)}</article>
+    <section class="reading-checkpoint"><h3><i class="fa-solid fa-bookmark"></i> Reading checkpoint</h3><p>${htmlSafe(part.question)}</p><div class="reading-gate-note" id="reading-gate-note">${alreadyDone?'<i class="fa-solid fa-circle-check"></i> Esta parte já foi concluída.':'<i class="fa-solid fa-hourglass-half"></i> Leia ou acompanhe o trecho antes de responder.'}</div><div class="reading-answer-grid">${part.options.map((option,optionIndex)=>`<button class="reading-answer" type="button" ${alreadyDone?'disabled':'disabled'} onclick="checkReadingCheckpoint(${index},${optionIndex},this)">${htmlSafe(option)}</button>`).join('')}</div><div id="reading-feedback"></div><div id="reading-next" class="reading-next ${alreadyDone?'':'hidden'}"><button class="btn btn-primary w-full" type="button" onclick="readingAdvance()">${index===READING_PARTS.length-1?'Ir para a revisão final':'Continuar para a próxima parte'} <i class="fa-solid fa-arrow-right"></i></button></div></section>`;
+  readingScrollTop();
+  if(alreadyDone){
+    const correctButton=content.querySelectorAll('.reading-answer')[part.answer];
+    correctButton?.classList.add('correct');
+    document.getElementById('reading-feedback').innerHTML='<div class="reading-feedback ok">✓ Você já comprovou a leitura desta parte.</div>';
+  }else startReadingGate();
+}
+
+function startReadingGate(){
+  let seconds=8;
+  const note=document.getElementById('reading-gate-note');
+  const update=()=>{if(note)note.innerHTML=`<i class="fa-solid fa-hourglass-half"></i> Continue lendo · checagem em ${seconds}s`;};
+  update();
+  readingGateTimer=setInterval(()=>{
+    seconds--;
+    if(seconds>0)return update();
+    clearInterval(readingGateTimer); readingGateTimer=null;
+    document.querySelectorAll('#reading-content .reading-answer').forEach(button=>button.disabled=false);
+    if(note)note.innerHTML='<i class="fa-solid fa-circle-question"></i> Agora responda usando o que você acabou de ler.';
+  },1000);
+}
+
+function listenReadingPart(){
+  const part=READING_PARTS[readingState.part];
+  if(!part||!readingData)return;
+  playTTS(readingData.week.story.slice(part.start,part.end).join(' '),.72,'en-US');
+}
+
+async function checkReadingCheckpoint(partIndex,optionIndex,button){
+  const part=READING_PARTS[partIndex];
+  if(!part||button.disabled)return;
+  const feedback=document.getElementById('reading-feedback');
+  if(optionIndex!==part.answer){
+    button.classList.add('wrong'); button.disabled=true;
+    feedback.innerHTML='<div class="reading-feedback retry">Ainda não. Volte ao trecho e procure a informação antes de tentar novamente.</div>';
+    return;
+  }
+  document.querySelectorAll('#reading-content .reading-answer').forEach(item=>item.disabled=true);
+  button.classList.add('correct');
+  feedback.innerHTML='<div class="reading-feedback ok">Muito bem — essa resposta está no trecho que você leu.</div>';
+  document.getElementById('reading-next')?.classList.remove('hidden');
+  await completeReadingPart(partIndex);
+}
+
+async function completeReadingPart(index){
+  const marker=readingPartMarker(index);
+  if(hasReadingMarker(marker))return;
+  readingState.completed.add(marker);
+  if(!currentUser||currentUser.role==='teacher')return;
+  currentUser.unlockedFases=currentUser.unlockedFases||[];
+  currentUser.unlockedFases.push(marker);
+  const reward=claimXpReward(marker,5);
+  await saveStudentProgress({xpGain:reward.amount,silent:true});
+  renderStudentHome();
+}
+
+function readingAdvance(){
+  const next=readingState.part+1;
+  if(next<READING_PARTS.length)return renderReadingPart(next);
+  renderReadingQuiz();
+}
+
+function renderReadingQuiz(){
+  if(!readingData)return;
+  readingState.mode='quiz'; readingState.quizAnswers={};
+  if(readingGateTimer){clearInterval(readingGateTimer);readingGateTimer=null;}
+  const items=readingData.week.true_false;
+  document.getElementById('reading-content').innerHTML=`
+    <div class="reading-reader-head"><h1>Final reading check</h1><p>Marque True ou False. Você precisa acertar pelo menos 5 de ${items.length} para concluir o capítulo.</p></div>
+    <div class="reading-quiz-list">${items.map((item,index)=>`<div class="reading-quiz-item" data-quiz="${index}"><p>${index+1}. ${htmlSafe(item.statement)}</p><div class="reading-tf-buttons"><button type="button" onclick="selectReadingQuiz(${index},true,this)">True</button><button type="button" onclick="selectReadingQuiz(${index},false,this)">False</button></div></div>`).join('')}</div>
+    <div id="reading-quiz-feedback"></div><button id="reading-quiz-submit" class="btn btn-primary w-full btn-lg" style="margin-top:16px" type="button" onclick="submitReadingQuiz()">Verificar respostas <i class="fa-solid fa-check"></i></button>`;
+  readingScrollTop();
+}
+
+function selectReadingQuiz(index,value,button){
+  readingState.quizAnswers[index]=value;
+  button.parentElement.querySelectorAll('button').forEach(item=>item.classList.toggle('selected',item===button));
+}
+
+async function submitReadingQuiz(){
+  const items=readingData.week.true_false;
+  const feedback=document.getElementById('reading-quiz-feedback');
+  if(Object.keys(readingState.quizAnswers).length<items.length){
+    feedback.innerHTML='<div class="reading-feedback retry">Responda todas as frases antes de verificar.</div>'; return;
+  }
+  let score=0;
+  items.forEach((item,index)=>{
+    const buttons=document.querySelector(`[data-quiz="${index}"]`).querySelectorAll('button');
+    buttons.forEach(button=>button.disabled=true);
+    const selected=readingState.quizAnswers[index];
+    if(selected===item.answer)score++;
+    buttons[selected?0:1].classList.add(selected===item.answer?'correct':'wrong');
+    buttons[item.answer?0:1].classList.add('correct');
+  });
+  if(score<5){
+    feedback.innerHTML=`<div class="reading-feedback retry">Você acertou ${score} de ${items.length}. Releia as partes indicadas e tente novamente — a resposta está no texto.</div><button class="btn btn-ghost w-full" style="margin-top:10px" onclick="renderReadingQuiz()">Tentar novamente</button>`;
+    document.getElementById('reading-quiz-submit')?.classList.add('hidden');
+    return;
+  }
+  feedback.innerHTML=`<div class="reading-feedback ok">Excelente: ${score} de ${items.length}. Capítulo concluído e progresso salvo.</div>`;
+  document.getElementById('reading-quiz-submit')?.classList.add('hidden');
+  await completeReadingWeek();
+  setTimeout(renderReadingStudy,700);
+}
+
+async function completeReadingWeek(){
+  if(readingIsComplete())return;
+  readingState.completed.add(READING_COMPLETE_MARKER);
+  if(!currentUser||currentUser.role==='teacher')return;
+  currentUser.unlockedFases=currentUser.unlockedFases||[];
+  currentUser.unlockedFases.push(READING_COMPLETE_MARKER);
+  const reward=claimXpReward(READING_COMPLETE_MARKER,20);
+  await saveStudentProgress({xpGain:reward.amount,silent:true});
+  renderStudentHome();
+  renderReadingLibrary();
+}
+
+function readingNoteKey(field){return `reading_notebook_${currentUser?.id||currentUser?.email||'preview'}_metamorphosis_w1_${field}`;}
+function readingNote(field){try{return localStorage.getItem(readingNoteKey(field))||'';}catch(error){return '';}}
+function saveReadingNote(field,value){try{localStorage.setItem(readingNoteKey(field),value);}catch(error){console.warn('Caderno de leitura indisponível:',error);}}
+
+async function submitReadingAnswers(){
+  if(!currentUser||currentUser.role==='teacher')return alert('Na prévia da professora, o envio fica desativado. Entre como aluno para testar um envio real.');
+  const answers={reflection:readingNote('reflection').trim(),think:readingNote('think').trim(),writing:readingNote('writing').trim()};
+  if(Object.values(answers).some(answer=>answer.length<3))return alert('Responda as três atividades antes de enviar para a professora.');
+  const button=document.getElementById('reading-submit-answers');
+  const status=document.getElementById('reading-submission-status');
+  if(button){button.disabled=true;button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';}
+  const report=[
+    `THE CLOSED DOOR: ${answers.reflection}`,
+    `THINK ABOUT THE STORY: ${answers.think}`,
+    `WRITING — GREGOR'S MORNING: ${answers.writing}`
+  ].join('\n\n');
+  const sent=await dispatchReport('📚 The Metamorphosis · Week 1 · Respostas abertas',report);
+  if(!sent){
+    if(status)status.innerHTML='<span style="color:#B91C1C"><i class="fa-solid fa-triangle-exclamation"></i> Não foi possível enviar agora. As respostas continuam salvas neste aparelho.</span>';
+    if(button){button.disabled=false;button.innerHTML='<i class="fa-solid fa-paper-plane"></i> Tentar enviar novamente';}
+    return;
+  }
+  readingState.completed.add(READING_ANSWERS_MARKER);
+  currentUser.unlockedFases=currentUser.unlockedFases||[];
+  if(!currentUser.unlockedFases.includes(READING_ANSWERS_MARKER))currentUser.unlockedFases.push(READING_ANSWERS_MARKER);
+  await saveStudentProgress({silent:true});
+  if(status)status.innerHTML='<span style="color:#0F766E"><i class="fa-solid fa-circle-check"></i> Respostas enviadas para a professora.</span>';
+  if(button){button.disabled=false;button.innerHTML='<i class="fa-solid fa-paper-plane"></i> Reenviar respostas';}
+}
+
+function renderReadingStudy(){
+  if(!readingData)return;
+  readingState.mode='study';
+  const visual=readingData.week.visual_reflection;
+  const writing=readingData.week.writing_mission;
+  document.getElementById('reading-content').innerHTML=`
+    <section class="reading-complete"><div class="reading-complete-icon"><i class="fa-solid fa-book-open-reader"></i></div><h1>Week 1 complete!</h1><p>Você leu os seis trechos e demonstrou compreensão. Agora use o caderno para pensar sobre a história e praticar inglês.</p></section>
+    <section class="reading-overview-card"><h3>Vocabulary review</h3><p>Toque em uma palavra para ouvir a pronúncia.</p><div class="reading-study-grid">${readingData.week.vocabulary.map(item=>`<div class="reading-vocab" role="button" tabindex="0" onclick="playTTS('${esc(item.word)}',.75,'en-US')"><strong>${htmlSafe(item.word)} <i class="fa-solid fa-volume-low"></i></strong><span>${htmlSafe(item.pt)}</span></div>`).join('')}</div></section>
+    <section class="reading-overview-card"><h3>${htmlSafe(visual.title)}</h3><img class="reading-story-image" style="margin-top:12px" src="${readingAsset(visual.asset)}" alt="${htmlSafe(visual.alt_text)}"><p>${visual.questions.map((question,index)=>`${index+1}. ${htmlSafe(question)}`).join('<br>')}</p><textarea class="reading-notebook" oninput="saveReadingNote('reflection',this.value)" placeholder="I think the closed door is important because...">${htmlSafe(readingNote('reflection'))}</textarea><p style="font-size:10px"><i class="fa-solid fa-floppy-disk"></i> Resposta salva neste aparelho.</p></section>
+    <section class="reading-overview-card"><h3>${htmlSafe(readingData.week.reflection.title)}</h3><p>${htmlSafe(readingData.week.reflection.prompt)}</p><textarea class="reading-notebook" oninput="saveReadingNote('think',this.value)" placeholder="${htmlSafe(readingData.week.reflection.sentence_starter)}">${htmlSafe(readingNote('think'))}</textarea></section>
+    <section class="reading-overview-card"><h3>${htmlSafe(writing.title)} · ${htmlSafe(writing.word_target)}</h3><p>${htmlSafe(writing.instruction)} ${writing.sentence_starters.map(htmlSafe).join(' ')}</p><textarea class="reading-notebook" oninput="saveReadingNote('writing',this.value)" placeholder="Gregor is...">${htmlSafe(readingNote('writing'))}</textarea></section>
+    <section class="reading-overview-card"><h3><i class="fa-solid fa-paper-plane"></i> Enviar para a professora</h3><p>Quando terminar as três respostas, envie o caderno. Seu nome, sua turma e todas as respostas chegarão juntos no relatório de atividades.</p><button id="reading-submit-answers" class="btn btn-primary w-full" style="margin-top:12px" type="button" onclick="submitReadingAnswers()"><i class="fa-solid fa-paper-plane"></i> ${hasReadingMarker(READING_ANSWERS_MARKER)?'Reenviar respostas':'Enviar minhas respostas'}</button><div id="reading-submission-status" style="margin-top:9px;font-size:11px;font-weight:750">${hasReadingMarker(READING_ANSWERS_MARKER)?'<span style="color:#0F766E"><i class="fa-solid fa-circle-check"></i> Respostas já enviadas.</span>':'As respostas continuam salvas neste aparelho até você enviar.'}</div></section>
+    <section class="reading-overview-card"><h3>Next week</h3><p><strong>${htmlSafe(readingData.week.next_week.chapter)}</strong><br>${htmlSafe(readingData.week.next_week.teaser)}</p></section>`;
+  readingScrollTop();
+}
+
 function switchStudentTab(tab){
   ['inicio','trilha','semanas','audios','leitura','musica'].forEach(t=>{
     const el=document.getElementById('stab-'+t);
@@ -5159,6 +5569,7 @@ function switchStudentTab(tab){
   if(tab==='trilha')renderStudentTrilha();
   if(tab==='semanas')renderStudentSemanas();
   if(tab==='audios')renderStudentAudios();
+  if(tab==='leitura')renderReadingLibrary();
   if(tab==='musica')renderStudentMusicas();
 }
 
@@ -5276,6 +5687,16 @@ function renderStudentHome(){
     : 'Os áudios aparecerão aqui quando forem liberados.';
   const allAudiosDone=bookAudios.length>0&&listenedAudios.length===bookAudios.length;
   setHomeStatus('home-audio-status',allAudiosDone?'done':listenedAudios.length?'started':'todo',allAudiosDone?'Escuta concluída':listenedAudios.length?'Continue ouvindo':'Pronto para ouvir');
+
+  const readingDone=(currentUser.unlockedFases||[]).includes(READING_COMPLETE_MARKER);
+  const readingParts=READING_PARTS.filter((_,index)=>(currentUser.unlockedFases||[]).includes(readingPartMarker(index))).length;
+  const readingTitle=document.getElementById('home-reading-title');
+  const readingDetail=document.getElementById('home-reading-detail');
+  if(readingTitle)readingTitle.textContent=readingDone?'Capítulo 1 concluído':readingParts?'Continue A Metamorfose':'Comece A Metamorfose';
+  if(readingDetail)readingDetail.textContent=readingDone
+    ? 'Revise o vocabulário e suas anotações da Semana 1.'
+    : readingParts?`${readingParts} de ${READING_PARTS.length} partes lidas · continue de onde parou.`:'Semana 1 disponível · leitura guiada em nível A1.';
+  setHomeStatus('home-reading-status',readingDone?'done':readingParts?'started':'todo',readingDone?'Leitura concluída':readingParts?'Em andamento':'Pronto para começar');
 
   const songs=(DATABASE.musicas[roomKey]||[]).filter(isContentPublished);
   const latestSong=songs[songs.length-1];
@@ -6117,29 +6538,79 @@ function detectSpeechLanguage(text,context=''){
   return scores.pt>scores.en?'pt-BR':'en-US';
 }
 
-function playTTS(text,rate=0.8,language='auto',context=''){
-  if(!('speechSynthesis' in window))return;
-  window.speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text);
-  const targetLanguage=language==='auto'?detectSpeechLanguage(text,context):language;
-  u.lang=targetLanguage; u.rate=rate; u.pitch=1; u.volume=1;
-  const voices=window.speechSynthesis.getVoices();
-  const normalizedTarget=targetLanguage.replace('_','-').toLocaleLowerCase();
-  const baseLanguage=normalizedTarget.split('-')[0];
-  const matchingVoices=voices.filter(voice=>voice.lang.replace('_','-').toLocaleLowerCase().startsWith(baseLanguage));
-  const v=matchingVoices.sort((a,b)=>{
-    const score=voice=>{
-      const lang=voice.lang.replace('_','-').toLocaleLowerCase();
-      const name=voice.name.toLocaleLowerCase();
-      return (lang===normalizedTarget?100:0)+(voice.localService?10:0)
-        +(/google|microsoft|natural|premium|samantha/.test(name)?6:0)
-        -(/compact|espeak/.test(name)?4:0);
+let speechRequestId=0;
+
+function speechVoiceScore(voice,targetLanguage){
+  const lang=String(voice.lang||'').replace('_','-').toLocaleLowerCase();
+  const target=targetLanguage.replace('_','-').toLocaleLowerCase();
+  const name=String(voice.name||'').toLocaleLowerCase();
+  let score=lang===target?160:lang.startsWith(target.split('-')[0])?90:0;
+  if(/natural|neural|premium|enhanced|online/.test(name))score+=130;
+  if(/microsoft.*(ava|aria|jenny|emma|sonia|ryan|guy)/.test(name))score+=105;
+  if(/google.*(us|uk|english|portugu)/.test(name))score+=85;
+  if(/samantha|alex|daniel|karen|moira|luciana|francisca/.test(name))score+=70;
+  if(voice.default)score+=12;
+  if(voice.localService)score+=4;
+  if(/compact|espeak|pico|festival|android/.test(name))score-=180;
+  return score;
+}
+
+function bestSpeechVoice(voices,targetLanguage){
+  const base=targetLanguage.replace('_','-').toLocaleLowerCase().split('-')[0];
+  return voices.filter(voice=>String(voice.lang||'').replace('_','-').toLocaleLowerCase().startsWith(base))
+    .sort((a,b)=>speechVoiceScore(b,targetLanguage)-speechVoiceScore(a,targetLanguage))[0]||null;
+}
+
+function waitForSpeechVoices(){
+  const available=window.speechSynthesis.getVoices();
+  if(available.length)return Promise.resolve(available);
+  return new Promise(resolve=>{
+    let finished=false;
+    const done=()=>{
+      if(finished)return;
+      finished=true;
+      window.speechSynthesis.removeEventListener?.('voiceschanged',done);
+      resolve(window.speechSynthesis.getVoices());
     };
-    return score(b)-score(a);
-  })[0];
-  if(v)u.voice=v;
-  window.speechSynthesis.speak(u);
-  return u;
+    window.speechSynthesis.addEventListener?.('voiceschanged',done,{once:true});
+    setTimeout(done,700);
+  });
+}
+
+function speechChunks(text,maxLength=240){
+  const sentences=String(text||'').match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[String(text||'')];
+  const chunks=[];
+  sentences.forEach(sentence=>{
+    const clean=sentence.trim();
+    if(!clean)return;
+    const last=chunks[chunks.length-1]||'';
+    if(last&&`${last} ${clean}`.length<=maxLength)chunks[chunks.length-1]=`${last} ${clean}`;
+    else chunks.push(clean);
+  });
+  return chunks;
+}
+
+async function playTTS(text,rate=0.8,language='auto',context=''){
+  if(!('speechSynthesis' in window)||!String(text||'').trim())return null;
+  const requestId=++speechRequestId;
+  window.speechSynthesis.cancel();
+  const targetLanguage=language==='auto'?detectSpeechLanguage(text,context):language;
+  const voices=await waitForSpeechVoices();
+  if(requestId!==speechRequestId)return null;
+  const voice=bestSpeechVoice(voices,targetLanguage);
+  const baseLanguage=targetLanguage.replace('_','-').toLocaleLowerCase().split('-')[0];
+  const naturalRate=Math.max(Number(rate)||.8,baseLanguage==='en'?.82:.86);
+  const utterances=speechChunks(text).map(chunk=>{
+    const utterance=new SpeechSynthesisUtterance(chunk);
+    utterance.lang=targetLanguage;
+    utterance.rate=naturalRate;
+    utterance.pitch=1.02;
+    utterance.volume=1;
+    if(voice)utterance.voice=voice;
+    return utterance;
+  });
+  utterances.forEach(utterance=>window.speechSynthesis.speak(utterance));
+  return utterances[0]||null;
 }
 
 const GAME_SESSION_VERSION=1;
@@ -7401,11 +7872,17 @@ function closeResult(){
   renderStudentHome();
 }
 
-function dispatchReport(act,result){
-  if(!currentUser||currentUser.role==='teacher')return;
+async function dispatchReport(act,result){
+  if(!currentUser||currentUser.role==='teacher')return false;
   const turmaName=DATABASE.turmas[currentUser.turma]?.name||'';
-  fetch(SHEET_WEB_API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({aluno:currentUser.name,turma:turmaName,atividade:act,resultado:result})}).catch(()=>{});
+  try{
+    await fetch(SHEET_WEB_API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},
+      body:JSON.stringify({aluno:currentUser.name,turma:turmaName,atividade:act,resultado:result})});
+    return true;
+  }catch(error){
+    console.warn('Relatório aguardando conexão:',error);
+    return false;
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -7742,16 +8219,25 @@ async function renderDashboard(){
     const now=Date.now();
     const diasDesde=(d)=>d?Math.max(0,Math.floor((now-new Date(d).getTime())/86400000)):null;
     const ativos=data.filter(a=>{const dd=diasDesde(a.updated_at);return dd!==null&&dd<=7;}).length;
+    const leitores=data.filter(a=>(Array.isArray(a.unlocked)?a.unlocked:[]).includes(READING_COMPLETE_MARKER)).length;
+    const respostasLeitura=data.filter(a=>(Array.isArray(a.unlocked)?a.unlocked:[]).includes(READING_ANSWERS_MARKER)).length;
 
     summary.innerHTML=`
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--orange)">${data.length}</div><div style="font-size:12px;color:var(--slate)">alunos no ranking</div></div>
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--teal)">${ativos}</div><div style="font-size:12px;color:var(--slate)">ativos (7 dias)</div></div>
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#7C2D12">${leitores}</div><div style="font-size:12px;color:var(--slate)">concluíram a leitura</div></div>
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#4F46E5">${respostasLeitura}</div><div style="font-size:12px;color:var(--slate)">enviaram respostas</div></div>
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--slate)">${disabledData.length}</div><div style="font-size:12px;color:var(--slate)">acessos desativados</div></div>`;
 
     const studentCard=(a,disabled=false)=>{
       const notas=a.notas&&typeof a.notas==='object'?Object.values(a.notas):[];
       const numNotas=notas.length;
-      const atividades=(Array.isArray(a.unlocked)?a.unlocked:[]).filter(value=>String(value).includes('__atividade_')).length;
+      const unlocked=Array.isArray(a.unlocked)?a.unlocked:[];
+      const atividades=unlocked.filter(value=>String(value).includes('__atividade_')).length;
+      const readingParts=unlocked.filter(value=>String(value).startsWith('reading__metamorphosis_w1_part_')).length;
+      const readingComplete=unlocked.includes(READING_COMPLETE_MARKER);
+      const readingAnswersSent=unlocked.includes(READING_ANSWERS_MARKER);
+      const readingLabel=readingAnswersSent?'📨 respostas enviadas':readingComplete?'📚 leitura concluída':readingParts?`📖 leitura ${Math.min(readingParts,READING_PARTS.length)}/${READING_PARTS.length}`:'📕 leitura não iniciada';
       const media=numNotas?(notas.reduce((sum,n)=>sum+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
       const nivel=Math.floor((a.xp||0)/200)+1;
       const dd=diasDesde(a.updated_at);
@@ -7759,7 +8245,7 @@ async function renderDashboard(){
       const ativo=dd!==null&&dd<=7;
       const mediaColor=media==='—'?'var(--slate)':parseFloat(media)>=8?'var(--teal)':parseFloat(media)>=5?'var(--orange)':'#DC2626';
       return `<div class="admin-item" style="margin-bottom:8px${disabled?';opacity:.68':''}">
-        <div style="flex:1;min-width:0"><div class="admin-item-name">${disabled?'🚫':ativo?'🟢':'⚪'} ${htmlSafe(a.name||'Aluno')}</div><div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · visto ${quando}</div></div>
+        <div style="flex:1;min-width:0"><div class="admin-item-name">${disabled?'🚫':ativo?'🟢':'⚪'} ${htmlSafe(a.name||'Aluno')}</div><div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · ${readingLabel} · visto ${quando}</div></div>
         <div style="text-align:center;min-width:48px"><div style="font-size:20px;font-weight:900;color:${mediaColor}">${media}</div><div style="font-size:10px;color:var(--slate)">média</div></div>
         <div style="display:flex;gap:2px">
           <button class="admin-edit" title="Editar nome ou turma" onclick="openAdminStudentEditor('${esc(a.id)}')"><i class="fa-solid fa-pen"></i></button>
