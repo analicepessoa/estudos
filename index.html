@@ -856,7 +856,12 @@ select.input { appearance: none; cursor: pointer; }
 .daily-word-pron { color:#6D5BA8; font-size:12px; font-weight:700; margin-top:5px; }
 .daily-word-meaning { margin-top:18px; font-size:16px; font-weight:800; color:var(--orange-dark); position:relative; z-index:1; }
 .daily-word-explanation { margin-top:7px; font-size:13px; line-height:1.55; color:var(--slate); position:relative; z-index:1; }
-.daily-word-example { margin-top:14px; padding:13px 15px; border-radius:13px; background:rgba(255,255,255,.78); border:1px solid rgba(79,70,229,.12); position:relative; z-index:1; }
+.daily-word-examples { display:grid; gap:9px; margin-top:14px; position:relative; z-index:1; }
+.daily-word-example { padding:13px 15px; border-radius:13px; background:rgba(255,255,255,.78); border:1px solid rgba(79,70,229,.12); }
+.daily-word-example.context { border-color:rgba(13,148,136,.16); background:linear-gradient(135deg,rgba(240,253,250,.92),rgba(255,255,255,.86)); }
+.daily-word-example.practice { background:rgba(255,255,255,.62); }
+.daily-word-example-label { display:inline-flex; align-items:center; gap:5px; margin-bottom:4px; color:var(--teal-dark); font-size:10px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
+.daily-word-example.practice .daily-word-example-label { color:#6D28D9; }
 .daily-word-example-en { color:var(--ink); font-size:14px; font-weight:750; line-height:1.45; }
 .daily-word-example-pt { color:var(--slate); font-size:12px; margin-top:4px; line-height:1.4; }
 .daily-word-actions { display:flex; gap:10px; margin-top:16px; position:relative; z-index:1; }
@@ -5512,6 +5517,44 @@ function dailyWordExampleSources(level){
   return sources;
 }
 
+const DAILY_WORD_CONTEXT_EXAMPLES={
+  skewer:{en:'The vegetables are on a skewer.',pt:'Os legumes estão em um espeto.'},
+  study:{en:'I study English every day.',pt:'Eu estudo inglês todos os dias.'},
+  call:{en:'I call my friend after class.',pt:'Eu ligo para meu amigo depois da aula.'},
+  beach:{en:'We go to the beach on Sunday.',pt:'Nós vamos à praia no domingo.'},
+  sleep:{en:'I sleep eight hours every night.',pt:'Eu durmo oito horas todas as noites.'},
+  sugar:{en:'I put sugar in my coffee.',pt:'Eu coloco açúcar no meu café.'},
+  recipe:{en:'This recipe is very easy.',pt:'Esta receita é muito fácil.'},
+  shirt:{en:'My shirt is blue.',pt:'Minha camisa é azul.'},
+  pants:{en:'These pants are comfortable.',pt:'Estas calças são confortáveis.'},
+  dress:{en:'She is wearing a red dress.',pt:'Ela está usando um vestido vermelho.'},
+  shoes:{en:'My shoes are under the bed.',pt:'Meus sapatos estão embaixo da cama.'},
+  jacket:{en:'I need a jacket today.',pt:'Eu preciso de uma jaqueta hoje.'},
+  bed:{en:'The book is on the bed.',pt:'O livro está sobre a cama.'},
+  chair:{en:'Please sit on the chair.',pt:'Por favor, sente-se na cadeira.'},
+  table:{en:'Dinner is on the table.',pt:'O jantar está sobre a mesa.'},
+  sofa:{en:'We are sitting on the sofa.',pt:'Nós estamos sentados no sofá.'},
+  wardrobe:{en:'My clothes are in the wardrobe.',pt:'Minhas roupas estão no guarda-roupa.'}
+};
+
+function dailyWordFallbackExample(candidate){
+  const normalized=normalizeDailyWordText(candidate.en);
+  if(DAILY_WORD_CONTEXT_EXAMPLES[normalized])return DAILY_WORD_CONTEXT_EXAMPLES[normalized];
+  const lower=String(candidate.en||'').trim().toLocaleLowerCase('en-US');
+  const first=normalized.split(' ')[0];
+  const actionWords=new Set(['answer','ask','buy','call','cook','drink','eat','go','have','help','learn','like','listen','live','love','need','open','play','read','sleep','speak','study','take','talk','use','wake','walk','want','watch','work','write']);
+  const colors=new Set(['black','blue','brown','green','orange','pink','purple','red','white','yellow']);
+  if(actionWords.has(first))return {en:`I ${lower} every day.`,pt:''};
+  if(colors.has(normalized))return {en:`My favorite color is ${lower}.`,pt:''};
+  if(/^\d/.test(normalized)||/^(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand)\b/.test(normalized)){
+    return {en:`I can count to ${lower}.`,pt:''};
+  }
+  if(/s$/.test(normalized)&&!/ss$/.test(normalized))return {en:`These are ${lower}.`,pt:''};
+  if(!normalized.includes(' of ')&&/\b(milk|water|sugar|honey|beer)$/.test(normalized))return {en:`I need ${lower} for this recipe.`,pt:''};
+  const article=/^[aeiou]/.test(lower)?'an':'a';
+  return {en:`This is ${article} ${lower}.`,pt:''};
+}
+
 function findDailyWordExample(candidate,sources){
   if(candidate.example)return {en:candidate.example,pt:candidate.examplePt||''};
   const target=normalizeDailyWordText(candidate.en);
@@ -5524,6 +5567,10 @@ function findDailyWordExample(candidate,sources){
     matches.sort((a,b)=>a.en.length-b.en.length);
     return matches[0];
   }
+  return dailyWordFallbackExample(candidate);
+}
+
+function dailyWordPracticeExample(candidate){
   const kind=(candidate.en.match(/[A-Za-z]+(?:['’-][A-Za-z]+)?/g)||[]).length>1?'expression':'word';
   return {
     en:`I'm learning the ${kind} “${candidate.en}” today.`,
@@ -5577,6 +5624,7 @@ function buildDailyWord(){
   const word={
     ...selected,
     exampleData:findDailyWordExample(selected,sources),
+    practiceData:dailyWordPracticeExample(selected),
     level:level||'Conteúdo atual',dateKey:date.key,activityKey
   };
   dailyWordCache={key:cacheKey,word};
@@ -5609,9 +5657,17 @@ function renderDailyWord(){
       </div>
       <div class="daily-word-meaning">🇧🇷 ${htmlSafe(word.pt)}</div>
       <div class="daily-word-explanation">${htmlSafe(explanation)}</div>
-      <div class="daily-word-example">
-        <div class="daily-word-example-en"><strong>Exemplo:</strong> ${htmlSafe(word.exampleData.en)}</div>
-        ${word.exampleData.pt?`<div class="daily-word-example-pt">${htmlSafe(word.exampleData.pt)}</div>`:''}
+      <div class="daily-word-examples">
+        <div class="daily-word-example context">
+          <div class="daily-word-example-label"><i class="fa-solid fa-comments"></i> Frase com a ${wordType}</div>
+          <div class="daily-word-example-en">${htmlSafe(word.exampleData.en)}</div>
+          ${word.exampleData.pt?`<div class="daily-word-example-pt">${htmlSafe(word.exampleData.pt)}</div>`:''}
+        </div>
+        <div class="daily-word-example practice">
+          <div class="daily-word-example-label"><i class="fa-solid fa-repeat"></i> Para repetir</div>
+          <div class="daily-word-example-en">${htmlSafe(word.practiceData.en)}</div>
+          <div class="daily-word-example-pt">${htmlSafe(word.practiceData.pt)}</div>
+        </div>
       </div>
       <div class="daily-word-actions">
         <button class="btn btn-ghost" type="button" onclick="listenDailyWord('${esc(word.activityKey)}')"><i class="fa-solid fa-volume-high"></i> Ouvir</button>
