@@ -702,6 +702,139 @@ select.input { appearance: none; cursor: pointer; }
 .section-header h2 { font-size: 26px; letter-spacing: -.03em; color: var(--ink); }
 .section-header p { color: var(--slate); font-size: 14px; margin-top: 6px; font-weight: 500; }
 
+/* ══ HOME DO ALUNO — PRÓXIMA AÇÃO EM PRIMEIRO LUGAR ══ */
+.student-home { display:flex; flex-direction:column; gap:18px; }
+.home-welcome { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.home-eyebrow { color:var(--orange-dark); font-size:12px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.home-welcome h1 { margin-top:4px; font-size:30px; line-height:1.06; color:var(--ink); }
+.home-welcome p { margin-top:7px; color:var(--slate); font-size:14px; line-height:1.45; font-weight:550; }
+.home-avatar {
+  width:64px; height:64px; flex:0 0 64px; border-radius:22px;
+  display:flex; align-items:center; justify-content:center; color:white; font-size:27px;
+  background:linear-gradient(145deg,var(--orange),var(--orange-light));
+  box-shadow:0 12px 28px rgba(245,124,0,.25); transform:rotate(3deg);
+}
+.home-overview {
+  display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:center;
+  padding:18px 20px; border-radius:22px; color:white;
+  background:linear-gradient(135deg,var(--blue-deep),var(--blue2));
+  box-shadow:0 15px 34px rgba(6,14,42,.18); overflow:hidden; position:relative;
+}
+.home-overview::after { content:''; position:absolute; right:-48px; top:-70px; width:180px; height:180px; border-radius:50%; background:rgba(110,155,255,.13); }
+.home-progress-ring {
+  --home-progress:0deg; width:66px; height:66px; border-radius:50%; display:grid; place-items:center;
+  background:conic-gradient(var(--orange-light) var(--home-progress),rgba(255,255,255,.16) 0);
+  position:relative; z-index:1;
+}
+.home-progress-ring::before { content:''; width:50px; height:50px; border-radius:50%; background:var(--blue); position:absolute; }
+.home-progress-ring span { position:relative; z-index:1; font-family:'Nunito',sans-serif; font-size:14px; font-weight:900; }
+.home-overview-copy { position:relative; z-index:1; }
+.home-overview-copy strong { display:block; font-family:'Nunito',sans-serif; font-size:18px; font-weight:900; }
+.home-overview-copy span { display:block; margin-top:4px; font-size:12px; color:rgba(255,255,255,.72); line-height:1.4; }
+.home-cards { display:grid; gap:14px; }
+.home-card {
+  width:100%; min-height:150px; padding:20px; border:1px solid var(--border); border-radius:24px;
+  background:white; box-shadow:var(--shadow-sm); color:var(--ink); cursor:pointer; text-align:left;
+  font:inherit; display:grid; grid-template-columns:76px minmax(0,1fr) 22px; align-items:center; gap:17px;
+  transition:transform .25s var(--ease-out),box-shadow .25s var(--ease-out),border-color .25s;
+}
+.home-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+.home-card:active { transform:scale(.985); }
+.home-card.trail { border-color:rgba(245,124,0,.22); background:linear-gradient(145deg,#fff 35%,#FFF7ED); }
+.home-card.lesson { border-color:rgba(79,70,229,.18); background:linear-gradient(145deg,#fff 35%,#F5F3FF); }
+.home-card.music { border-color:rgba(13,148,136,.2); background:linear-gradient(145deg,#fff 35%,#ECFDF5); }
+.home-card.audio { border-color:rgba(37,99,235,.2); background:linear-gradient(145deg,#fff 35%,#EFF6FF); }
+.home-card.reading { border-color:rgba(124,58,237,.2); background:linear-gradient(145deg,#fff 35%,#F5F3FF); }
+.home-card-icon {
+  width:76px; height:76px; border-radius:24px; display:flex; align-items:center; justify-content:center;
+  color:white; font-size:31px; box-shadow:0 10px 22px rgba(11,20,38,.16);
+}
+.home-card.trail .home-card-icon { background:linear-gradient(145deg,var(--orange),var(--orange-light)); }
+.home-card.lesson .home-card-icon { background:linear-gradient(145deg,#4F46E5,#7C3AED); }
+.home-card.music .home-card-icon { background:linear-gradient(145deg,var(--teal),#22C55E); }
+.home-card.audio .home-card-icon { background:linear-gradient(145deg,#2563EB,#60A5FA); }
+.home-card.reading .home-card-icon { background:linear-gradient(145deg,#6D28D9,#A855F7); }
+.home-card-kicker { font-size:11px; font-weight:900; letter-spacing:.075em; text-transform:uppercase; color:var(--slate); }
+.home-card h2 { margin-top:4px; font-size:21px; line-height:1.12; }
+.home-card-detail { margin-top:7px; color:var(--slate); font-size:13px; line-height:1.4; font-weight:550; }
+.home-card-arrow { color:var(--slate-light); font-size:18px; }
+.home-card-progress { height:6px; margin-top:12px; border-radius:99px; background:rgba(100,116,139,.13); overflow:hidden; }
+.home-card-progress span { display:block; height:100%; min-width:0; border-radius:inherit; background:linear-gradient(90deg,var(--orange),var(--orange-light)); }
+.home-card-status { display:inline-flex; align-items:center; gap:6px; margin-top:10px; padding:5px 9px; border-radius:999px; font-size:11px; font-weight:850; }
+.home-card-status.todo { color:#9A3412; background:#FFEDD5; }
+.home-card-status.started { color:#4338CA; background:#EEF2FF; }
+.home-card-status.done { color:#047857; background:#D1FAE5; }
+.content-status { display:inline-flex; align-items:center; gap:5px; padding:5px 9px; border-radius:999px; font-size:10px; font-weight:850; white-space:nowrap; }
+.content-status.todo { color:#9A3412; background:#FFEDD5; }
+.content-status.started { color:#4338CA; background:#EEF2FF; }
+.content-status.done { color:#047857; background:#D1FAE5; }
+.game-tile { position:relative; }
+.activity-check { position:absolute; top:8px; right:8px; width:21px; height:21px; display:grid; place-items:center; border-radius:50%; color:white; background:var(--teal); font-size:10px; box-shadow:0 3px 8px rgba(13,148,136,.25); }
+.music-card-status { margin-left:auto; align-self:center; }
+.home-card-copy { min-width:0; }
+
+.audio-hub-hero {
+  padding:22px; margin-bottom:22px; border-radius:26px; color:white;
+  background:linear-gradient(135deg,#0B1A4A 0%,#1D4ED8 65%,#3B82F6 100%);
+  box-shadow:0 16px 34px rgba(29,78,216,.22); position:relative; overflow:hidden;
+}
+.audio-hub-hero::after { content:''; position:absolute; width:180px; height:180px; right:-70px; top:-85px; border-radius:50%; background:rgba(255,255,255,.11); }
+.audio-hub-top { display:flex; align-items:center; gap:16px; position:relative; z-index:1; }
+.audio-hub-icon { width:68px; height:68px; flex:0 0 68px; border-radius:22px; display:grid; place-items:center; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.18); font-size:29px; }
+.audio-hub-copy { min-width:0; flex:1; }
+.audio-hub-copy h3 { font-size:21px; color:white; }
+.audio-hub-copy p { margin-top:5px; color:rgba(255,255,255,.76); font-size:13px; line-height:1.45; }
+.audio-hub-progress { height:8px; margin:18px 0 15px; border-radius:99px; background:rgba(255,255,255,.18); overflow:hidden; position:relative; z-index:1; }
+.audio-hub-progress span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#FBBF24,#FDBA74); }
+.audio-hub-action { width:100%; min-height:48px; position:relative; z-index:1; border:none; border-radius:14px; background:white; color:#1D4ED8; font:800 14px 'Inter',sans-serif; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+.audio-hub-heading { margin:0 0 12px; font-size:17px; }
+.student-audio-list { display:grid; gap:10px; }
+.student-audio-card {
+  width:100%; padding:14px; border:1px solid var(--border); border-radius:18px; background:white;
+  display:flex; align-items:center; gap:13px; text-align:left; font:inherit; color:var(--ink); cursor:pointer;
+  box-shadow:var(--shadow-xs); transition:transform .2s var(--ease-out),box-shadow .2s,border-color .2s;
+}
+.student-audio-card:hover { transform:translateY(-1px); box-shadow:var(--shadow-sm); border-color:#BFDBFE; }
+.student-audio-card-icon { width:48px; height:48px; flex:0 0 48px; border-radius:15px; display:grid; place-items:center; background:#EFF6FF; color:#2563EB; font-size:19px; }
+.student-audio-card.done .student-audio-card-icon { background:#D1FAE5; color:#047857; }
+.student-audio-card-copy { min-width:0; flex:1; }
+.student-audio-card-title { display:block; font-family:'Nunito',sans-serif; font-size:15px; font-weight:900; line-height:1.25; }
+.student-audio-card-meta { display:block; margin-top:4px; color:var(--slate); font-size:11px; line-height:1.35; }
+.student-audio-empty { padding:30px 20px; border:1px dashed #BFDBFE; border-radius:20px; background:#F8FAFF; text-align:center; color:var(--slate); font-size:13px; line-height:1.5; }
+
+.reading-coming {
+  min-height:430px; padding:38px 28px; border:1px solid rgba(124,58,237,.16); border-radius:30px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+  background:radial-gradient(circle at 50% 0%,rgba(168,85,247,.13),transparent 42%),linear-gradient(145deg,#FFFFFF,#F5F3FF);
+  box-shadow:var(--shadow-md); position:relative; overflow:hidden;
+}
+.reading-coming-icon {
+  width:104px; height:104px; border-radius:32px; display:grid; place-items:center;
+  color:white; font-size:43px; background:linear-gradient(145deg,#6D28D9,#A855F7);
+  box-shadow:0 18px 36px rgba(109,40,217,.25); transform:rotate(-3deg);
+}
+.reading-coming-badge { margin-top:26px; padding:7px 13px; border-radius:999px; color:#6D28D9; background:#EDE9FE; font-size:11px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.reading-coming h2 { margin-top:13px; font-size:29px; color:var(--ink); }
+.reading-coming p { max-width:370px; margin-top:10px; color:var(--slate); font-size:15px; line-height:1.6; }
+
+@media(max-width:420px){
+  .home-welcome h1 { font-size:26px; }
+  .home-avatar { width:56px; height:56px; flex-basis:56px; border-radius:19px; font-size:24px; }
+  .home-card { min-height:138px; padding:17px; grid-template-columns:64px minmax(0,1fr) 16px; gap:13px; }
+  .home-card-icon { width:64px; height:64px; border-radius:21px; font-size:27px; }
+  .home-card h2 { font-size:19px; }
+  .semana-header > div:first-child { align-items:flex-start !important; flex-direction:column; }
+  .music-card { gap:10px; padding:13px; }
+  .music-icon { width:44px; height:44px; font-size:20px; }
+  .music-card-status { padding:4px 7px; font-size:9px; }
+  .nav-btn { font-size:9px; }
+  .audio-hub-hero { padding:18px; }
+  .audio-hub-icon { width:58px; height:58px; flex-basis:58px; border-radius:19px; font-size:25px; }
+  .reading-coming { min-height:390px; padding:30px 20px; }
+  .reading-coming-icon { width:88px; height:88px; border-radius:28px; font-size:37px; }
+  .reading-coming h2 { font-size:25px; }
+}
+
 /* Palavra do dia */
 .daily-word-card {
   margin-bottom: 24px; padding: 22px; border-radius: var(--radius-xl);
@@ -2180,8 +2313,86 @@ select.input { appearance: none; cursor: pointer; }
   </div>
 
   <main class="app-main">
+    <!-- INÍCIO -->
+    <section id="stab-inicio" class="student-home">
+      <div class="home-welcome">
+        <div>
+          <div class="home-eyebrow">Seu espaço de estudos</div>
+          <h1>Olá, <span id="home-student-name">aluno</span>!</h1>
+          <p>Veja onde você parou e continue com um toque.</p>
+        </div>
+        <div class="home-avatar" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i></div>
+      </div>
+
+      <div class="home-overview" aria-label="Resumo do progresso na trilha">
+        <div class="home-progress-ring" id="home-progress-ring"><span id="home-progress-percent">0%</span></div>
+        <div class="home-overview-copy">
+          <strong id="home-progress-title">Sua jornada começa aqui</strong>
+          <span id="home-progress-copy">Comece pela primeira fase da trilha.</span>
+        </div>
+      </div>
+
+      <div class="home-cards">
+        <button class="home-card trail" type="button" onclick="switchStudentTab('trilha')">
+          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-route"></i></span>
+          <div class="home-card-copy">
+            <span class="home-card-kicker">Sua trilha</span>
+            <h2 id="home-trail-title">Continuar aprendendo</h2>
+            <span class="home-card-detail" id="home-trail-detail">Carregando seu progresso...</span>
+            <span class="home-card-progress"><span id="home-trail-progress" style="width:0%"></span></span>
+            <span class="home-card-status todo" id="home-trail-status"><i class="fa-regular fa-circle"></i> Não iniciada</span>
+          </div>
+          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        </button>
+
+        <button class="home-card lesson" type="button" onclick="switchStudentTab('semanas')">
+          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-chalkboard-user"></i></span>
+          <div class="home-card-copy">
+            <span class="home-card-kicker">Aula mais recente</span>
+            <h2 id="home-lesson-title">Suas aulas</h2>
+            <span class="home-card-detail" id="home-lesson-detail">Confira o conteúdo liberado para você.</span>
+            <span class="home-card-status todo" id="home-lesson-status"><i class="fa-regular fa-circle"></i> Ainda não vista</span>
+          </div>
+          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        </button>
+
+        <button class="home-card audio" type="button" onclick="switchStudentTab('audios')">
+          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-book-open-reader"></i></span>
+          <div class="home-card-copy">
+            <span class="home-card-kicker">Áudios do seu livro</span>
+            <h2 id="home-audio-title">Pratique sua escuta</h2>
+            <span class="home-card-detail" id="home-audio-detail">Ouça novamente o conteúdo trabalhado em aula.</span>
+            <span class="home-card-status todo" id="home-audio-status"><i class="fa-regular fa-circle"></i> Pronto para ouvir</span>
+          </div>
+          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        </button>
+
+        <button class="home-card reading" type="button" onclick="switchStudentTab('leitura')">
+          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
+          <div class="home-card-copy">
+            <span class="home-card-kicker">Biblioteca de leitura</span>
+            <h2>Leia em inglês</h2>
+            <span class="home-card-detail">Histórias adaptadas para você praticar no seu nível.</span>
+            <span class="home-card-status started"><i class="fa-solid fa-wand-magic-sparkles"></i> Em breve</span>
+          </div>
+          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        </button>
+
+        <button class="home-card music" type="button" onclick="switchStudentTab('musica')">
+          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-headphones-simple"></i></span>
+          <div class="home-card-copy">
+            <span class="home-card-kicker">Última música adicionada</span>
+            <h2 id="home-music-title">Learn with Music</h2>
+            <span class="home-card-detail" id="home-music-detail">Ouça, acompanhe a letra e pratique.</span>
+            <span class="home-card-status todo" id="home-music-status"><i class="fa-regular fa-circle"></i> Ainda não ouvida</span>
+          </div>
+          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
+
     <!-- TRILHA TAB -->
-    <section id="stab-trilha">
+    <section id="stab-trilha" class="hidden">
       <div class="section-header">
         <h2>Trilha de Fundamentos</h2>
         <p>Complete cada fase e tire nota 8.0 para avançar</p>
@@ -2211,6 +2422,41 @@ select.input { appearance: none; cursor: pointer; }
       <div id="semanas-container"></div>
     </section>
 
+    <!-- ÁUDIOS DO LIVRO -->
+    <section id="stab-audios" class="hidden">
+      <div class="section-header">
+        <h2>Áudios do Livro 🎧</h2>
+        <p>Escute as lições liberadas e acompanhe o que você já concluiu</p>
+      </div>
+      <div class="audio-hub-hero">
+        <div class="audio-hub-top">
+          <div class="audio-hub-icon" aria-hidden="true"><i class="fa-solid fa-headphones-simple"></i></div>
+          <div class="audio-hub-copy">
+            <h3 id="audio-hub-title">Sua biblioteca de escuta</h3>
+            <p id="audio-hub-copy">Todos os áudios do seu livro em um só lugar.</p>
+          </div>
+        </div>
+        <div class="audio-hub-progress"><span id="audio-hub-progress" style="width:0%"></span></div>
+        <button class="audio-hub-action" type="button" onclick="openBookAudioLibrary()"><i class="fa-solid fa-play"></i> Abrir biblioteca completa</button>
+      </div>
+      <h3 class="audio-hub-heading" id="audio-hub-list-title">Próximos para ouvir</h3>
+      <div id="student-audio-list" class="student-audio-list"></div>
+    </section>
+
+    <!-- BIBLIOTECA DE LEITURA -->
+    <section id="stab-leitura" class="hidden">
+      <div class="section-header">
+        <h2>Biblioteca de Leitura 📚</h2>
+        <p>Histórias em inglês adaptadas para o seu nível</p>
+      </div>
+      <div class="reading-coming">
+        <div class="reading-coming-icon" aria-hidden="true"><i class="fa-solid fa-book-open-reader"></i></div>
+        <div class="reading-coming-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Em breve</div>
+        <h2>Novas leituras estão chegando</h2>
+        <p>Estamos preparando histórias especiais para você ler em inglês, aprender novas palavras e acompanhar seu progresso.</p>
+      </div>
+    </section>
+
     <!-- MÚSICAS LISTA -->
     <section id="stab-musica" class="hidden">
       <div class="section-header">
@@ -2222,11 +2468,20 @@ select.input { appearance: none; cursor: pointer; }
   </main>
 
   <nav class="bottom-nav">
-    <button onclick="switchStudentTab('trilha')" id="snav-trilha" class="nav-btn active">
+    <button onclick="switchStudentTab('inicio')" id="snav-inicio" class="nav-btn active">
+      <i class="fa-solid fa-house"></i>Início
+    </button>
+    <button onclick="switchStudentTab('trilha')" id="snav-trilha" class="nav-btn">
       <i class="fa-solid fa-map-location-dot"></i>Trilha
     </button>
     <button onclick="switchStudentTab('semanas')" id="snav-semanas" class="nav-btn">
       <i class="fa-solid fa-calendar-week"></i>Aulas
+    </button>
+    <button onclick="switchStudentTab('audios')" id="snav-audios" class="nav-btn">
+      <i class="fa-solid fa-headphones"></i>Áudios
+    </button>
+    <button onclick="switchStudentTab('leitura')" id="snav-leitura" class="nav-btn">
+      <i class="fa-solid fa-book-open"></i>Livros
     </button>
     <button onclick="switchStudentTab('musica')" id="snav-musica" class="nav-btn">
       <i class="fa-solid fa-music"></i>Músicas
@@ -4780,8 +5035,10 @@ async function setupUserSession(user){
   }
   scheduledContentRefreshTimer=setInterval(()=>{
     if(currentUser?.role!=='student')return;
-    if(!document.getElementById('stab-trilha')?.classList.contains('hidden'))renderStudentTrilha();
+    if(!document.getElementById('stab-inicio')?.classList.contains('hidden'))renderStudentHome();
+    else if(!document.getElementById('stab-trilha')?.classList.contains('hidden'))renderStudentTrilha();
     else if(!document.getElementById('stab-semanas')?.classList.contains('hidden'))renderStudentSemanas();
+    else if(!document.getElementById('stab-audios')?.classList.contains('hidden'))renderStudentAudios();
     else if(!document.getElementById('stab-musica')?.classList.contains('hidden'))renderStudentMusicas();
   },30000);
   currentUser={id:user.id,email:user.email,role:'student',name:control.name||m.name||"Aluno",
@@ -4792,7 +5049,7 @@ async function setupUserSession(user){
   document.getElementById('xp-num').textContent=currentUser.xp;
   updateXpLevel();
   document.getElementById('btn-back-admin').classList.add('hidden');
-  switchStudentTab('trilha');
+  switchStudentTab('inicio');
   showView('student');
 }
 
@@ -4833,7 +5090,7 @@ async function refreshCurrentStudentControl(){
     if(changed){
       if(control.name)currentUser.name=control.name;
       if(control.turma)currentUser.turma=control.turma;
-      switchStudentTab('trilha');
+      switchStudentTab('inicio');
     }
   }catch(error){console.warn('Verificação de acesso aguardando conexão:',error);}
 }
@@ -4865,7 +5122,7 @@ function previewAsStudent(roomKey=adminSelectedRoom){
   document.getElementById('student-xp').textContent='0';
   document.getElementById('xp-num').textContent='0';
   updateXpLevel();
-  switchStudentTab('trilha');
+  switchStudentTab('inicio');
   showView('student');
 }
 
@@ -4887,14 +5144,16 @@ function exitStudentPreview(){
    STUDENT UI
 ══════════════════════════════════════════════ */
 function switchStudentTab(tab){
-  ['trilha','semanas','musica'].forEach(t=>{
+  ['inicio','trilha','semanas','audios','leitura','musica'].forEach(t=>{
     const el=document.getElementById('stab-'+t);
     if(el)el.classList.toggle('hidden',t!==tab);
     const btn=document.getElementById('snav-'+t);
     if(btn)btn.classList.toggle('active',t===tab);
   });
+  if(tab==='inicio')renderStudentHome();
   if(tab==='trilha')renderStudentTrilha();
   if(tab==='semanas')renderStudentSemanas();
+  if(tab==='audios')renderStudentAudios();
   if(tab==='musica')renderStudentMusicas();
 }
 
@@ -4907,6 +5166,122 @@ function publishDateValue(value){
 function isContentPublished(item,now=Date.now()){
   const publishTime=publishDateValue(item?.publishAt);
   return !publishTime||publishTime<=now;
+}
+
+function hasProgressAward(key){
+  return Boolean(key&&currentUser?.xpAwards&&Object.prototype.hasOwnProperty.call(currentUser.xpAwards,key));
+}
+
+function trailPhaseDone(fase){
+  const unlocked=currentUser?.unlockedFases||[];
+  return unlocked.includes(`${fase.id}_done`)||Number(currentUser?.notas?.[fase.id]||0)>=8;
+}
+
+function weeklyActivityTypes(week){
+  const types=[];
+  if((week?.vocab||[]).length)types.push('vocab');
+  if((week?.chunks||[]).length)types.push('chunks');
+  if((week?.ditado||[]).length)types.push('ditado');
+  if((week?.erros||[]).length)types.push('erros');
+  if([...(week?.vocab||[]),...(week?.chunks||[])].length)types.push('memoria','quiz');
+  if((week?.bookAudioIds||[]).length)types.push('bookaudio');
+  return types;
+}
+
+function weeklyActivityDone(week,roomKey,type){
+  if(type==='bookaudio')return (week?.bookAudioIds||[]).every(id=>isBookAudioListened(id));
+  return hasProgressAward(`semana:${roomKey}:${week?.title||''}:${type}`);
+}
+
+function weeklyProgress(week,roomKey){
+  const types=weeklyActivityTypes(week);
+  const done=types.filter(type=>weeklyActivityDone(week,roomKey,type)).length;
+  return {done,total:types.length};
+}
+
+function musicListened(music,roomKey){
+  return hasProgressAward(`music:${roomKey}:${music?.id||''}:listen`);
+}
+
+function setHomeStatus(id,state,label){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const icons={todo:'fa-regular fa-circle',started:'fa-solid fa-clock',done:'fa-solid fa-circle-check'};
+  el.className=`home-card-status ${state}`;
+  el.innerHTML=`<i class="${icons[state]||icons.todo}"></i> ${label}`;
+}
+
+function renderStudentHome(){
+  if(!currentUser)return;
+  const roomKey=currentUser.turma;
+  const firstName=String(currentUser.name||'aluno').trim().split(/\s+/)[0]||'aluno';
+  const nameEl=document.getElementById('home-student-name');
+  if(nameEl)nameEl.textContent=firstName;
+
+  const phases=(DATABASE.trilhas[roomKey]||[]).filter(isContentPublished);
+  const unlocked=currentUser.unlockedFases||[];
+  const completedPhases=phases.filter(trailPhaseDone);
+  const currentPhase=phases.find((fase,index)=>{
+    if(fase.locked)return false;
+    const accessible=index===0||unlocked.includes(fase.id)||trailPhaseDone(fase);
+    return accessible&&!trailPhaseDone(fase);
+  })||[...phases].reverse().find(fase=>!fase.locked)||null;
+  const trailPercent=phases.length?Math.round((completedPhases.length/phases.length)*100):0;
+  const trailStarted=completedPhases.length>0||unlocked.some(value=>String(value).includes('__atividade_'));
+  const ring=document.getElementById('home-progress-ring');
+  if(ring)ring.style.setProperty('--home-progress',`${trailPercent*3.6}deg`);
+  const percent=document.getElementById('home-progress-percent');
+  if(percent)percent.textContent=`${trailPercent}%`;
+  const progressTitle=document.getElementById('home-progress-title');
+  const progressCopy=document.getElementById('home-progress-copy');
+  if(progressTitle)progressTitle.textContent=phases.length?`${completedPhases.length} de ${phases.length} fases concluídas`:'Sua jornada começa aqui';
+  if(progressCopy)progressCopy.textContent=phases.length
+    ? (trailPercent===100?'Você concluiu toda a trilha disponível. Parabéns!':'Acompanhe seu avanço e continue de onde parou.')
+    : 'A primeira fase aparecerá aqui quando for liberada.';
+  const trailTitle=document.getElementById('home-trail-title');
+  const trailDetail=document.getElementById('home-trail-detail');
+  const trailBar=document.getElementById('home-trail-progress');
+  if(trailTitle)trailTitle.textContent=currentPhase?.title||'Trilha de fundamentos';
+  if(trailDetail)trailDetail.textContent=currentPhase
+    ? `${currentPhase.nivel?`${currentPhase.nivel} · `:''}Fase ${Math.max(1,phases.indexOf(currentPhase)+1)} de ${phases.length}`
+    : 'Nenhuma fase disponível no momento.';
+  if(trailBar)trailBar.style.width=`${trailPercent}%`;
+  setHomeStatus('home-trail-status',trailPercent===100&&phases.length?'done':trailStarted?'started':'todo',trailPercent===100&&phases.length?'Trilha concluída':trailStarted?'Em andamento':'Ainda não iniciada');
+
+  const weeks=(DATABASE.semanas[roomKey]||[]).filter(isContentPublished);
+  const latestWeek=weeks[weeks.length-1];
+  const weekProgress=latestWeek?weeklyProgress(latestWeek,roomKey):{done:0,total:0};
+  const lessonTitle=document.getElementById('home-lesson-title');
+  const lessonDetail=document.getElementById('home-lesson-detail');
+  if(lessonTitle)lessonTitle.textContent=latestWeek?.title||'Suas aulas';
+  if(lessonDetail)lessonDetail.textContent=latestWeek
+    ? (weekProgress.done?`${weekProgress.done} de ${weekProgress.total} atividades realizadas`:'O conteúdo está esperando por você.')
+    : 'Nenhuma aula foi liberada no momento.';
+  const weekDone=weekProgress.total>0&&weekProgress.done===weekProgress.total;
+  setHomeStatus('home-lesson-status',weekDone?'done':weekProgress.done?'started':'todo',weekDone?'Aula concluída':weekProgress.done?'Em andamento':'Ainda não vista');
+
+  const bookAudios=accessibleBookAudioItems();
+  const listenedAudios=bookAudios.filter(item=>isBookAudioListened(item.id));
+  const nextAudio=bookAudios.find(item=>!isBookAudioListened(item.id));
+  const audioTitle=document.getElementById('home-audio-title');
+  const audioDetail=document.getElementById('home-audio-detail');
+  if(audioTitle)audioTitle.textContent=nextAudio?.title||(bookAudios.length?'Todos os áudios concluídos':'Pratique sua escuta');
+  if(audioDetail)audioDetail.textContent=bookAudios.length
+    ? `${listenedAudios.length} de ${bookAudios.length} áudios concluídos${nextAudio?.page?` · Próximo: página ${nextAudio.page}`:''}`
+    : 'Os áudios aparecerão aqui quando forem liberados.';
+  const allAudiosDone=bookAudios.length>0&&listenedAudios.length===bookAudios.length;
+  setHomeStatus('home-audio-status',allAudiosDone?'done':listenedAudios.length?'started':'todo',allAudiosDone?'Escuta concluída':listenedAudios.length?'Continue ouvindo':'Pronto para ouvir');
+
+  const songs=(DATABASE.musicas[roomKey]||[]).filter(isContentPublished);
+  const latestSong=songs[songs.length-1];
+  const listened=latestSong?musicListened(latestSong,roomKey):false;
+  const musicTitle=document.getElementById('home-music-title');
+  const musicDetail=document.getElementById('home-music-detail');
+  if(musicTitle)musicTitle.textContent=latestSong?.title||'Learn with Music';
+  if(musicDetail)musicDetail.textContent=latestSong
+    ? `${latestSong.artist||'Artista não informado'} · Ouça e acompanhe a letra`
+    : 'Nenhuma música foi liberada no momento.';
+  setHomeStatus('home-music-status',listened?'done':'todo',listened?'Música ouvida':'Ainda não ouvida');
 }
 
 function publishAtFromInput(inputId){
@@ -5322,6 +5697,48 @@ function accessibleBookAudioItems(){
   return catalog.filter(item=>allowed.has(item.id));
 }
 
+function openBookAudioFromHub(id){
+  openBookAudioLibrary([id]);
+  openBookAudioDetail(id);
+}
+
+function renderStudentAudios(){
+  const listEl=document.getElementById('student-audio-list');
+  if(!listEl)return;
+  const items=accessibleBookAudioItems();
+  const doneItems=items.filter(item=>isBookAudioListened(item.id));
+  const pendingItems=items.filter(item=>!isBookAudioListened(item.id));
+  const pct=items.length?Math.round((doneItems.length/items.length)*100):0;
+  const title=document.getElementById('audio-hub-title');
+  const copy=document.getElementById('audio-hub-copy');
+  const bar=document.getElementById('audio-hub-progress');
+  const listTitle=document.getElementById('audio-hub-list-title');
+  if(title)title.textContent=items.length?`${doneItems.length} de ${items.length} áudios concluídos`:'Sua biblioteca de escuta';
+  if(copy)copy.textContent=items.length
+    ? (pct===100?'Muito bem! Você pode voltar quando quiser para revisar.':`${pendingItems.length} áudio${pendingItems.length===1?'':'s'} esperando por você.`)
+    : 'Os áudios do seu livro aparecerão aqui quando forem liberados.';
+  if(bar)bar.style.width=`${pct}%`;
+  if(listTitle)listTitle.textContent=pendingItems.length?'Próximos para ouvir':'Seus áudios';
+  if(!items.length){
+    listEl.innerHTML='<div class="student-audio-empty"><i class="fa-solid fa-headphones" style="font-size:28px;color:#60A5FA;margin-bottom:10px;display:block"></i>Nenhum áudio foi liberado para esta turma ainda.</div>';
+    return;
+  }
+  const renderAudioCard=item=>{
+    const done=isBookAudioListened(item.id);
+    const book=BOOK_AUDIO_LEVELS[item.level]?.book||'';
+    return `<button class="student-audio-card ${done?'done':''}" type="button" onclick="openBookAudioFromHub('${esc(item.id)}')">
+      <span class="student-audio-card-icon"><i class="fa-solid fa-${done?'circle-check':'play'}"></i></span>
+      <span class="student-audio-card-copy">
+        <span class="student-audio-card-title">${htmlSafe(item.title)}</span>
+        <span class="student-audio-card-meta">${htmlSafe(bookAudioLessonLabel(item))}${item.page?` · Página ${htmlSafe(item.page)}`:''}${book?` · ${htmlSafe(book)}`:''}</span>
+      </span>
+      <span class="content-status ${done?'done':'todo'}"><i class="fa-solid fa-${done?'check':'headphones'}"></i> ${done?'Concluído':'Ouvir'}</span>
+    </button>`;
+  };
+  const completedHeading=pendingItems.length&&doneItems.length?'<h3 class="audio-hub-heading" style="margin:12px 0 2px">Concluídos</h3>':'';
+  listEl.innerHTML=pendingItems.map(renderAudioCard).join('')+completedHeading+doneItems.map(renderAudioCard).join('');
+}
+
 function refreshBookAudioLibraryCta(){
   const cta=document.getElementById('book-audio-library-cta');
   if(cta)cta.classList.toggle('hidden',accessibleBookAudioItems().length===0);
@@ -5427,6 +5844,9 @@ async function completeBookAudioListen(){
   openBookAudioDetail(id);
   if(isTeacherPreview())return;
   await saveStudentProgress({silent:true});
+  renderStudentHome();
+  renderStudentSemanas();
+  renderStudentAudios();
 }
 
 function changeAdminBookLevel(level){
@@ -5529,6 +5949,11 @@ function renderStudentSemanas(){
     const badge=isTeacher?`<span class="badge badge-violet">${sem.turmaName}</span>`:'';
     const lockTag=isTeacher&&sem.locked?'<span class="badge" style="background:#FEF2F2;color:#991B1B;margin-left:6px">🔒 travada</span>':'';
     const scheduleTag=isTeacher&&!isContentPublished(sem)?`<span class="badge" style="background:#F5F3FF;color:#7C3AED;margin-left:6px">📅 ${formatPublishAt(sem.publishAt)}</span>`:'';
+    const progress=weeklyProgress(sem,sem.rKey);
+    const allDone=progress.total>0&&progress.done===progress.total;
+    const progressState=allDone?'done':progress.done?'started':'todo';
+    const progressLabel=allDone?'Aula concluída':progress.done?`${progress.done} de ${progress.total} feitas`:'Ainda não vista';
+    const activityCheck=type=>weeklyActivityDone(sem,sem.rKey,type)?'<span class="activity-check" title="Atividade realizada"><i class="fa-solid fa-check"></i></span>':'';
     const div=document.createElement('div');
     div.className='card semana-card';
 
@@ -5549,41 +5974,51 @@ function renderStudentSemanas(){
 
     div.innerHTML=`
       <div class="semana-header">
-        <div class="semana-title">${sem.title}${lockTag}${scheduleTag}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div class="semana-title">${sem.title}${lockTag}${scheduleTag}</div>
+          <span class="content-status ${progressState}"><i class="fa-solid fa-${allDone?'circle-check':progress.done?'clock':'circle'}"></i> ${progressLabel}</span>
+        </div>
         ${badge?`<div class="semana-turma-badge" style="margin-top:6px">${badge}</div>`:''}
       </div>
       <div class="semana-games">
         <div class="game-tile vocab" onclick="startSemanaGame('${sem.rKey}',${sem.realIdx},'vocab')">
+          ${activityCheck('vocab')}
           <div class="tile-icon">📖</div>
           <div class="tile-label">Vocabulário</div>
           <div class="tile-sub">${(sem.vocab||[]).length} palavras + áudio</div>
         </div>
         <div class="game-tile chunks" onclick="startSemanaGame('${sem.rKey}',${sem.realIdx},'chunks')">
+          ${activityCheck('chunks')}
           <div class="tile-icon">🎯</div>
           <div class="tile-label">Chunks</div>
           <div class="tile-sub">${(sem.chunks||[]).length} frases prontas</div>
         </div>
         <div class="game-tile ditado" onclick="startSemanaGame('${sem.rKey}',${sem.realIdx},'ditado')">
+          ${activityCheck('ditado')}
           <div class="tile-icon">🎧</div>
           <div class="tile-label">Ditado</div>
           <div class="tile-sub">Ouça e escreva</div>
         </div>
         <div class="game-tile erros" onclick="startSemanaGame('${sem.rKey}',${sem.realIdx},'erros')">
+          ${activityCheck('erros')}
           <div class="tile-icon">❌</div>
           <div class="tile-label">Ache o Erro</div>
           <div class="tile-sub">Gramática em ação</div>
         </div>
         <div class="game-tile memoria" onclick="startSemanaGame('${sem.rKey}',${sem.realIdx},'memoria')">
+          ${activityCheck('memoria')}
           <div class="tile-icon">🃏</div>
           <div class="tile-label">Memória</div>
           <div class="tile-sub">Pares EN↔PT</div>
         </div>
         <div class="game-tile quiz" onclick="startSemanaGame('${sem.rKey}',${sem.realIdx},'quiz')">
+          ${activityCheck('quiz')}
           <div class="tile-icon">⚡</div>
           <div class="tile-label">Quiz da Aula</div>
           <div class="tile-sub">Até 25 perguntas</div>
         </div>
         ${(sem.bookAudioIds||[]).length?`<div class="game-tile book-audio" onclick='openBookAudioLibrary(${JSON.stringify(sem.bookAudioIds)})'>
+          ${activityCheck('bookaudio')}
           <div class="tile-icon">🎧</div>
           <div class="tile-label">Áudio do Livro</div>
           <div class="tile-sub">${sem.bookAudioIds.length} faixa${sem.bookAudioIds.length===1?'':'s'} · ${htmlSafe(BOOK_AUDIO_LEVELS[sem.bookLevel]?.label||'')}</div>
@@ -6905,6 +7340,9 @@ function closeResult(){
   document.querySelectorAll('.result-confetti').forEach(c=>c.remove());
   renderStudentTrilha();
   renderStudentSemanas();
+  renderStudentAudios();
+  renderStudentMusicas();
+  renderStudentHome();
 }
 
 function dispatchReport(act,result){
@@ -7957,15 +8395,18 @@ function renderStudentMusicas() {
     return;
   }
   
-  cont.innerHTML = list.map(m => `
-    <div class="music-card" onclick="openMusicPlayer('${m.rKey}', '${m.id}')">
-      <div class="music-icon"><i class="fa-solid fa-play"></i></div>
-      <div class="music-info">
-        <div class="music-title">${m.title}</div>
-        <div class="music-artist">${m.artist||'Desconhecido'} ${isTeacherAdmin()?`<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${m.turmaName}</span>${!isContentPublished(m)?`<span class="badge" style="font-size:10px;margin-left:6px;background:#F5F3FF;color:#7C3AED">📅 ${formatPublishAt(m.publishAt)}</span>`:''}`:''}</div>
-      </div>
-    </div>
-  `).join('');
+  cont.innerHTML = list.map(m => {
+    const listened=musicListened(m,m.rKey);
+    return `
+      <div class="music-card" onclick="openMusicPlayer('${m.rKey}', '${m.id}')">
+        <div class="music-icon"><i class="fa-solid fa-${listened?'check':'play'}"></i></div>
+        <div class="music-info">
+          <div class="music-title">${m.title}</div>
+          <div class="music-artist">${m.artist||'Desconhecido'} ${isTeacherAdmin()?`<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${m.turmaName}</span>${!isContentPublished(m)?`<span class="badge" style="font-size:10px;margin-left:6px;background:#F5F3FF;color:#7C3AED">📅 ${formatPublishAt(m.publishAt)}</span>`:''}`:''}</div>
+        </div>
+        <span class="content-status ${listened?'done':'todo'} music-card-status"><i class="fa-solid fa-${listened?'circle-check':'circle'}"></i> ${listened?'Ouvida':'Não ouvida'}</span>
+      </div>`;
+  }).join('');
 }
 
 // -- MUSIC PLAYER LOGIC --
@@ -7985,12 +8426,16 @@ async function awardMusicXp(kind,fullXp,label){
   const reward=claimXpReward(activityKey,fullXp);
   if(reward.kind==='cooldown'){
     updateMusicXpStatus(`${label} concluído · XP de revisão disponível em ${reward.days} dia${reward.days===1?'':'s'}`);
+    renderStudentMusicas();
+    renderStudentHome();
     return;
   }
   if(!reward.amount)return;
   updateMusicXpStatus(`${label} concluído · salvando +${reward.amount} XP...`);
   const saved=await saveStudentProgress({xpGain:reward.amount,silent:true});
   updateMusicXpStatus(`${label} concluído · +${reward.amount} XP${reward.kind==='review'?' de revisão':''}${saved?'':' (salvo neste aparelho)'}`);
+  renderStudentMusicas();
+  renderStudentHome();
 }
 
 function trackMusicStudy(){
