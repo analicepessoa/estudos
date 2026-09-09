@@ -1,7 +1,7 @@
 // Service Worker — Analice Pessoa · English
 // Troque a versão (v1, v2...) sempre que publicar uma atualização do app,
 // para forçar os celulares a baixarem a versão nova.
-const CACHE = 'ap-english-v36';
+const CACHE = 'ap-english-v37';
 
 // Arquivos do "esqueleto" do app que ficam guardados para abrir offline.
 const APP_SHELL = [
@@ -12,6 +12,11 @@ const APP_SHELL = [
   './livros/a%20metamorfose/week1_app_content.json',
   './livros/a%20metamorfose/assets/cover_the_metamorphosis_a1.png',
   './livros/a%20metamorfose/assets/week1_opening_gregor_wakes.png',
+  './livros/a%20metamorfose/assets/week1_part2_clock_and_job.webp',
+  './livros/a%20metamorfose/assets/week1_part3_responsibility.webp',
+  './livros/a%20metamorfose/assets/week1_part4_voices_behind_door.webp',
+  './livros/a%20metamorfose/assets/week1_part5_time_passing.webp',
+  './livros/a%20metamorfose/assets/week1_part6_chief_clerk.webp',
   './livros/a%20metamorfose/assets/week1_visual_reflection_closed_door.png',
   './manifest.json',
   './icon-192.png',

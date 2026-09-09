@@ -5462,11 +5462,12 @@ function renderReadingPart(index){
   if(readingGateTimer){clearInterval(readingGateTimer);readingGateTimer=null;}
   const part=READING_PARTS[index];
   const sentences=readingData.week.story.slice(part.start,part.end);
+  const illustration=readingData.week.part_illustrations?.[index]||(index===0?readingData.week.opening_illustration:null);
   const alreadyDone=hasReadingMarker(readingPartMarker(index));
   const content=document.getElementById('reading-content');
   content.innerHTML=`
     <div class="reading-reader-head"><h1>Part ${index+1} · ${htmlSafe(part.title)}</h1><p>Chapter 1 · ${part.end-part.start} frases curtas</p></div>
-    ${index===0?`<img class="reading-story-image" src="${readingAsset(readingData.week.opening_illustration.asset)}" alt="${htmlSafe(readingData.week.opening_illustration.alt_text)}">`:''}
+    ${illustration?`<img class="reading-story-image" src="${readingAsset(illustration.asset)}" alt="${htmlSafe(illustration.alt_text)}">`:''}
     <div class="reading-tools">
       <div class="reading-audio-controls" aria-label="Controles do áudio">
         <button id="reading-audio-play" class="reading-audio-btn" type="button" onclick="listenReadingPart()"><i class="fa-solid fa-volume-high"></i> Ouvir e acompanhar</button>
