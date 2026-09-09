@@ -866,9 +866,18 @@ select.input { appearance: none; cursor: pointer; }
 .reading-reader-head h1 { color:#2E211A; font:900 27px/1.1 'Nunito',sans-serif; }
 .reading-reader-head p { margin-top:5px; color:#806E62; font-size:12px; }
 .reading-story-image { width:100%; max-height:390px; object-fit:cover; border-radius:23px; box-shadow:0 13px 30px rgba(45,28,20,.17); }
-.reading-listen { width:100%; min-height:48px; margin:13px 0; border:1px solid rgba(87,52,36,.17); border-radius:15px; background:#FFFCF7; color:#7C2D12; font:850 13px 'Inter',sans-serif; cursor:pointer; }
+.reading-tools { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:13px 0; flex-wrap:wrap; }
+.reading-audio-controls { display:flex; gap:7px; flex:1 1 360px; }
+.reading-audio-btn { min-height:46px; padding:0 14px; border:1px solid rgba(87,52,36,.17); border-radius:13px; background:#FFFCF7; color:#7C2D12; font:850 12px 'Inter',sans-serif; cursor:pointer; }
+.reading-audio-btn:first-child { flex:1; }
+.reading-audio-btn:disabled { opacity:.42; cursor:not-allowed; }
+.reading-audio-btn.playing { border-color:#7C2D12; background:#F4E5D8; }
+.reading-font-controls { display:flex; align-items:center; gap:5px; padding:5px; border:1px solid rgba(87,52,36,.15); border-radius:13px; background:#FFFCF7; }
+.reading-font-controls span { padding:0 5px; color:#806E62; font-size:10px; font-weight:850; }
+.reading-font-controls button { min-width:37px; height:35px; border:0; border-radius:9px; background:#F4ECE2; color:#6B3424; font-weight:900; cursor:pointer; }
+.reading-font-controls button:disabled { opacity:.38; cursor:not-allowed; }
 .reading-text { padding:24px 22px; border:1px solid rgba(87,52,36,.13); border-radius:23px; background:#FFFCF7; box-shadow:0 7px 22px rgba(45,28,20,.07); }
-.reading-text p { margin:0 0 15px; color:#382922; font:600 17px/1.82 'Nunito',sans-serif; }
+.reading-text p { margin:0 0 15px; color:#382922; font:600 var(--reading-font-size,18px)/1.82 'Nunito',sans-serif; }
 .reading-text p:last-child { margin-bottom:0; }
 .reading-checkpoint { margin-top:16px; padding:20px; border:1px solid rgba(124,45,18,.18); border-radius:21px; background:#F7EDE3; }
 .reading-checkpoint h3 { color:#7C2D12; font-size:16px; }
@@ -910,7 +919,10 @@ select.input { appearance: none; cursor: pointer; }
   .reading-hero h1 { font-size:24px; }
   .reading-hero h2 { font-size:14px; }
   .reading-text { padding:20px 18px; }
-  .reading-text p { font-size:16px; line-height:1.75; }
+  .reading-text p { line-height:1.75; }
+  .reading-audio-controls { flex-basis:100%; }
+  .reading-audio-btn { padding:0 11px; }
+  .reading-font-controls { width:100%; justify-content:center; }
 }
 
 @media(max-width:420px){
@@ -5267,6 +5279,8 @@ let readingDataPromise=null;
 let readingGateTimer=null;
 let readingState={mode:'overview',part:0,completed:new Set(),quizAnswers:{}};
 let readingSessionOwner='';
+let readingFontSize=Math.min(24,Math.max(15,Number(localStorage.getItem('ap_reading_font_size'))||18));
+let readingAudioPaused=false;
 
 function readingAsset(path){return `${READING_BASE}${String(path||'').replace(/^\.\//,'')}`;}
 function readingPartMarker(index){return `reading__metamorphosis_w1_part_${index+1}`;}
@@ -5283,6 +5297,65 @@ function hasReadingMarker(marker){syncReadingSessionOwner();return readingState.
 function readingIsComplete(){return hasReadingMarker(READING_COMPLETE_MARKER);}
 function readingPartsDone(){return READING_PARTS.filter((_,index)=>hasReadingMarker(readingPartMarker(index))).length;}
 function readingProgress(){return {done:readingPartsDone()+(readingIsComplete()?1:0),total:READING_PARTS.length+1};}
+
+function applyReadingFontSize(){
+  document.getElementById('reading-overlay')?.style.setProperty('--reading-font-size',`${readingFontSize}px`);
+  const value=document.getElementById('reading-font-value');
+  const smaller=document.getElementById('reading-font-smaller');
+  const larger=document.getElementById('reading-font-larger');
+  if(value)value.textContent=`${readingFontSize}px`;
+  if(smaller)smaller.disabled=readingFontSize<=15;
+  if(larger)larger.disabled=readingFontSize>=24;
+}
+
+function adjustReadingFont(delta){
+  readingFontSize=Math.min(24,Math.max(15,readingFontSize+delta));
+  localStorage.setItem('ap_reading_font_size',String(readingFontSize));
+  applyReadingFontSize();
+}
+
+function resetReadingFont(){
+  readingFontSize=18;
+  localStorage.setItem('ap_reading_font_size',String(readingFontSize));
+  applyReadingFontSize();
+}
+
+function updateReadingAudioControls(state='idle'){
+  const play=document.getElementById('reading-audio-play');
+  const pause=document.getElementById('reading-audio-pause');
+  const stop=document.getElementById('reading-audio-stop');
+  if(play){
+    play.disabled=state==='loading';
+    play.classList.toggle('playing',state==='playing'||state==='paused');
+    play.innerHTML=state==='loading'?'<i class="fa-solid fa-spinner fa-spin"></i> Preparando voz...':state==='playing'||state==='paused'?'<i class="fa-solid fa-rotate-right"></i> Reiniciar trecho':'<i class="fa-solid fa-volume-high"></i> Ouvir e acompanhar';
+  }
+  if(pause){
+    pause.disabled=!['playing','paused'].includes(state);
+    pause.innerHTML=state==='paused'?'<i class="fa-solid fa-play"></i> Continuar':'<i class="fa-solid fa-pause"></i> Pausar';
+  }
+  if(stop)stop.disabled=!['playing','paused'].includes(state);
+}
+
+function stopReadingAudio(updateControls=true){
+  speechRequestId++;
+  window.speechSynthesis?.cancel();
+  readingAudioPaused=false;
+  if(updateControls)updateReadingAudioControls('idle');
+}
+
+function toggleReadingAudio(){
+  const synth=window.speechSynthesis;
+  if(!synth)return;
+  if(readingAudioPaused){
+    synth.resume();
+    readingAudioPaused=false;
+    updateReadingAudioControls('playing');
+  }else if(synth.speaking){
+    synth.pause();
+    readingAudioPaused=true;
+    updateReadingAudioControls('paused');
+  }
+}
 
 async function loadReadingData(){
   if(readingData)return readingData;
@@ -5340,7 +5413,7 @@ async function openReadingBook(){
 
 function closeReadingBook(){
   if(readingGateTimer){clearInterval(readingGateTimer);readingGateTimer=null;}
-  window.speechSynthesis?.cancel();
+  stopReadingAudio(false);
   document.getElementById('reading-overlay')?.classList.add('hidden');
   renderReadingLibrary();
   renderStudentHome();
@@ -5355,6 +5428,7 @@ function readingScrollTop(){document.getElementById('reading-overlay')?.scrollTo
 
 function renderReadingOverview(){
   if(!readingData)return;
+  stopReadingAudio(false);
   readingState.mode='overview';
   if(readingGateTimer){clearInterval(readingGateTimer);readingGateTimer=null;}
   const content=document.getElementById('reading-content');
@@ -5383,6 +5457,7 @@ function renderReadingPart(index){
   if(!readingData||!READING_PARTS[index])return;
   const firstIncomplete=READING_PARTS.findIndex((_,partIndex)=>!hasReadingMarker(readingPartMarker(partIndex)));
   if(index>firstIncomplete&&firstIncomplete>=0)return;
+  stopReadingAudio(false);
   readingState.mode='part'; readingState.part=index;
   if(readingGateTimer){clearInterval(readingGateTimer);readingGateTimer=null;}
   const part=READING_PARTS[index];
@@ -5392,10 +5467,18 @@ function renderReadingPart(index){
   content.innerHTML=`
     <div class="reading-reader-head"><h1>Part ${index+1} · ${htmlSafe(part.title)}</h1><p>Chapter 1 · ${part.end-part.start} frases curtas</p></div>
     ${index===0?`<img class="reading-story-image" src="${readingAsset(readingData.week.opening_illustration.asset)}" alt="${htmlSafe(readingData.week.opening_illustration.alt_text)}">`:''}
-    <button class="reading-listen" type="button" onclick="listenReadingPart()"><i class="fa-solid fa-volume-high"></i> Ouvir e acompanhar este trecho</button>
+    <div class="reading-tools">
+      <div class="reading-audio-controls" aria-label="Controles do áudio">
+        <button id="reading-audio-play" class="reading-audio-btn" type="button" onclick="listenReadingPart()"><i class="fa-solid fa-volume-high"></i> Ouvir e acompanhar</button>
+        <button id="reading-audio-pause" class="reading-audio-btn" type="button" onclick="toggleReadingAudio()" disabled><i class="fa-solid fa-pause"></i> Pausar</button>
+        <button id="reading-audio-stop" class="reading-audio-btn" type="button" onclick="stopReadingAudio()" disabled><i class="fa-solid fa-stop"></i> Parar</button>
+      </div>
+      <div class="reading-font-controls" aria-label="Tamanho da letra"><span id="reading-font-value">${readingFontSize}px</span><button id="reading-font-smaller" type="button" onclick="adjustReadingFont(-2)" aria-label="Diminuir letra">A−</button><button type="button" onclick="resetReadingFont()" aria-label="Restaurar tamanho padrão">A</button><button id="reading-font-larger" type="button" onclick="adjustReadingFont(2)" aria-label="Aumentar letra">A+</button></div>
+    </div>
     <article class="reading-text">${readingStoryHtml(sentences)}</article>
     <section class="reading-checkpoint"><h3><i class="fa-solid fa-bookmark"></i> Reading checkpoint</h3><p>${htmlSafe(part.question)}</p><div class="reading-gate-note" id="reading-gate-note">${alreadyDone?'<i class="fa-solid fa-circle-check"></i> Esta parte já foi concluída.':'<i class="fa-solid fa-hourglass-half"></i> Leia ou acompanhe o trecho antes de responder.'}</div><div class="reading-answer-grid">${part.options.map((option,optionIndex)=>`<button class="reading-answer" type="button" ${alreadyDone?'disabled':'disabled'} onclick="checkReadingCheckpoint(${index},${optionIndex},this)">${htmlSafe(option)}</button>`).join('')}</div><div id="reading-feedback"></div><div id="reading-next" class="reading-next ${alreadyDone?'':'hidden'}"><button class="btn btn-primary w-full" type="button" onclick="readingAdvance()">${index===READING_PARTS.length-1?'Ir para a revisão final':'Continuar para a próxima parte'} <i class="fa-solid fa-arrow-right"></i></button></div></section>`;
   readingScrollTop();
+  applyReadingFontSize();
   if(alreadyDone){
     const correctButton=content.querySelectorAll('.reading-answer')[part.answer];
     correctButton?.classList.add('correct');
@@ -5417,10 +5500,18 @@ function startReadingGate(){
   },1000);
 }
 
-function listenReadingPart(){
+async function listenReadingPart(){
   const part=READING_PARTS[readingState.part];
   if(!part||!readingData)return;
-  playTTS(readingData.week.story.slice(part.start,part.end).join(' '),.72,'en-US');
+  stopReadingAudio(false);
+  updateReadingAudioControls('loading');
+  const utterance=await playTTS(readingData.week.story.slice(part.start,part.end).join(' '),.82,'en-US');
+  if(!utterance)return updateReadingAudioControls('idle');
+  readingAudioPaused=false;
+  updateReadingAudioControls('playing');
+  const finish=()=>{readingAudioPaused=false;updateReadingAudioControls('idle');};
+  utterance.onend=finish;
+  utterance.onerror=finish;
 }
 
 async function checkReadingCheckpoint(partIndex,optionIndex,button){
@@ -5459,6 +5550,7 @@ function readingAdvance(){
 
 function renderReadingQuiz(){
   if(!readingData)return;
+  stopReadingAudio(false);
   readingState.mode='quiz'; readingState.quizAnswers={};
   if(readingGateTimer){clearInterval(readingGateTimer);readingGateTimer=null;}
   const items=readingData.week.true_false;
@@ -5544,6 +5636,7 @@ async function submitReadingAnswers(){
 
 function renderReadingStudy(){
   if(!readingData)return;
+  stopReadingAudio(false);
   readingState.mode='study';
   const visual=readingData.week.visual_reflection;
   const writing=readingData.week.writing_mission;
@@ -6610,7 +6703,7 @@ async function playTTS(text,rate=0.8,language='auto',context=''){
     return utterance;
   });
   utterances.forEach(utterance=>window.speechSynthesis.speak(utterance));
-  return utterances[0]||null;
+  return utterances[utterances.length-1]||null;
 }
 
 const GAME_SESSION_VERSION=1;
@@ -7331,7 +7424,7 @@ function engineDictation(){
     </div>`;
   setTimeout(()=>handleDictPlay(frase,'slow'),450);
 }
-function handleDictPlay(text,mode='slow',sourceButton=null){
+async function handleDictPlay(text,mode='slow',sourceButton=null){
   dictPlayCount++;
   const btn=document.getElementById('dict-play-btn');
   const counter=document.getElementById('dict-count');
@@ -7342,7 +7435,7 @@ function handleDictPlay(text,mode='slow',sourceButton=null){
     normal:{rate:0.82,label:'normal',text},
     words:{rate:0.58,label:'palavra por palavra',text:String(text).replace(/[.,!?;:]+/g,'').split(/\s+/).join(', ')}
   }[mode]||{rate:0.62,label:'devagar',text};
-  const utterance=playTTS(settings.text,settings.rate,'en-US');
+  const utterance=await playTTS(settings.text,settings.rate,'en-US');
   counter.textContent=`Ouvido ${dictPlayCount}x · modo ${settings.label} · repita quantas vezes precisar`;
   const finish=()=>document.querySelectorAll('.dictation-play,.dictation-audio-btn').forEach(button=>button.classList.remove('playing'));
   if(utterance)utterance.onend=utterance.onerror=finish;
