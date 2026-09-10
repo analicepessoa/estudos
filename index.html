@@ -834,12 +834,12 @@ select.input { appearance: none; cursor: pointer; }
 .reading-book-meta { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; color:#7C6A5F; font-size:11px; font-weight:750; }
 .reading-book-card .btn { margin-top:14px; align-self:flex-start; background:#4A2318; color:white; border-color:#4A2318; }
 .reading-weeks { display:grid; gap:10px; }
-.reading-week-row { display:flex; align-items:center; gap:13px; padding:14px; border:1px solid var(--border); border-radius:17px; background:white; }
+.reading-week-row { width:100%; display:flex; align-items:center; gap:13px; padding:14px; border:1px solid var(--border); border-radius:17px; background:white; font:inherit; text-align:left; cursor:pointer; }
 .reading-week-number { width:42px; height:42px; flex:none; display:grid; place-items:center; border-radius:13px; background:#F4ECE2; color:#7C2D12; font-weight:900; }
 .reading-week-copy { min-width:0; flex:1; }
 .reading-week-copy strong { display:block; color:var(--ink); font-size:14px; }
 .reading-week-copy span { display:block; margin-top:3px; color:var(--slate); font-size:11px; }
-.reading-week-row.locked { opacity:.64; }
+.reading-week-row.locked { opacity:.64; cursor:not-allowed; }
 .reading-week-lock { color:var(--slate-light); }
 
 #reading-overlay { position:fixed; inset:0; z-index:1250; overflow:auto; background:#F4F0EA; color:#2E211A; }
@@ -910,6 +910,9 @@ select.input { appearance: none; cursor: pointer; }
 .reading-vocab strong { display:block; color:#7C2D12; font-size:13px; }
 .reading-vocab span { display:block; margin-top:3px; color:#806E62; font-size:11px; }
 .reading-notebook { width:100%; min-height:105px; margin-top:12px; padding:13px; border:1px solid rgba(87,52,36,.2); border-radius:14px; background:white; color:#382922; font:600 14px/1.55 'Inter',sans-serif; resize:vertical; }
+.progress-sync-status { display:flex; align-items:center; gap:5px; color:var(--slate); font-size:10px; font-weight:750; white-space:nowrap; }
+.progress-sync-status.saved { color:var(--teal-dark); }
+.progress-sync-status.pending { color:var(--orange-dark); }
 
 @media(max-width:600px){
   .reading-book-card { grid-template-columns:110px minmax(0,1fr); gap:16px; padding:15px; }
@@ -2413,6 +2416,7 @@ select.input { appearance: none; cursor: pointer; }
     <div class="app-logo"><span style="color:var(--orange)">All</span><span style="color:var(--ink)">Net</span> <span style="font-size:13px;font-weight:600;color:var(--slate)">Inglês</span></div>
     <div style="display:flex;align-items:center;gap:10px">
       <button id="btn-back-admin" onclick="exitStudentPreview()" class="btn btn-ghost btn-sm hidden"><i class="fa-solid fa-arrow-left"></i> Admin</button>
+      <span id="progress-sync-status" class="progress-sync-status saved" title="Situação do progresso"><i class="fa-solid fa-cloud-check"></i><span>Salvo</span></span>
       <div class="badge" style="background:linear-gradient(135deg,var(--orange),var(--orange-light));color:white;border:none;box-shadow:0 2px 8px rgba(245,124,0,.2);padding:5px 14px"><i class="fa-solid fa-bolt"></i> <span id="student-xp">0</span> XP</div>
       <button onclick="doLogout()" class="btn-icon" style="background:none;border:none;cursor:pointer;color:var(--slate);font-size:16px;transition:color .2s" onmouseover="this.style.color='var(--rose)'" onmouseout="this.style.color='var(--slate)'"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
@@ -2938,6 +2942,7 @@ let adminSelectedRoom = localStorage.getItem('ap_admin_selected_room') || '';
 let progressSaveChain = Promise.resolve();
 let progressRetryTimer = null;
 let progressRetryAttempts = 0;
+let progressSyncState = 'saved';
 let dailyWordCurrent = null;
 let dailyWordCache = {key:'',word:null};
 const dailyWordListened = new Set();
@@ -5269,16 +5274,35 @@ function exitStudentPreview(){
    STUDENT UI
 ══════════════════════════════════════════════ */
 const READING_BASE='livros/a%20metamorfose/';
-const READING_PARTS=[
-  {start:0,end:12,title:'A different morning',question:'What is different when Gregor wakes up?',options:["Gregor's body","The bedroom","The window"],answer:0},
-  {start:12,end:27,title:'The clock and the job',question:'Why does Gregor look worried?',options:['He cannot find his clothes','He is late for work','His room is empty'],answer:1},
-  {start:27,end:37,title:'Responsibility',question:'Why can Gregor not simply leave his job?',options:['He loves traveling','His manager is his father','His family needs money'],answer:2},
-  {start:37,end:51,title:'Voices behind the door',question:"What is strange about Gregor's answer?",options:['He speaks very loudly','His voice sounds different','He answers in Portuguese'],answer:1},
-  {start:51,end:64,title:'Time is passing',question:'What new sound does Gregor hear?',options:['A train','The window opening','The doorbell'],answer:2},
-  {start:64,end:74,title:'Work comes to Gregor',question:'Who is the visitor?',options:["The chief clerk from Gregor's office",'A doctor','A train conductor'],answer:0}
-];
+const READING_WEEK_CONFIGS={
+  1:{
+    file:'week1_app_content.json',global:'METAMORPHOSIS_WEEK1',focus:'To Be + adjectives',
+    parts:[
+      {start:0,end:12,title:'A different morning',question:'What is different when Gregor wakes up?',options:["Gregor's body","The bedroom","The window"],answer:0},
+      {start:12,end:27,title:'The clock and the job',question:'Why does Gregor look worried?',options:['He cannot find his clothes','He is late for work','His room is empty'],answer:1},
+      {start:27,end:37,title:'Responsibility',question:'Why can Gregor not simply leave his job?',options:['He loves traveling','His manager is his father','His family needs money'],answer:2},
+      {start:37,end:51,title:'Voices behind the door',question:"What is strange about Gregor's answer?",options:['He speaks very loudly','His voice sounds different','He answers in Portuguese'],answer:1},
+      {start:51,end:64,title:'Time is passing',question:'What new sound does Gregor hear?',options:['A train','The window opening','The doorbell'],answer:2},
+      {start:64,end:74,title:'Work comes to Gregor',question:'Who is the visitor?',options:["The chief clerk from Gregor's office",'A doctor','A train conductor'],answer:0}
+    ]
+  },
+  2:{
+    file:'week2_app_content.json',global:'METAMORPHOSIS_WEEK2',focus:'There is / There are + prepositions',
+    parts:[
+      {start:0,end:16,title:'The clerk is inside',question:'Why is the chief clerk at the apartment?',options:['Gregor invited him','Gregor is late for work','He wants to see Grete'],answer:1},
+      {start:16,end:33,title:'The key in the lock',question:'How does Gregor open the bedroom door?',options:['With his mouth','With his hands','His father opens it'],answer:0},
+      {start:33,end:49,title:'The door opens',question:'How do the people react when they see Gregor?',options:['They laugh','They are afraid and shocked','They do not notice him'],answer:1},
+      {start:49,end:65,title:'The clerk runs away',question:'Why does Gregor try to follow the chief clerk?',options:['He wants his document case','He wants to explain and protect his job','He wants to close the front door'],answer:1},
+      {start:65,end:82,title:'Back to the bedroom',question:'What does Mr. Samsa use to force Gregor back?',options:['A chair and a book','A key and a coat','A walking stick and a newspaper'],answer:2},
+      {start:82,end:95,title:'Everything is different',question:'What is still the same about Gregor?',options:['His human body','His life at work','He is still Gregor inside'],answer:2}
+    ]
+  }
+};
+let activeReadingWeek=1;
+let READING_PARTS=READING_WEEK_CONFIGS[1].parts;
 let readingData=null;
-let readingDataPromise=null;
+const readingDataByWeek={};
+const readingDataPromises={};
 let readingGateTimer=null;
 let readingState={mode:'overview',part:0,completed:new Set(),quizAnswers:{}};
 let readingSessionOwner='';
@@ -5286,9 +5310,10 @@ let readingFontSize=Math.min(24,Math.max(15,Number(localStorage.getItem('ap_read
 let readingAudioPaused=false;
 
 function readingAsset(path){return `${READING_BASE}${String(path||'').replace(/^\.\//,'')}`;}
-function readingPartMarker(index){return `reading__metamorphosis_w1_part_${index+1}`;}
-const READING_COMPLETE_MARKER='reading__metamorphosis_w1_complete';
-const READING_ANSWERS_MARKER='reading__metamorphosis_w1_answers_sent';
+function readingPartMarker(index,week=activeReadingWeek){return `reading__metamorphosis_w${week}_part_${index+1}`;}
+function readingCompleteMarker(week=activeReadingWeek){return `reading__metamorphosis_w${week}_complete`;}
+function readingAnswersMarker(week=activeReadingWeek){return `reading__metamorphosis_w${week}_answers_sent`;}
+function readingWeekUnlocked(week){return week===1||readingIsComplete(week-1)||isTeacherPreview();}
 function syncReadingSessionOwner(){
   const owner=currentUser?.id||`${currentUser?.role||'guest'}:${currentUser?.turma||''}:${currentUser?.name||''}`;
   if(owner===readingSessionOwner)return;
@@ -5297,9 +5322,9 @@ function syncReadingSessionOwner(){
   readingState.quizAnswers={};
 }
 function hasReadingMarker(marker){syncReadingSessionOwner();return readingState.completed.has(marker)||(currentUser?.unlockedFases||[]).includes(marker);}
-function readingIsComplete(){return hasReadingMarker(READING_COMPLETE_MARKER);}
-function readingPartsDone(){return READING_PARTS.filter((_,index)=>hasReadingMarker(readingPartMarker(index))).length;}
-function readingProgress(){return {done:readingPartsDone()+(readingIsComplete()?1:0),total:READING_PARTS.length+1};}
+function readingIsComplete(week=activeReadingWeek){return hasReadingMarker(readingCompleteMarker(week));}
+function readingPartsDone(week=activeReadingWeek){return READING_WEEK_CONFIGS[week].parts.filter((_,index)=>hasReadingMarker(readingPartMarker(index,week))).length;}
+function readingProgress(week=activeReadingWeek){return {done:readingPartsDone(week)+(readingIsComplete(week)?1:0),total:READING_WEEK_CONFIGS[week].parts.length+1};}
 
 function applyReadingFontSize(){
   document.getElementById('reading-overlay')?.style.setProperty('--reading-font-size',`${readingFontSize}px`);
@@ -5360,43 +5385,54 @@ function toggleReadingAudio(){
   }
 }
 
-async function loadReadingData(){
-  if(readingData)return readingData;
-  if(window.METAMORPHOSIS_WEEK1){
-    readingData=window.METAMORPHOSIS_WEEK1;
-    return readingData;
-  }
-  if(!readingDataPromise)readingDataPromise=fetch(`${READING_BASE}week1_app_content.json`).then(response=>{
+async function loadReadingWeekData(week){
+  const config=READING_WEEK_CONFIGS[week];
+  if(!config)throw new Error('Semana de leitura inválida.');
+  if(readingDataByWeek[week])return readingDataByWeek[week];
+  if(window[config.global])return readingDataByWeek[week]=window[config.global];
+  if(!readingDataPromises[week])readingDataPromises[week]=fetch(`${READING_BASE}${config.file}`).then(response=>{
     if(!response.ok)throw new Error(`Leitura indisponível (${response.status})`);
     return response.json();
-  }).then(data=>readingData=data).finally(()=>readingDataPromise=null);
-  return readingDataPromise;
+  }).then(data=>readingDataByWeek[week]=data).finally(()=>delete readingDataPromises[week]);
+  return readingDataPromises[week];
+}
+
+async function loadReadingData(){
+  readingData=await loadReadingWeekData(activeReadingWeek);
+  return readingData;
+}
+
+function readingWeekStatus(week){
+  const parts=READING_WEEK_CONFIGS[week].parts;
+  const done=readingPartsDone(week);
+  return readingIsComplete(week)?'Capítulo concluído':done?`${done} de ${parts.length} partes lidas`:'Pronto para começar';
 }
 
 async function renderReadingLibrary(){
   const container=document.getElementById('reading-library');
   if(!container)return;
   try{
-    const data=await loadReadingData();
-    const progress=readingProgress();
-    const percent=Math.round((progress.done/progress.total)*100);
-    const nextPart=READING_PARTS.findIndex((_,index)=>!hasReadingMarker(readingPartMarker(index)));
-    const status=readingIsComplete()?'Capítulo concluído':progress.done?'Leitura em andamento':'Pronto para começar';
+    const [week1,week2]=await Promise.all([loadReadingWeekData(1),loadReadingWeekData(2)]);
+    const nextWeek=readingIsComplete(1)?2:1;
+    const allProgress=[readingProgress(1),readingProgress(2)];
+    const percent=Math.round(allProgress.reduce((sum,item)=>sum+item.done,0)/allProgress.reduce((sum,item)=>sum+item.total,0)*100);
+    const nextPart=READING_WEEK_CONFIGS[nextWeek].parts.findIndex((_,index)=>!hasReadingMarker(readingPartMarker(index,nextWeek)));
+    const nextStatus=readingWeekStatus(nextWeek);
     container.innerHTML=`
       <article class="reading-book-card">
-        <img class="reading-book-cover" src="${readingAsset(data.book.cover_asset)}" alt="Capa de ${htmlSafe(data.book.title)}">
+        <img class="reading-book-cover" src="${readingAsset(week1.book.cover_asset)}" alt="Capa de ${htmlSafe(week1.book.title)}">
         <div class="reading-book-copy">
-          <div class="reading-book-eyebrow">${htmlSafe(data.book.cefr)} · clássico adaptado</div>
-          <h3>${htmlSafe(data.book.title)}</h3>
-          <p>${htmlSafe(data.book.author)} · Semana 1 de 6<br>${htmlSafe(data.week.title)}</p>
+          <div class="reading-book-eyebrow">${htmlSafe(week1.book.cefr)} · clássico adaptado</div>
+          <h3>${htmlSafe(week1.book.title)}</h3>
+          <p>${htmlSafe(week1.book.author)} · 2 capítulos disponíveis<br>Continue sua leitura semana a semana</p>
           <div class="reading-progress-line"><span style="width:${percent}%"></span></div>
-          <div class="reading-book-meta"><span>${status}</span><span>${percent}%</span></div>
-          <button class="btn btn-sm" type="button" onclick="openReadingBook()"><i class="fa-solid fa-book-open"></i> ${readingIsComplete()?'Revisar capítulo':nextPart>0?'Continuar leitura':'Começar a ler'}</button>
+          <div class="reading-book-meta"><span>${nextStatus}</span><span>${percent}% da leitura disponível</span></div>
+          <button class="btn btn-sm" type="button" onclick="openReadingBook(${nextWeek})"><i class="fa-solid fa-book-open"></i> ${readingIsComplete(nextWeek)?'Revisar capítulo':nextPart>0?'Continuar leitura':'Começar a ler'}</button>
         </div>
       </article>
       <div class="reading-weeks">
-        <div class="reading-week-row"><div class="reading-week-number">01</div><div class="reading-week-copy"><strong>A Strange Morning</strong><span>${status} · To Be + adjectives</span></div><i class="fa-solid fa-${readingIsComplete()?'circle-check':'chevron-right'}" style="color:${readingIsComplete()?'#0F766E':'#7C2D12'}"></i></div>
-        ${[2,3,4,5,6].map(number=>`<div class="reading-week-row locked"><div class="reading-week-number">0${number}</div><div class="reading-week-copy"><strong>Próximo capítulo</strong><span>Será liberado pela professora</span></div><i class="fa-solid fa-lock reading-week-lock"></i></div>`).join('')}
+        ${[1,2].map(number=>{const data=number===1?week1:week2;const unlocked=readingWeekUnlocked(number);const complete=readingIsComplete(number);return `<button class="reading-week-row ${unlocked?'':'locked'}" type="button" ${unlocked?`onclick="openReadingBook(${number})"`:'disabled'}><div class="reading-week-number">0${number}</div><div class="reading-week-copy"><strong>${htmlSafe(data.week.title)}</strong><span>${unlocked?readingWeekStatus(number):'Conclua a Semana 1 para desbloquear'} · ${htmlSafe(READING_WEEK_CONFIGS[number].focus)}</span></div><i class="fa-solid fa-${complete?'circle-check':unlocked?'chevron-right':'lock'} reading-week-lock" style="color:${complete?'#0F766E':unlocked?'#7C2D12':''}"></i></button>`;}).join('')}
+        ${[3,4,5,6].map(number=>`<div class="reading-week-row locked"><div class="reading-week-number">0${number}</div><div class="reading-week-copy"><strong>Próximo capítulo</strong><span>Será liberado pela professora</span></div><i class="fa-solid fa-lock reading-week-lock"></i></div>`).join('')}
       </div>`;
   }catch(error){
     container.innerHTML=`<div class="reading-coming"><div class="reading-coming-icon"><i class="fa-solid fa-book-open-reader"></i></div><h2>Não foi possível abrir o livro</h2><p>Verifique sua conexão e tente novamente.</p><button class="btn btn-primary" style="margin-top:16px" onclick="renderReadingLibrary()">Tentar novamente</button></div>`;
@@ -5404,12 +5440,19 @@ async function renderReadingLibrary(){
   }
 }
 
-async function openReadingBook(){
+async function openReadingBook(week=1){
+  if(!readingWeekUnlocked(week))return alert('Conclua a Semana 1 para abrir a Semana 2.');
   try{
+    activeReadingWeek=week;
+    READING_PARTS=READING_WEEK_CONFIGS[week].parts;
+    readingData=null;
     await loadReadingData();
     syncReadingSessionOwner();
     readingState.completed=new Set((currentUser?.unlockedFases||[]).filter(value=>String(value).startsWith('reading__metamorphosis')));
+    readingState.part=0;
+    readingState.quizAnswers={};
     document.getElementById('reading-overlay')?.classList.remove('hidden');
+    document.getElementById('reading-overlay-subtitle').textContent=`Week ${activeReadingWeek} · ${readingData.week.title}`;
     renderReadingOverview();
   }catch(error){alert('Não foi possível abrir o livro agora. Tente novamente em alguns instantes.');}
 }
@@ -5442,7 +5485,7 @@ function renderReadingOverview(){
   content.innerHTML=`
     <section class="reading-hero">
       <img src="${readingAsset(readingData.book.cover_asset)}" alt="Capa de ${htmlSafe(readingData.book.title)}">
-      <div><div class="reading-hero-kicker">Week 1 of 6 · ${htmlSafe(readingData.book.cefr)}</div><h1>${htmlSafe(readingData.book.title)}</h1><h2>${htmlSafe(readingData.week.title)}</h2><p>${htmlSafe(readingData.book.adaptation_note_pt)}</p><button class="btn" type="button" onclick="${readingIsComplete()?'renderReadingStudy()':nextPart<READING_PARTS.length?`renderReadingPart(${nextPart})`:'renderReadingQuiz()'}"><i class="fa-solid fa-${nextPart?'bookmark':'book-open'}"></i> ${readingIsComplete()?'Revisar e escrever':nextPart?'Continuar de onde parei':'Começar capítulo'}</button></div>
+      <div><div class="reading-hero-kicker">Week ${activeReadingWeek} of 6 · ${htmlSafe(readingData.book.cefr)}</div><h1>${htmlSafe(readingData.book.title)}</h1><h2>${htmlSafe(readingData.week.title)}</h2><p>${htmlSafe(readingData.book.adaptation_note_pt)}</p><button class="btn" type="button" onclick="${readingIsComplete()?'renderReadingStudy()':nextPart<READING_PARTS.length?`renderReadingPart(${nextPart})`:'renderReadingQuiz()'}"><i class="fa-solid fa-${nextPart?'bookmark':'book-open'}"></i> ${readingIsComplete()?'Revisar e escrever':nextPart?'Continuar de onde parei':'Começar capítulo'}</button></div>
     </section>
     <section class="reading-overview-card"><h3>Seu progresso · ${percent}%</h3><p>Leia cada parte com calma. Para avançar, responda a uma pergunta sobre o trecho. Você também pode ouvir o texto e acompanhar a leitura.</p><div class="reading-progress-line"><span style="width:${percent}%"></span></div><div class="reading-part-map">${READING_PARTS.map((_,index)=>`<button class="reading-part-dot ${hasReadingMarker(readingPartMarker(index))?'done':''}" type="button" ${hasReadingMarker(readingPartMarker(index))?`onclick="renderReadingPart(${index})"`:'disabled'} aria-label="Parte ${index+1}">${hasReadingMarker(readingPartMarker(index))?'<i class="fa-solid fa-check"></i>':index+1}</button>`).join('')}</div></section>
     <section class="reading-overview-card"><h3>Before you read</h3><p>${readingData.week.before_you_read.map((question,index)=>`${index+1}. ${htmlSafe(question)}`).join('<br>')}</p></section>
@@ -5469,7 +5512,7 @@ function renderReadingPart(index){
   const alreadyDone=hasReadingMarker(readingPartMarker(index));
   const content=document.getElementById('reading-content');
   content.innerHTML=`
-    <div class="reading-reader-head"><h1>Part ${index+1} · ${htmlSafe(part.title)}</h1><p>Chapter 1 · ${part.end-part.start} frases curtas</p></div>
+    <div class="reading-reader-head"><h1>Part ${index+1} · ${htmlSafe(part.title)}</h1><p>Chapter ${activeReadingWeek} · ${part.end-part.start} frases curtas</p></div>
     ${illustration?`<img class="reading-story-image" src="${readingAsset(illustration.asset)}" alt="${htmlSafe(illustration.alt_text)}">`:''}
     <div class="reading-tools">
       <div class="reading-audio-controls" aria-label="Controles do áudio">
@@ -5598,17 +5641,18 @@ async function submitReadingQuiz(){
 
 async function completeReadingWeek(){
   if(readingIsComplete())return;
-  readingState.completed.add(READING_COMPLETE_MARKER);
+  const marker=readingCompleteMarker();
+  readingState.completed.add(marker);
   if(!currentUser||currentUser.role==='teacher')return;
   currentUser.unlockedFases=currentUser.unlockedFases||[];
-  currentUser.unlockedFases.push(READING_COMPLETE_MARKER);
-  const reward=claimXpReward(READING_COMPLETE_MARKER,20);
+  currentUser.unlockedFases.push(marker);
+  const reward=claimXpReward(marker,20);
   await saveStudentProgress({xpGain:reward.amount,silent:true});
   renderStudentHome();
   renderReadingLibrary();
 }
 
-function readingNoteKey(field){return `reading_notebook_${currentUser?.id||currentUser?.email||'preview'}_metamorphosis_w1_${field}`;}
+function readingNoteKey(field){return `reading_notebook_${currentUser?.id||currentUser?.email||'preview'}_metamorphosis_w${activeReadingWeek}_${field}`;}
 function readingNote(field){try{return localStorage.getItem(readingNoteKey(field))||'';}catch(error){return '';}}
 function saveReadingNote(field,value){try{localStorage.setItem(readingNoteKey(field),value);}catch(error){console.warn('Caderno de leitura indisponível:',error);}}
 
@@ -5620,19 +5664,20 @@ async function submitReadingAnswers(){
   const status=document.getElementById('reading-submission-status');
   if(button){button.disabled=true;button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';}
   const report=[
-    `THE CLOSED DOOR: ${answers.reflection}`,
-    `THINK ABOUT THE STORY: ${answers.think}`,
-    `WRITING — GREGOR'S MORNING: ${answers.writing}`
+    `${String(readingData.week.visual_reflection.title).toUpperCase()}: ${answers.reflection}`,
+    `${String(readingData.week.reflection.title).toUpperCase()}: ${answers.think}`,
+    `WRITING — ${String(readingData.week.writing_mission.title).toUpperCase()}: ${answers.writing}`
   ].join('\n\n');
-  const sent=await dispatchReport('📚 The Metamorphosis · Week 1 · Respostas abertas',report);
+  const sent=await dispatchReport(`📚 The Metamorphosis · Week ${activeReadingWeek} · Respostas abertas`,report);
   if(!sent){
     if(status)status.innerHTML='<span style="color:#B91C1C"><i class="fa-solid fa-triangle-exclamation"></i> Não foi possível enviar agora. As respostas continuam salvas neste aparelho.</span>';
     if(button){button.disabled=false;button.innerHTML='<i class="fa-solid fa-paper-plane"></i> Tentar enviar novamente';}
     return;
   }
-  readingState.completed.add(READING_ANSWERS_MARKER);
+  const answersMarker=readingAnswersMarker();
+  readingState.completed.add(answersMarker);
   currentUser.unlockedFases=currentUser.unlockedFases||[];
-  if(!currentUser.unlockedFases.includes(READING_ANSWERS_MARKER))currentUser.unlockedFases.push(READING_ANSWERS_MARKER);
+  if(!currentUser.unlockedFases.includes(answersMarker))currentUser.unlockedFases.push(answersMarker);
   await saveStudentProgress({silent:true});
   if(status)status.innerHTML='<span style="color:#0F766E"><i class="fa-solid fa-circle-check"></i> Respostas enviadas para a professora.</span>';
   if(button){button.disabled=false;button.innerHTML='<i class="fa-solid fa-paper-plane"></i> Reenviar respostas';}
@@ -5644,13 +5689,14 @@ function renderReadingStudy(){
   readingState.mode='study';
   const visual=readingData.week.visual_reflection;
   const writing=readingData.week.writing_mission;
+  const reflectionStarter=readingData.week.reflection.sentence_starter||readingData.week.reflection.sentence_starters?.[0]||'I think...';
   document.getElementById('reading-content').innerHTML=`
-    <section class="reading-complete"><div class="reading-complete-icon"><i class="fa-solid fa-book-open-reader"></i></div><h1>Week 1 complete!</h1><p>Você leu os seis trechos e demonstrou compreensão. Agora use o caderno para pensar sobre a história e praticar inglês.</p></section>
+    <section class="reading-complete"><div class="reading-complete-icon"><i class="fa-solid fa-book-open-reader"></i></div><h1>Week ${activeReadingWeek} complete!</h1><p>Você leu os seis trechos e demonstrou compreensão. Agora use o caderno para pensar sobre a história e praticar inglês.</p></section>
     <section class="reading-overview-card"><h3>Vocabulary review</h3><p>Toque em uma palavra para ouvir a pronúncia.</p><div class="reading-study-grid">${readingData.week.vocabulary.map(item=>`<div class="reading-vocab" role="button" tabindex="0" onclick="playTTS('${esc(item.word)}',.75,'en-US')"><strong>${htmlSafe(item.word)} <i class="fa-solid fa-volume-low"></i></strong><span>${htmlSafe(item.pt)}</span></div>`).join('')}</div></section>
     <section class="reading-overview-card"><h3>${htmlSafe(visual.title)}</h3><img class="reading-story-image" style="margin-top:12px" src="${readingAsset(visual.asset)}" alt="${htmlSafe(visual.alt_text)}"><p>${visual.questions.map((question,index)=>`${index+1}. ${htmlSafe(question)}`).join('<br>')}</p><textarea class="reading-notebook" oninput="saveReadingNote('reflection',this.value)" placeholder="I think the closed door is important because...">${htmlSafe(readingNote('reflection'))}</textarea><p style="font-size:10px"><i class="fa-solid fa-floppy-disk"></i> Resposta salva neste aparelho.</p></section>
-    <section class="reading-overview-card"><h3>${htmlSafe(readingData.week.reflection.title)}</h3><p>${htmlSafe(readingData.week.reflection.prompt)}</p><textarea class="reading-notebook" oninput="saveReadingNote('think',this.value)" placeholder="${htmlSafe(readingData.week.reflection.sentence_starter)}">${htmlSafe(readingNote('think'))}</textarea></section>
+    <section class="reading-overview-card"><h3>${htmlSafe(readingData.week.reflection.title)}</h3><p>${htmlSafe(readingData.week.reflection.prompt)}</p><textarea class="reading-notebook" oninput="saveReadingNote('think',this.value)" placeholder="${htmlSafe(reflectionStarter)}">${htmlSafe(readingNote('think'))}</textarea></section>
     <section class="reading-overview-card"><h3>${htmlSafe(writing.title)} · ${htmlSafe(writing.word_target)}</h3><p>${htmlSafe(writing.instruction)} ${writing.sentence_starters.map(htmlSafe).join(' ')}</p><textarea class="reading-notebook" oninput="saveReadingNote('writing',this.value)" placeholder="Gregor is...">${htmlSafe(readingNote('writing'))}</textarea></section>
-    <section class="reading-overview-card"><h3><i class="fa-solid fa-paper-plane"></i> Enviar para a professora</h3><p>Quando terminar as três respostas, envie o caderno. Seu nome, sua turma e todas as respostas chegarão juntos no relatório de atividades.</p><button id="reading-submit-answers" class="btn btn-primary w-full" style="margin-top:12px" type="button" onclick="submitReadingAnswers()"><i class="fa-solid fa-paper-plane"></i> ${hasReadingMarker(READING_ANSWERS_MARKER)?'Reenviar respostas':'Enviar minhas respostas'}</button><div id="reading-submission-status" style="margin-top:9px;font-size:11px;font-weight:750">${hasReadingMarker(READING_ANSWERS_MARKER)?'<span style="color:#0F766E"><i class="fa-solid fa-circle-check"></i> Respostas já enviadas.</span>':'As respostas continuam salvas neste aparelho até você enviar.'}</div></section>
+    <section class="reading-overview-card"><h3><i class="fa-solid fa-paper-plane"></i> Enviar para a professora</h3><p>Quando terminar as três respostas, envie o caderno. Seu nome, sua turma e todas as respostas chegarão juntos no relatório de atividades.</p><button id="reading-submit-answers" class="btn btn-primary w-full" style="margin-top:12px" type="button" onclick="submitReadingAnswers()"><i class="fa-solid fa-paper-plane"></i> ${hasReadingMarker(readingAnswersMarker())?'Reenviar respostas':'Enviar minhas respostas'}</button><div id="reading-submission-status" style="margin-top:9px;font-size:11px;font-weight:750">${hasReadingMarker(readingAnswersMarker())?'<span style="color:#0F766E"><i class="fa-solid fa-circle-check"></i> Respostas já enviadas.</span>':'As respostas continuam salvas neste aparelho até você enviar.'}</div></section>
     <section class="reading-overview-card"><h3>Next week</h3><p><strong>${htmlSafe(readingData.week.next_week.chapter)}</strong><br>${htmlSafe(readingData.week.next_week.teaser)}</p></section>`;
   readingScrollTop();
 }
@@ -5785,15 +5831,18 @@ function renderStudentHome(){
   const allAudiosDone=bookAudios.length>0&&listenedAudios.length===bookAudios.length;
   setHomeStatus('home-audio-status',allAudiosDone?'done':listenedAudios.length?'started':'todo',allAudiosDone?'Escuta concluída':listenedAudios.length?'Continue ouvindo':'Pronto para ouvir');
 
-  const readingDone=(currentUser.unlockedFases||[]).includes(READING_COMPLETE_MARKER);
-  const readingParts=READING_PARTS.filter((_,index)=>(currentUser.unlockedFases||[]).includes(readingPartMarker(index))).length;
+  const readingUnlocked=currentUser.unlockedFases||[];
+  const week1Done=readingUnlocked.includes(readingCompleteMarker(1));
+  const week2Done=readingUnlocked.includes(readingCompleteMarker(2));
+  const currentReadingWeek=week1Done?2:1;
+  const readingParts=READING_WEEK_CONFIGS[currentReadingWeek].parts.filter((_,index)=>readingUnlocked.includes(readingPartMarker(index,currentReadingWeek))).length;
   const readingTitle=document.getElementById('home-reading-title');
   const readingDetail=document.getElementById('home-reading-detail');
-  if(readingTitle)readingTitle.textContent=readingDone?'Capítulo 1 concluído':readingParts?'Continue A Metamorfose':'Comece A Metamorfose';
-  if(readingDetail)readingDetail.textContent=readingDone
-    ? 'Revise o vocabulário e suas anotações da Semana 1.'
-    : readingParts?`${readingParts} de ${READING_PARTS.length} partes lidas · continue de onde parou.`:'Semana 1 disponível · leitura guiada em nível A1.';
-  setHomeStatus('home-reading-status',readingDone?'done':readingParts?'started':'todo',readingDone?'Leitura concluída':readingParts?'Em andamento':'Pronto para começar');
+  if(readingTitle)readingTitle.textContent=week2Done?'Semanas 1 e 2 concluídas':readingParts?'Continue A Metamorfose':week1Done?'Semana 2 disponível':'Comece A Metamorfose';
+  if(readingDetail)readingDetail.textContent=week2Done
+    ? 'Revise o vocabulário e suas anotações dos dois capítulos.'
+    : readingParts?`Semana ${currentReadingWeek}: ${readingParts} de ${READING_WEEK_CONFIGS[currentReadingWeek].parts.length} partes lidas.`:`Semana ${currentReadingWeek} disponível · leitura guiada em nível A1.`;
+  setHomeStatus('home-reading-status',week2Done?'done':week1Done||readingParts?'started':'todo',week2Done?'Leitura concluída':week1Done||readingParts?'Em andamento':'Pronto para começar');
 
   const songs=(DATABASE.musicas[roomKey]||[]).filter(isContentPublished);
   const latestSong=songs[songs.length-1];
@@ -8114,10 +8163,24 @@ function applyProgressSnapshot(snapshot,userId=currentUser?.id){
   updateXpLevel();
 }
 
+function updateProgressSyncStatus(state='saved'){
+  progressSyncState=state;
+  const element=document.getElementById('progress-sync-status');
+  if(!element)return;
+  const settings={
+    saved:{icon:'cloud-check',text:'Salvo'},
+    saving:{icon:'rotate fa-spin',text:'Salvando...'},
+    pending:{icon:'cloud-arrow-up',text:'Aguardando internet'}
+  };
+  const current=settings[state]||settings.saved;
+  element.className=`progress-sync-status ${state==='pending'?'pending':state==='saved'?'saved':''}`;
+  element.innerHTML=`<i class="fa-solid fa-${current.icon}"></i><span>${current.text}</span>`;
+}
+
 function scheduleProgressRetry(){
-  if(progressRetryTimer||progressRetryAttempts>=3||!currentUser||currentUser.role==='teacher')return;
-  const delays=[5000,15000,30000];
-  const delay=delays[progressRetryAttempts]||30000;
+  if(progressRetryTimer||!currentUser||currentUser.role==='teacher')return;
+  const delays=[5000,15000,30000,60000,120000,300000];
+  const delay=delays[Math.min(progressRetryAttempts,delays.length-1)];
   progressRetryAttempts++;
   progressRetryTimer=setTimeout(()=>{
     progressRetryTimer=null;
@@ -8126,6 +8189,10 @@ function scheduleProgressRetry(){
 }
 
 function saveStudentProgress(options={}){
+  if(currentUser?.id&&currentUser.role!=='teacher'){
+    storePendingProgress(mergeProgressSnapshots(currentUser,readPendingProgress(currentUser.id)),currentUser.id);
+    updateProgressSyncStatus('saving');
+  }
   const task=()=>saveStudentProgressNow(options);
   const result=progressSaveChain.then(task,task);
   progressSaveChain=result.catch(()=>false);
@@ -8146,6 +8213,7 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
   storePendingProgress(provisional,studentId);
 
   let remote=null;
+  let remoteReadOk=false;
   try{
     const {data,error}=await withTimeout(
       sbClient.from('student_progress').select('xp,notas,unlocked').eq('id',studentId).maybeSingle(),
@@ -8153,6 +8221,7 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
     );
     if(error)throw error;
     remote=data;
+    remoteReadOk=true;
   }catch(error){
     console.warn('Não foi possível consultar o progresso mais recente:',error);
   }
@@ -8177,7 +8246,9 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
   };
 
   const [tableResult,authResult]=await Promise.allSettled([
-    withTimeout(sbClient.from('student_progress').upsert(payload),7000),
+    remoteReadOk
+      ? withTimeout(sbClient.from('student_progress').upsert(payload),7000)
+      : Promise.reject(new Error('Gravação adiada até confirmar o progresso existente na nuvem.')),
     withTimeout(sbClient.auth.updateUser({data:{
       xp:merged.xp,
       notas:merged.notas,
@@ -8192,16 +8263,34 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
     clearPendingProgress(studentId);
     progressRetryAttempts=0;
     if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
+    updateProgressSyncStatus('saved');
   }else{
     console.warn('Progresso aguardando nova tentativa:',{
       tabela:tableOk?'ok':tableResult.status==='fulfilled'?tableResult.value.error:tableResult.reason,
       conta:authOk?'ok':authResult.status==='fulfilled'?authResult.value.error:authResult.reason
     });
+    updateProgressSyncStatus('pending');
     scheduleProgressRetry();
     if(!silent)alert('Seu progresso ficou salvo neste aparelho e será enviado quando a conexão melhorar.');
   }
-  return tableOk||authOk;
+  return tableOk&&authOk;
 }
+
+window.addEventListener('online',()=>{
+  if(currentUser?.role==='student'&&readPendingProgress(currentUser.id)){
+    if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
+    progressRetryAttempts=0;
+    saveStudentProgress({silent:true});
+  }
+});
+
+window.addEventListener('offline',()=>{
+  if(currentUser?.role==='student')updateProgressSyncStatus('pending');
+});
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&currentUser?.role==='student'&&readPendingProgress(currentUser.id))saveStudentProgress({silent:true});
+});
 
 function effectiveStudentProfile(student){
   const control=DATABASE.studentControls?.[student?.id]||{};
@@ -8316,8 +8405,8 @@ async function renderDashboard(){
     const now=Date.now();
     const diasDesde=(d)=>d?Math.max(0,Math.floor((now-new Date(d).getTime())/86400000)):null;
     const ativos=data.filter(a=>{const dd=diasDesde(a.updated_at);return dd!==null&&dd<=7;}).length;
-    const leitores=data.filter(a=>(Array.isArray(a.unlocked)?a.unlocked:[]).includes(READING_COMPLETE_MARKER)).length;
-    const respostasLeitura=data.filter(a=>(Array.isArray(a.unlocked)?a.unlocked:[]).includes(READING_ANSWERS_MARKER)).length;
+    const leitores=data.filter(a=>{const unlocked=Array.isArray(a.unlocked)?a.unlocked:[];return unlocked.includes(readingCompleteMarker(1))||unlocked.includes(readingCompleteMarker(2));}).length;
+    const respostasLeitura=data.filter(a=>{const unlocked=Array.isArray(a.unlocked)?a.unlocked:[];return unlocked.includes(readingAnswersMarker(1))||unlocked.includes(readingAnswersMarker(2));}).length;
 
     summary.innerHTML=`
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--orange)">${data.length}</div><div style="font-size:12px;color:var(--slate)">alunos no ranking</div></div>
@@ -8331,10 +8420,12 @@ async function renderDashboard(){
       const numNotas=notas.length;
       const unlocked=Array.isArray(a.unlocked)?a.unlocked:[];
       const atividades=unlocked.filter(value=>String(value).includes('__atividade_')).length;
-      const readingParts=unlocked.filter(value=>String(value).startsWith('reading__metamorphosis_w1_part_')).length;
-      const readingComplete=unlocked.includes(READING_COMPLETE_MARKER);
-      const readingAnswersSent=unlocked.includes(READING_ANSWERS_MARKER);
-      const readingLabel=readingAnswersSent?'📨 respostas enviadas':readingComplete?'📚 leitura concluída':readingParts?`📖 leitura ${Math.min(readingParts,READING_PARTS.length)}/${READING_PARTS.length}`:'📕 leitura não iniciada';
+      const week1Complete=unlocked.includes(readingCompleteMarker(1));
+      const week2Complete=unlocked.includes(readingCompleteMarker(2));
+      const currentWeek=week1Complete?2:1;
+      const readingParts=unlocked.filter(value=>String(value).startsWith(`reading__metamorphosis_w${currentWeek}_part_`)).length;
+      const readingAnswersSent=unlocked.includes(readingAnswersMarker(currentWeek));
+      const readingLabel=week2Complete?'📚 semanas 1–2 concluídas':readingAnswersSent?`📨 semana ${currentWeek}: respostas enviadas`:readingParts?`📖 semana ${currentWeek}: ${Math.min(readingParts,6)}/6`:week1Complete?'📘 semana 2 disponível':'📕 leitura não iniciada';
       const media=numNotas?(notas.reduce((sum,n)=>sum+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
       const nivel=Math.floor((a.xp||0)/200)+1;
       const dd=diasDesde(a.updated_at);

@@ -1,0 +1,479 @@
+{
+  "book": {
+    "title": "THE METAMORPHOSIS",
+    "subtitle": "A CEFR A1 Educational Adaptation of Franz Kafka",
+    "author": "Franz Kafka",
+    "cefr": "A1",
+    "audience": "Teenagers and adults",
+    "adaptation_note_pt": "Adaptação educacional com inglês simplificado. O enredo, a atmosfera sombria, os conflitos, a filosofia e o final da obra são preservados.",
+    "cover_asset": "assets/cover_the_metamorphosis_a1.png"
+  },
+  "week": {
+    "number": 2,
+    "of": 6,
+    "chapter_number": 2,
+    "title": "Behind the Door",
+    "main_language_focus": "There is / There are + Prepositions of Place",
+    "main_theme": "Identity, fear and rejection",
+    "opening_illustration": {
+      "asset": "assets/week2_part1_chief_clerk_arrives.webp",
+      "alt_text": "The chief clerk stands near Gregor's closed bedroom door. Grete, Mrs. Samsa and Mr. Samsa are behind him in the hallway. Everyone looks tense and worried."
+    },
+    "part_illustrations": [
+      {
+        "asset": "assets/week2_part1_chief_clerk_arrives.webp",
+        "alt_text": "The chief clerk waits beside Gregor's closed bedroom door while the worried Samsa family stands behind him."
+      },
+      {
+        "asset": "assets/week2_part2_key_in_lock.webp",
+        "alt_text": "Gregor turns the key in the bedroom door with his mouth while his family waits outside."
+      },
+      {
+        "asset": "assets/week2_part3_door_opens.webp",
+        "alt_text": "Gregor appears in the open doorway and the chief clerk and his family react with fear."
+      },
+      {
+        "asset": "assets/week2_part4_clerk_runs_away.webp",
+        "alt_text": "The frightened chief clerk runs toward the apartment entrance while looking back at Gregor."
+      },
+      {
+        "asset": "assets/week2_part5_father_forces_return.webp",
+        "alt_text": "Mr. Samsa uses a walking stick and folded newspaper to force Gregor back toward the bedroom."
+      },
+      {
+        "asset": "assets/week2_part6_alone_again.webp",
+        "alt_text": "Gregor is alone in the dim bedroom after his father closes the door again."
+      }
+    ],
+    "before_you_read": [
+      "Is it easy to understand someone when you are afraid?",
+      "Can a person's appearance change how other people treat them?",
+      "What do you do when you have a problem and people do not understand you?"
+    ],
+    "story": [
+      "The chief clerk is inside the Samsa apartment.",
+      "Gregor is still in his bedroom.",
+      "There is a closed door between them.",
+      "The chief clerk speaks loudly.",
+      "“Gregor, what is happening? You are late for work.”",
+      "Gregor listens from his room.",
+      "The clerk continues.",
+      "“Your work is not good recently. Your manager is worried.”",
+      "Gregor becomes afraid.",
+      "He does not want to lose his job.",
+      "His family needs his money.",
+      "“I am coming,” Gregor says.",
+      "But his voice is strange.",
+      "The people outside the room cannot understand him well.",
+      "Gregor tries to get out of bed again.",
+      "This time, he falls onto the floor.",
+      "It hurts, but he continues.",
+      "He moves slowly across the room.",
+      "The door is in front of him.",
+      "There is a key in the lock.",
+      "Gregor cannot use his hands now.",
+      "He has no human hands.",
+      "Opening the door is very difficult.",
+      "Outside the room, his mother is worried.",
+      "Grete is quiet.",
+      "His father is impatient.",
+      "The chief clerk continues talking about work.",
+      "Gregor tries to turn the key with his mouth.",
+      "It is difficult.",
+      "He tries again.",
+      "Slowly, the key moves.",
+      "The lock opens.",
+      "The door begins to open.",
+      "For a moment, nobody speaks.",
+      "Gregor appears in the doorway.",
+      "His mother looks at him.",
+      "Her face changes.",
+      "She steps back.",
+      "Grete looks at her brother in fear.",
+      "His father is shocked.",
+      "The chief clerk looks at Gregor and begins to move away.",
+      "Gregor wants to explain everything.",
+      "He wants to say:",
+      "“I can still work.”",
+      "He tries to speak.",
+      "But his words sound different now.",
+      "Nobody understands him.",
+      "Gregor looks at the chief clerk.",
+      "He does not want the man to leave.",
+      "If the clerk returns to the office, Gregor knows there will be more problems.",
+      "Gregor moves toward him.",
+      "The chief clerk becomes terrified.",
+      "He moves toward the apartment door.",
+      "Then he runs away.",
+      "Gregor tries to follow him.",
+      "“Please,” Gregor wants to say.",
+      "He wants the clerk to understand.",
+      "But nobody understands.",
+      "His mother is frightened.",
+      "Grete stays close to her.",
+      "His father becomes angry.",
+      "Gregor is still thinking about his job.",
+      "He still wants to explain.",
+      "He still wants to show that he is Gregor Samsa.",
+      "But his father does not listen.",
+      "Mr. Samsa takes a walking stick and a newspaper.",
+      "He moves toward Gregor.",
+      "Gregor understands.",
+      "His father wants him back inside the bedroom.",
+      "Gregor tries to turn around.",
+      "It is difficult.",
+      "His new body does not move like a human body.",
+      "His father continues to move toward him.",
+      "Gregor becomes more afraid.",
+      "He slowly returns to the doorway.",
+      "The doorway is narrow.",
+      "Gregor tries to enter the room.",
+      "His body gets caught for a moment.",
+      "It hurts.",
+      "His father continues to force him inside.",
+      "Finally, Gregor falls into the bedroom.",
+      "His father closes the door.",
+      "The apartment becomes quiet.",
+      "Gregor is alone again.",
+      "A few minutes before, he was worried about a train.",
+      "He was worried about being late.",
+      "He was worried about his manager.",
+      "Now the chief clerk has seen him.",
+      "His mother has seen him.",
+      "His father has seen him.",
+      "Grete has seen him.",
+      "Gregor is still Gregor inside.",
+      "But the people around him no longer look at him in the same way.",
+      "The door is closed again.",
+      "And this time, everything is different."
+    ],
+    "visual_reflection": {
+      "title": "The Door Opens",
+      "asset": "assets/week2_part3_door_opens.webp",
+      "alt_text": "Gregor appears at the bedroom doorway in his transformed insect-like body. The chief clerk moves away in fear. Mrs. Samsa, Mr. Samsa and Grete react with shock in the brighter hallway.",
+      "questions": [
+        "Where is Gregor?",
+        "Where is the chief clerk?",
+        "What do the characters' faces and positions show?"
+      ]
+    },
+    "vocabulary": [
+      {
+        "word": "inside",
+        "pt": "dentro"
+      },
+      {
+        "word": "outside",
+        "pt": "fora"
+      },
+      {
+        "word": "behind",
+        "pt": "atrás de"
+      },
+      {
+        "word": "near",
+        "pt": "perto de"
+      },
+      {
+        "word": "doorway",
+        "pt": "entrada / vão da porta"
+      },
+      {
+        "word": "key",
+        "pt": "chave"
+      },
+      {
+        "word": "lock",
+        "pt": "fechadura"
+      },
+      {
+        "word": "open",
+        "pt": "abrir / aberto"
+      },
+      {
+        "word": "follow",
+        "pt": "seguir"
+      },
+      {
+        "word": "afraid",
+        "pt": "com medo"
+      },
+      {
+        "word": "angry",
+        "pt": "bravo / irritado"
+      },
+      {
+        "word": "understand",
+        "pt": "entender"
+      }
+    ],
+    "vocabulary_in_context": {
+      "word_bank": [
+        "key",
+        "afraid",
+        "follow",
+        "doorway",
+        "understand"
+      ],
+      "items": [
+        "Gregor uses the ______ to open the door.",
+        "The chief clerk is ______ of Gregor.",
+        "Gregor wants to ______ the clerk.",
+        "Gregor stands in the ______.",
+        "The family cannot ______ Gregor's voice."
+      ],
+      "answers": [
+        "key",
+        "afraid",
+        "follow",
+        "doorway",
+        "understand"
+      ]
+    },
+    "reading_comprehension": [
+      {
+        "question": "Who is inside the Samsa apartment?",
+        "suggested_answer": "The chief clerk is inside the apartment."
+      },
+      {
+        "question": "Why is the chief clerk there?",
+        "suggested_answer": "Because Gregor is late for work and did not go to the office."
+      },
+      {
+        "question": "Why is Gregor afraid of losing his job?",
+        "suggested_answer": "Because his family needs his money."
+      },
+      {
+        "question": "How does Gregor open the door?",
+        "suggested_answer": "He turns the key with his mouth."
+      },
+      {
+        "question": "What happens when the family sees Gregor?",
+        "suggested_answer": "They are shocked and afraid."
+      },
+      {
+        "question": "Why does Gregor want to follow the chief clerk?",
+        "suggested_answer": "He wants to explain the situation and protect his job."
+      },
+      {
+        "question": "Does the chief clerk understand Gregor?",
+        "suggested_answer": "No, he doesn't."
+      },
+      {
+        "question": "How does Mr. Samsa react?",
+        "suggested_answer": "He becomes angry and forces Gregor back into the bedroom."
+      },
+      {
+        "question": "What happens when Gregor tries to return to the bedroom?",
+        "suggested_answer": "He gets caught in the doorway and is hurt."
+      },
+      {
+        "question": "Gregor is still worried about his job after everyone sees him. What does this tell us about him?",
+        "suggested_answer": "Open answer. Expected idea: he feels responsible for his family and is still focused on work and duty."
+      }
+    ],
+    "true_false": [
+      {
+        "statement": "The chief clerk comes because Gregor is late for work.",
+        "answer": true
+      },
+      {
+        "statement": "Gregor opens the door easily.",
+        "answer": false
+      },
+      {
+        "statement": "Gregor's family understands his voice perfectly.",
+        "answer": false
+      },
+      {
+        "statement": "The chief clerk is afraid when he sees Gregor.",
+        "answer": true
+      },
+      {
+        "statement": "Gregor wants the chief clerk to stay.",
+        "answer": true
+      },
+      {
+        "statement": "Mr. Samsa helps Gregor speak to the clerk.",
+        "answer": false
+      },
+      {
+        "statement": "Gregor is hurt when he returns to his bedroom.",
+        "answer": true
+      }
+    ],
+    "reflection": {
+      "title": "Think About the Story",
+      "prompt": "Is Gregor still the same person inside?",
+      "sentence_starters": [
+        "I think yes because...",
+        "I think no because..."
+      ],
+      "answer_type": "open"
+    },
+    "grammar_focus": {
+      "title": "There is / There are + Prepositions of Place",
+      "explanation": "We use there is and there are to say that something or someone exists in a place.",
+      "examples": [
+        "There is a door in front of Gregor.",
+        "There is a key in the lock.",
+        "There are people outside the bedroom.",
+        "There are three members of Gregor's family near the room."
+      ],
+      "prepositions": [
+        {
+          "word": "in",
+          "example": "Gregor is in the bedroom."
+        },
+        {
+          "word": "outside",
+          "example": "His family is outside the room."
+        },
+        {
+          "word": "behind",
+          "example": "Gregor is behind the door."
+        },
+        {
+          "word": "near",
+          "example": "Mr. Samsa is near the doorway."
+        },
+        {
+          "word": "in front of",
+          "example": "The door is in front of Gregor."
+        },
+        {
+          "word": "next to",
+          "example": "Grete is next to her mother."
+        }
+      ],
+      "practice_there_is_are": {
+        "items": [
+          "______ a key in the lock.",
+          "______ three people outside Gregor's room.",
+          "______ a chief clerk in the apartment.",
+          "______ doors in the apartment.",
+          "______ a problem with Gregor's voice."
+        ],
+        "answers": [
+          "There is",
+          "There are",
+          "There is",
+          "There are",
+          "There is"
+        ]
+      },
+      "practice_prepositions": {
+        "word_bank": [
+          "in",
+          "behind",
+          "near",
+          "outside",
+          "in front of"
+        ],
+        "items": [
+          "Gregor is ______ his bedroom.",
+          "His family is ______ the room.",
+          "Gregor is ______ the closed door before he opens it.",
+          "Mr. Samsa stands ______ Gregor.",
+          "The door is ______ Gregor when he crosses the room."
+        ],
+        "answers": [
+          "in",
+          "outside",
+          "behind",
+          "near",
+          "in front of"
+        ]
+      }
+    },
+    "look_at_the_scene": {
+      "instruction": "Use the illustration to make sentences.",
+      "example": "There is a door between Gregor and his family.",
+      "items": [
+        "There is ______.",
+        "There are ______.",
+        "Gregor is ______."
+      ],
+      "answer_type": "open"
+    },
+    "speaking_mission": {
+      "title": "What Is Happening?",
+      "instruction": "Look at the illustration and describe the scene.",
+      "sentence_starters": [
+        "There is...",
+        "There are...",
+        "Gregor is...",
+        "The chief clerk is...",
+        "Mr. Samsa is...",
+        "Mrs. Samsa is..."
+      ],
+      "challenge": "Why does the chief clerk run away?",
+      "challenge_starter": "He runs away because..."
+    },
+    "writing_mission": {
+      "title": "The Door Opens",
+      "word_target": "25–35 words",
+      "instruction": "Write about the moment Gregor opens the door.",
+      "sentence_starters": [
+        "Gregor is...",
+        "There is...",
+        "There are...",
+        "His mother is...",
+        "The chief clerk...",
+        "His father..."
+      ]
+    },
+    "story_image_activity": {
+      "instruction": "Look carefully at the illustration.",
+      "find": [
+        "Gregor",
+        "the doorway",
+        "the chief clerk",
+        "Mr. Samsa",
+        "Mrs. Samsa"
+      ],
+      "questions": [
+        "Who is closest to Gregor?",
+        "Who wants to move away from Gregor?",
+        "What does physical distance tell us about the characters?"
+      ],
+      "answer_type": "open"
+    },
+    "kafkas_question": {
+      "context": "Gregor wants to talk and explain, but nobody understands him. The people around him react to what they see, not to what Gregor thinks or feels.",
+      "prompt": "If Gregor thinks and feels like Gregor, is he still Gregor?",
+      "sentence_starters": [
+        "I think he is still Gregor because...",
+        "I think he is different because..."
+      ],
+      "answer_type": "open"
+    },
+    "second_question": {
+      "context": "Before his transformation, Gregor is important because he works, earns money and helps his family. Now he cannot work.",
+      "prompt": "Will his family treat him differently now?",
+      "sentence_starter": "I think...",
+      "answer_type": "open"
+    },
+    "prediction": {
+      "context": "Gregor is alone inside his bedroom again. He cannot work. His family is afraid of him. But they still live in the same apartment.",
+      "question": "What do you think happens next?",
+      "sentence_starters": [
+        "I think Grete...",
+        "I think Gregor...",
+        "I think the family..."
+      ]
+    },
+    "learning_outcomes": [
+      "Use there is / there are.",
+      "Use basic prepositions of place.",
+      "Describe where people and objects are.",
+      "Understand the family's first reaction to Gregor.",
+      "Identify the beginning of Gregor's isolation.",
+      "Think about the difference between appearance and identity."
+    ],
+    "next_week": {
+      "chapter": "Chapter 3 — Gregor's New Life",
+      "teaser": "Gregor cannot go outside. He cannot work. But someone in the family will begin to take care of him. Grete enters Gregor's new world."
+    }
+  }
+}
