@@ -1,0 +1,410 @@
+{
+  "book": {
+    "title": "THE METAMORPHOSIS",
+    "subtitle": "A CEFR A1 Educational Adaptation of Franz Kafka",
+    "author": "Franz Kafka",
+    "cefr": "A1",
+    "cover_asset": "assets/cover_the_metamorphosis_a1.png",
+    "adaptation_note_pt": "Adaptação educacional com inglês simplificado. O enredo, a atmosfera sombria, os conflitos, a filosofia e o final da obra são preservados."
+  },
+  "week": {
+    "number": 5,
+    "of": 6,
+    "chapter_number": 5,
+    "title": "The Family Moves On",
+    "main_language_focus": "Have / Has + Possessives",
+    "main_theme": "Neglect, loneliness and humanity",
+    "opening_illustration": {
+      "asset": "assets/week5_part1_family_routine.webp",
+      "alt_text": "Gregor sits alone in a darker, cluttered room filled with boxes and stored objects while warm light from the family rooms is visible beyond the doorway."
+    },
+    "part_illustrations": [
+      {
+        "asset": "assets/week5_part1_family_routine.webp",
+        "alt_text": "The tired Samsa family works and studies under warm light while Gregor watches from his dark bedroom doorway."
+      },
+      {
+        "asset": "assets/week5_part2_neglected_room.webp",
+        "alt_text": "Gregor sits among boxes and unused furniture while Grete leaves food quickly and walks away without looking at him."
+      },
+      {
+        "asset": "assets/week5_part3_three_lodgers.webp",
+        "alt_text": "Three serious lodgers dine while the Samsa family serves them and Gregor watches from a distant doorway."
+      },
+      {
+        "asset": "assets/week5_part4_violin_music.webp",
+        "alt_text": "Grete plays the violin in the illuminated living room while Gregor listens from the darkness."
+      },
+      {
+        "asset": "assets/week5_part5_drawn_to_music.webp",
+        "alt_text": "Gregor slowly leaves his cluttered room and moves toward Grete and the sound of her violin."
+      },
+      {
+        "asset": "assets/week5_part6_lodgers_see_gregor.webp",
+        "alt_text": "A lodger points at Gregor, Grete lowers her violin and everyone turns toward the doorway in shocked silence."
+      }
+    ],
+    "before_you_read": [
+      "Can music change the way you feel?",
+      "How do people feel when nobody notices them?",
+      "Can a family continue changing even when one person stays in the same place?"
+    ],
+    "story": [
+      "Time passes.",
+      "Gregor is still hurt.",
+      "The apple remains in his body, and he becomes weaker.",
+      "He cannot move as easily as before.",
+      "His family has a new routine now.",
+      "Mr. Samsa has a job.",
+      "He wears his dark uniform every day.",
+      "Mrs. Samsa works at home.",
+      "She sews clothes for other people.",
+      "Grete has a job too.",
+      "She works during the day and studies at night.",
+      "Everyone is tired.",
+      "Gregor watches them when his bedroom door is open.",
+      "Sometimes the family sits together in the living room.",
+      "Gregor stays in the darkness of his room.",
+      "He can see them.",
+      "But he is not really part of their life anymore.",
+      "At first, Grete took good care of him.",
+      "Now things are different.",
+      "She still brings food, but she does it quickly.",
+      "Sometimes she does not look at him.",
+      "Sometimes she leaves the room without cleaning it well.",
+      "Gregor understands that Grete is tired.",
+      "But he also understands something painful.",
+      "His sister is changing.",
+      "Gregor's room changes too.",
+      "The family starts putting things there.",
+      "Old boxes.",
+      "Furniture.",
+      "Objects they do not need.",
+      "The room becomes a place for things that have no other place.",
+      "Gregor lives among them.",
+      "A new cleaning woman comes to the apartment.",
+      "She is older and strong.",
+      "She is not very afraid of Gregor.",
+      "Sometimes she opens the door and looks at him.",
+      "Gregor does not know what to think about her.",
+      "She talks to him in a simple, direct way.",
+      "She does not treat him like Grete does.",
+      "But she does not treat him like Gregor Samsa either.",
+      "The family needs more money.",
+      "So they rent one room to three men.",
+      "The three lodgers are serious.",
+      "They want the apartment to be clean.",
+      "They want good food.",
+      "They want everything to be correct.",
+      "The Samsa family tries to please them.",
+      "Mr. Samsa is polite.",
+      "Mrs. Samsa serves them.",
+      "Grete helps.",
+      "Gregor watches.",
+      "This is his family's home.",
+      "But now the lodgers have an important place in it.",
+      "Gregor has less and less space.",
+      "One evening, the three lodgers are eating in the living room.",
+      "Grete is in another room.",
+      "Then she takes her violin.",
+      "She begins to play.",
+      "Gregor hears the music.",
+      "He becomes still.",
+      "The sound is beautiful.",
+      "Gregor moves closer to the door.",
+      "He listens.",
+      "Grete continues playing.",
+      "Gregor forgets the pain in his body.",
+      "He forgets the dirty room.",
+      "He forgets the lodgers.",
+      "He only hears the violin.",
+      "Gregor remembers an old dream.",
+      "Before his transformation, he wanted to help Grete study music.",
+      "He wanted to send her to a music school.",
+      "He never told her.",
+      "Now he cannot tell her.",
+      "He cannot say: “Your music is beautiful.”",
+      "He cannot say: “I wanted to help you.”",
+      "Gregor slowly leaves his room.",
+      "He moves toward the living room.",
+      "He wants to be closer to the music.",
+      "For a moment, Gregor does not think about fear.",
+      "He does not think about his body.",
+      "He only thinks about Grete and her violin.",
+      "Then one of the lodgers sees him.",
+      "The music stops.",
+      "The room becomes silent.",
+      "The man points at Gregor.",
+      "The other lodgers look too.",
+      "Their faces change.",
+      "The family turns around.",
+      "Everyone sees Gregor.",
+      "Again.",
+      "But this time, Gregor is not thinking about work.",
+      "He is not thinking about money.",
+      "He is thinking about music."
+    ],
+    "visual_reflection": {
+      "title": "Grete Plays the Violin",
+      "asset": "assets/week5_part4_violin_music.webp",
+      "alt_text": "Grete plays the violin under warm light while the lodgers and family listen. Gregor is partly visible in the darker doorway, drawn toward the music.",
+      "questions": [
+        "Where is Grete?",
+        "Where is Gregor?",
+        "Why is the difference between light and darkness important?"
+      ]
+    },
+    "vocabulary": [
+      {
+        "word": "violin",
+        "pt": "violino"
+      },
+      {
+        "word": "music",
+        "pt": "música"
+      },
+      {
+        "word": "play",
+        "pt": "tocar / brincar"
+      },
+      {
+        "word": "hear",
+        "pt": "ouvir"
+      },
+      {
+        "word": "lodger",
+        "pt": "inquilino"
+      },
+      {
+        "word": "tired",
+        "pt": "cansado"
+      },
+      {
+        "word": "dirty",
+        "pt": "sujo"
+      },
+      {
+        "word": "beautiful",
+        "pt": "bonito"
+      },
+      {
+        "word": "alone",
+        "pt": "sozinho"
+      },
+      {
+        "word": "rent",
+        "pt": "alugar"
+      },
+      {
+        "word": "study",
+        "pt": "estudar"
+      },
+      {
+        "word": "dream",
+        "pt": "sonho"
+      }
+    ],
+    "vocabulary_in_context": {
+      "word_bank": [
+        "violin",
+        "lodgers",
+        "tired",
+        "music",
+        "dream"
+      ],
+      "items": [
+        "Grete plays the ______.",
+        "The three ______ live in the apartment.",
+        "The family is very ______.",
+        "Gregor listens to the ______.",
+        "Gregor remembers an old ______ about Grete."
+      ],
+      "answers": [
+        "violin",
+        "lodgers",
+        "tired",
+        "music",
+        "dream"
+      ]
+    },
+    "reading_comprehension": [
+      {
+        "question": "Why is Gregor weaker now?",
+        "suggested_answer": "Because he is still hurt after the apple attack."
+      },
+      {
+        "question": "What job does Mrs. Samsa do at home?",
+        "suggested_answer": "She sews clothes for other people."
+      },
+      {
+        "question": "What does Grete do during the day?",
+        "suggested_answer": "She works."
+      },
+      {
+        "question": "How does Grete's care for Gregor change?",
+        "suggested_answer": "She becomes more tired and gives him less attention."
+      },
+      {
+        "question": "What happens to Gregor's room?",
+        "suggested_answer": "It becomes a storage room for boxes, furniture and other objects."
+      },
+      {
+        "question": "Why does the family have three lodgers?",
+        "suggested_answer": "Because they need more money."
+      },
+      {
+        "question": "What does Grete play?",
+        "suggested_answer": "The violin."
+      },
+      {
+        "question": "Why is the music important to Gregor?",
+        "suggested_answer": "It moves him emotionally and connects him to Grete and his human memories."
+      },
+      {
+        "question": "What did Gregor want to do for Grete before his transformation?",
+        "suggested_answer": "He wanted to help her study music / send her to music school."
+      },
+      {
+        "question": "What happens when the lodgers see Gregor?",
+        "suggested_answer": "They become upset and the music stops."
+      }
+    ],
+    "true_false": [
+      {
+        "statement": "Gregor becomes stronger.",
+        "answer": false
+      },
+      {
+        "statement": "Grete works and studies.",
+        "answer": true
+      },
+      {
+        "statement": "Gregor's room becomes cleaner and more comfortable.",
+        "answer": false
+      },
+      {
+        "statement": "The family rents a room because they need money.",
+        "answer": true
+      },
+      {
+        "statement": "The cleaning woman is very afraid of Gregor.",
+        "answer": false
+      },
+      {
+        "statement": "Grete plays the violin.",
+        "answer": true
+      },
+      {
+        "statement": "Gregor leaves his room because he wants to attack the lodgers.",
+        "answer": false
+      }
+    ],
+    "reflection": {
+      "title": "Think About the Story",
+      "prompt": "What does Gregor's reaction to music tell us about him?",
+      "sentence_starter": "I think Gregor...",
+      "answer_type": "open"
+    },
+    "grammar_focus": {
+      "title": "Have / Has + Possessives",
+      "examples": [
+        "They have a new routine.",
+        "Grete has a violin.",
+        "Mr. Samsa has a job.",
+        "Gregor has memories.",
+        "Gregor remembers his old life.",
+        "Grete plays her violin.",
+        "The lodgers eat their dinner."
+      ],
+      "practice_have_has": {
+        "items": [
+          "Grete ______ a violin.",
+          "The Samsa family ______ money problems.",
+          "Mr. Samsa ______ a new job.",
+          "The lodgers ______ a room in the apartment.",
+          "Gregor ______ memories of his old life."
+        ],
+        "answers": [
+          "has",
+          "has",
+          "has",
+          "have",
+          "has"
+        ]
+      },
+      "practice_possessives": {
+        "items": [
+          "Grete plays ______ violin.",
+          "Gregor stays in ______ room.",
+          "The lodgers eat ______ dinner.",
+          "Mr. Samsa wears ______ uniform.",
+          "Mrs. Samsa does ______ work at home."
+        ],
+        "answers": [
+          "her",
+          "his",
+          "their",
+          "his",
+          "her"
+        ]
+      }
+    },
+    "speaking_mission": {
+      "title": "What Makes Gregor Human?",
+      "sentence_starters": [
+        "Gregor likes...",
+        "Gregor remembers...",
+        "Gregor feels...",
+        "He has...",
+        "I think he is still human because..."
+      ],
+      "challenge": "Is a human body necessary to be human?"
+    },
+    "writing_mission": {
+      "title": "Gregor and the Music",
+      "word_target": "30–45 words",
+      "instruction": "Write about what Gregor hears, feels and remembers when Grete plays.",
+      "sentence_starters": [
+        "Grete has...",
+        "She plays...",
+        "Gregor hears...",
+        "He feels...",
+        "He remembers..."
+      ]
+    },
+    "story_image_activity": {
+      "questions": [
+        "Who is in the light?",
+        "Who is in the darkness?",
+        "Gregor wants to be close to Grete. Why can't he simply join the family?"
+      ],
+      "answer_type": "open"
+    },
+    "kafkas_question": {
+      "prompt": "Has Gregor become less important than the things the family needs?",
+      "sentence_starter": "I think...",
+      "answer_type": "open"
+    },
+    "deeper_question": {
+      "prompt": "Who looks more human in this scene: Gregor or the people who only see a problem?",
+      "answer_type": "open"
+    },
+    "prediction": {
+      "context": "The lodgers can see Gregor. The music stops. The family is afraid of what happens next.",
+      "question": "What do you think Grete will say?",
+      "sentence_starter": "I think Grete..."
+    },
+    "learning_outcomes": [
+      "Use have / has.",
+      "Use basic possessives.",
+      "Understand how the family has changed.",
+      "Describe Gregor's increasing isolation.",
+      "Explain why the violin scene is important.",
+      "Discuss what makes someone human."
+    ],
+    "next_week": {
+      "chapter": "Chapter 6 — The Last Night",
+      "teaser": "Gregor wants to be close to Grete. But Grete is about to make the most important decision of the story. The final metamorphosis is not Gregor's body."
+    }
+  }
+}

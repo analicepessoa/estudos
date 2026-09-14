@@ -5318,9 +5318,20 @@ const READING_WEEK_CONFIGS={
       {start:73,end:93,title:'The apples',question:'What does Mr. Samsa throw toward Gregor?',options:['Books','Apples','Chairs'],answer:1},
       {start:93,end:105,title:'An empty room',question:'Why does the empty room feel strange to Gregor?',options:['It is too cold','It has less of his old human life','It is full of people'],answer:1}
     ]
+  },
+  5:{
+    file:'week5_app_content.json',global:'METAMORPHOSIS_WEEK5',focus:'Have / Has · possessives',
+    parts:[
+      {start:0,end:17,title:'A new family routine',question:'What does Grete do now?',options:['She works during the day and studies at night','She stays home all day','She travels with Gregor'],answer:0},
+      {start:17,end:32,title:'Gregor is neglected',question:"What happens to Gregor's room?",options:['It becomes a music room','It becomes a place for boxes and unused things','It becomes clean and empty'],answer:1},
+      {start:32,end:54,title:'The lodgers',question:'Why does the family rent a room to three men?',options:['They need more money','The men are relatives','Grete wants new friends'],answer:0},
+      {start:54,end:68,title:'The violin',question:'What instrument does Grete play?',options:['The piano','The guitar','The violin'],answer:2},
+      {start:68,end:81,title:"Gregor's old dream",question:'What did Gregor want to do for Grete?',options:['Send her to a music school','Buy her a new room','Help her find a lodger'],answer:0},
+      {start:81,end:93,title:'The music stops',question:'What happens when a lodger sees Gregor?',options:['Grete plays louder','The music stops and everyone looks','Gregor returns to work'],answer:1}
+    ]
   }
 };
-const AVAILABLE_READING_WEEKS=[1,2,3,4];
+const AVAILABLE_READING_WEEKS=[1,2,3,4,5];
 let activeReadingWeek=1;
 let READING_PARTS=READING_WEEK_CONFIGS[1].parts;
 let readingData=null;
@@ -5457,7 +5468,7 @@ async function renderReadingLibrary(){
       </article>
       <div class="reading-weeks">
         ${AVAILABLE_READING_WEEKS.map(number=>{const data=dataByWeek[number];const unlocked=readingWeekUnlocked(number);const complete=readingIsComplete(number);return `<button class="reading-week-row ${unlocked?'':'locked'}" type="button" ${unlocked?`onclick="openReadingBook(${number})"`:'disabled'}><div class="reading-week-number">0${number}</div><div class="reading-week-copy"><strong>${htmlSafe(data.week.title)}</strong><span>${unlocked?readingWeekStatus(number):`Conclua a Semana ${number-1} para desbloquear`} · ${htmlSafe(READING_WEEK_CONFIGS[number].focus)}</span></div><i class="fa-solid fa-${complete?'circle-check':unlocked?'chevron-right':'lock'} reading-week-lock" style="color:${complete?'#0F766E':unlocked?'#7C2D12':''}"></i></button>`;}).join('')}
-        ${[5,6].map(number=>`<div class="reading-week-row locked"><div class="reading-week-number">0${number}</div><div class="reading-week-copy"><strong>Próximo capítulo</strong><span>Será liberado pela professora</span></div><i class="fa-solid fa-lock reading-week-lock"></i></div>`).join('')}
+        ${[6].map(number=>`<div class="reading-week-row locked"><div class="reading-week-number">0${number}</div><div class="reading-week-copy"><strong>Próximo capítulo</strong><span>Será liberado pela professora</span></div><i class="fa-solid fa-lock reading-week-lock"></i></div>`).join('')}
       </div>`;
   }catch(error){
     container.innerHTML=`<div class="reading-coming"><div class="reading-coming-icon"><i class="fa-solid fa-book-open-reader"></i></div><h2>Não foi possível abrir o livro</h2><p>Verifique sua conexão e tente novamente.</p><button class="btn btn-primary" style="margin-top:16px" onclick="renderReadingLibrary()">Tentar novamente</button></div>`;
@@ -5866,9 +5877,9 @@ function renderStudentHome(){
   const readingStarted=completedReadingWeeks.length>0||readingParts>0;
   const readingTitle=document.getElementById('home-reading-title');
   const readingDetail=document.getElementById('home-reading-detail');
-  if(readingTitle)readingTitle.textContent=allReadingWeeksDone?'Semanas 1 a 4 concluídas':readingParts?'Continue A Metamorfose':completedReadingWeeks.length?`Semana ${currentReadingWeek} disponível`:'Comece A Metamorfose';
+  if(readingTitle)readingTitle.textContent=allReadingWeeksDone?'Semanas 1 a 5 concluídas':readingParts?'Continue A Metamorfose':completedReadingWeeks.length?`Semana ${currentReadingWeek} disponível`:'Comece A Metamorfose';
   if(readingDetail)readingDetail.textContent=allReadingWeeksDone
-    ? 'Revise o vocabulário e suas anotações dos quatro capítulos.'
+    ? 'Revise o vocabulário e suas anotações dos cinco capítulos.'
     : readingParts?`Semana ${currentReadingWeek}: ${readingParts} de ${READING_WEEK_CONFIGS[currentReadingWeek].parts.length} partes lidas.`:`Semana ${currentReadingWeek} disponível · leitura guiada em nível A1.`;
   setHomeStatus('home-reading-status',allReadingWeeksDone?'done':readingStarted?'started':'todo',allReadingWeeksDone?'Leitura concluída':readingStarted?'Em andamento':'Pronto para começar');
 
@@ -8453,7 +8464,7 @@ async function renderDashboard(){
       const currentWeek=AVAILABLE_READING_WEEKS.find(number=>!unlocked.includes(readingCompleteMarker(number)))||AVAILABLE_READING_WEEKS[AVAILABLE_READING_WEEKS.length-1];
       const readingParts=unlocked.filter(value=>String(value).startsWith(`reading__metamorphosis_w${currentWeek}_part_`)).length;
       const readingAnswersSent=unlocked.includes(readingAnswersMarker(currentWeek));
-      const readingLabel=allWeeksComplete?'📚 semanas 1–4 concluídas':readingAnswersSent?`📨 semana ${currentWeek}: respostas enviadas`:readingParts?`📖 semana ${currentWeek}: ${Math.min(readingParts,6)}/6`:completedWeeks.length?`📘 semana ${currentWeek} disponível`:'📕 leitura não iniciada';
+      const readingLabel=allWeeksComplete?'📚 semanas 1–5 concluídas':readingAnswersSent?`📨 semana ${currentWeek}: respostas enviadas`:readingParts?`📖 semana ${currentWeek}: ${Math.min(readingParts,6)}/6`:completedWeeks.length?`📘 semana ${currentWeek} disponível`:'📕 leitura não iniciada';
       const media=numNotas?(notas.reduce((sum,n)=>sum+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
       const nivel=Math.floor((a.xp||0)/200)+1;
       const dd=diasDesde(a.updated_at);
