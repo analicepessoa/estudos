@@ -1,0 +1,381 @@
+{
+  "book": {
+    "title": "THE METAMORPHOSIS",
+    "subtitle": "A CEFR A1 Educational Adaptation of Franz Kafka",
+    "author": "Franz Kafka",
+    "cefr": "A1",
+    "cover_asset": "assets/cover_the_metamorphosis_a1.png",
+    "adaptation_note_pt": "Adaptação educacional com inglês simplificado. O enredo, a atmosfera sombria, os conflitos, a filosofia e o final da obra são preservados."
+  },
+  "week": {
+    "number": 3,
+    "of": 6,
+    "chapter_number": 3,
+    "title": "Gregor's New Life",
+    "main_language_focus": "Simple Present — Daily Routine",
+    "main_theme": "Isolation, care, usefulness and guilt",
+    "opening_illustration": {
+      "asset": "assets/week3_part1_grete_brings_food.webp",
+      "alt_text": "Grete enters Gregor's dim bedroom with a tray of food. Gregor is partly hidden under the sofa. Grete looks careful and nervous."
+    },
+    "part_illustrations": [
+      {
+        "asset": "assets/week3_part1_grete_brings_food.webp",
+        "alt_text": "Grete brings milk and bread into Gregor's dim bedroom while he hides under the sofa."
+      },
+      {
+        "asset": "assets/week3_part2_different_foods.webp",
+        "alt_text": "The milk remains untouched while Grete offers Gregor several different foods."
+      },
+      {
+        "asset": "assets/week3_part3_gregor_hides.webp",
+        "alt_text": "Gregor hides under the sofa and a cloth while Grete carefully cleans the room."
+      },
+      {
+        "asset": "assets/week3_part4_listens_to_family.webp",
+        "alt_text": "Gregor listens from his dark room while his family discusses money in the brighter room."
+      },
+      {
+        "asset": "assets/week3_part5_climbs_wall.webp",
+        "alt_text": "Gregor climbs the bedroom wall as Grete notices that the furniture limits his movement."
+      },
+      {
+        "asset": "assets/week3_part6_old_life.webp",
+        "alt_text": "Gregor looks at his desk, chair and picture and worries about losing the last signs of his human life."
+      }
+    ],
+    "before_you_read": [
+      "Who takes care of you when you are sick?",
+      "Is helping your family important to you?",
+      "How do you feel when you cannot do something you normally do?"
+    ],
+    "story": [
+      "Gregor stays inside his bedroom.",
+      "The door is closed.",
+      "His body hurts after what happened with his father.",
+      "The apartment is quiet.",
+      "Gregor is hungry.",
+      "After some time, the bedroom door opens slowly.",
+      "Grete enters.",
+      "She carries a bowl of milk and some bread.",
+      "Before his transformation, Gregor likes milk very much. Grete remembers this.",
+      "She puts the food near him and quickly leaves the room.",
+      "Gregor waits. Then he moves toward the bowl. He tries the milk.",
+      "But something is different. He does not like it now.",
+      "Later, Grete returns. She understands that Gregor does not want the milk.",
+      "The next time, she brings many different foods. There are old vegetables. There is cheese. There is bread. There are sauces and other things from the kitchen.",
+      "Gregor tries them. Now he likes some foods that he did not like before. His body is different. His taste is different too.",
+      "Grete begins to understand his new habits. Every day, she brings food. Every day, she cleans part of his room.",
+      "But she is still afraid of him.",
+      "Gregor understands this. When Grete enters, he often hides under the sofa. He does not want to frighten her.",
+      "Sometimes, only part of his body fits under it. Gregor puts a cloth over himself. Now Grete can enter the room without looking directly at him.",
+      "Gregor watches his sister quietly. He knows she is trying to help him. He is grateful. But he is also sad.",
+      "He cannot speak to her. He cannot say, “Thank you.” He cannot ask, “How are you?” He cannot tell her that he is still her brother.",
+      "Gregor spends many hours alone. He listens to his family through the door.",
+      "In the evening, his father and mother talk about money. Gregor listens carefully.",
+      "Before his transformation, Gregor works every day. He pays for many things in the family. He believes his family has almost no money.",
+      "But now he hears something new. His father still has some money from the past. It is not a lot. The family can live with it for some time. But not forever.",
+      "Soon, everyone needs to work.",
+      "Gregor feels something strange. He is happy because his family has some money. But he also feels guilty.",
+      "His father must work again. His mother needs to help. Grete is young, but she will need more responsibilities too.",
+      "Gregor remembers his old life. He gets up early. He takes trains. He travels. He works for many hours. He comes home tired.",
+      "He does not like that life. But the money helps his family.",
+      "Now Gregor cannot help them. He stays in his room. The family works outside it.",
+      "Days pass. Gregor slowly learns how to use his new body. He moves across the floor. Then he begins to climb the walls.",
+      "Sometimes, he climbs high and stays there. Movement makes him feel better.",
+      "Grete notices this. She looks at the furniture in the bedroom. There is a bed. There is a desk. There are chairs and other things from Gregor's old life.",
+      "Grete has an idea. Maybe Gregor needs more space. Maybe the furniture is now a problem for him. She thinks about removing it.",
+      "Gregor listens. At first, the idea sounds practical. More space means he can move more easily.",
+      "But then Gregor looks around the room. He looks at his desk. His chair. His picture.",
+      "These things belong to his human life.",
+      "Gregor asks himself a question:",
+      "If the room changes completely...",
+      "what is left of his old life?"
+    ],
+    "visual_reflection": {
+      "title": "Gregor Listens to His Family",
+      "asset": "assets/week3_part4_listens_to_family.webp",
+      "alt_text": "Gregor stays close to the bedroom door in the darker room while his family talks together in the brighter room beyond. He is physically near them but separated.",
+      "questions": [
+        "Where is Gregor?",
+        "What is the family doing?",
+        "What does the light and distance show about Gregor's situation?"
+      ]
+    },
+    "vocabulary": [
+      {
+        "word": "food",
+        "pt": "comida"
+      },
+      {
+        "word": "hungry",
+        "pt": "com fome"
+      },
+      {
+        "word": "bring",
+        "pt": "trazer"
+      },
+      {
+        "word": "eat",
+        "pt": "comer"
+      },
+      {
+        "word": "clean",
+        "pt": "limpar"
+      },
+      {
+        "word": "hide",
+        "pt": "esconder-se"
+      },
+      {
+        "word": "listen",
+        "pt": "ouvir / escutar"
+      },
+      {
+        "word": "money",
+        "pt": "dinheiro"
+      },
+      {
+        "word": "help",
+        "pt": "ajudar"
+      },
+      {
+        "word": "work",
+        "pt": "trabalhar"
+      },
+      {
+        "word": "wall",
+        "pt": "parede"
+      },
+      {
+        "word": "climb",
+        "pt": "subir / escalar"
+      }
+    ],
+    "vocabulary_in_context": {
+      "word_bank": [
+        "hungry",
+        "brings",
+        "hides",
+        "listens",
+        "climb"
+      ],
+      "items": [
+        "Gregor is ______.",
+        "Grete ______ food every day.",
+        "Gregor ______ under the sofa.",
+        "He ______ to his family through the door.",
+        "Gregor learns to ______ the walls."
+      ],
+      "answers": [
+        "hungry",
+        "brings",
+        "hides",
+        "listens",
+        "climb"
+      ]
+    },
+    "reading_comprehension": [
+      {
+        "question": "What food does Grete bring first?",
+        "suggested_answer": "Milk and bread."
+      },
+      {
+        "question": "Does Gregor still like milk?",
+        "suggested_answer": "No, he doesn't."
+      },
+      {
+        "question": "Why does Grete bring different foods?",
+        "suggested_answer": "Because she wants to discover what Gregor likes now."
+      },
+      {
+        "question": "Why does Gregor hide under the sofa?",
+        "suggested_answer": "Because he does not want to frighten Grete."
+      },
+      {
+        "question": "How does Grete help Gregor every day?",
+        "suggested_answer": "She brings food and cleans part of his room."
+      },
+      {
+        "question": "What does Gregor hear his family talking about?",
+        "suggested_answer": "Money and the family's financial situation."
+      },
+      {
+        "question": "Does the family have some money?",
+        "suggested_answer": "Yes. Gregor's father has some money from the past."
+      },
+      {
+        "question": "Why does Gregor feel guilty?",
+        "suggested_answer": "Because he cannot work or support his family now."
+      },
+      {
+        "question": "What new thing can Gregor do with his body?",
+        "suggested_answer": "He can climb the walls."
+      },
+      {
+        "question": "Why does Gregor feel worried about removing the furniture?",
+        "suggested_answer": "Because the furniture connects him to his old human life."
+      }
+    ],
+    "true_false": [
+      {
+        "statement": "Gregor still loves milk.",
+        "answer": false
+      },
+      {
+        "statement": "Grete brings different foods to Gregor.",
+        "answer": true
+      },
+      {
+        "statement": "Gregor hides because he wants to scare Grete.",
+        "answer": false
+      },
+      {
+        "statement": "Gregor listens to his family through the door.",
+        "answer": true
+      },
+      {
+        "statement": "Gregor's father has some money.",
+        "answer": true
+      },
+      {
+        "statement": "Gregor is happy because he cannot work.",
+        "answer": false
+      },
+      {
+        "statement": "Gregor begins to climb the walls.",
+        "answer": true
+      }
+    ],
+    "reflection": {
+      "title": "Think About the Story",
+      "prompt": "Why does Gregor feel guilty?",
+      "sentence_starter": "Gregor feels guilty because..."
+    },
+    "grammar_focus": {
+      "title": "Simple Present — Daily Routine",
+      "examples": [
+        "Grete brings food.",
+        "Gregor stays in his room.",
+        "His father works.",
+        "Gregor listens to his family.",
+        "Grete cleans the room."
+      ],
+      "rule": "With he, she and it, we usually add -s to the verb. Use does not / doesn't + base verb for negatives.",
+      "practice_1": {
+        "items": [
+          "Grete bring / brings food to Gregor.",
+          "Gregor stay / stays in his bedroom.",
+          "His father work / works again.",
+          "Gregor listen / listens to his family.",
+          "Grete clean / cleans the room.",
+          "Gregor climb / climbs the walls."
+        ],
+        "answers": [
+          "brings",
+          "stays",
+          "works",
+          "listens",
+          "cleans",
+          "climbs"
+        ]
+      },
+      "practice_2": {
+        "items": [
+          "Gregor ______ to work. (go)",
+          "He ______ milk now. (like)",
+          "Gregor ______ his room. (leave)",
+          "Grete ______ Gregor completely. (understand)"
+        ],
+        "answers": [
+          "doesn't go",
+          "doesn't like",
+          "doesn't leave",
+          "doesn't understand"
+        ]
+      }
+    },
+    "routine_sort": {
+      "items": [
+        "eats different food",
+        "goes to work",
+        "hides under the sofa",
+        "climbs the walls",
+        "takes the train",
+        "listens to his family"
+      ],
+      "before": [
+        "goes to work",
+        "takes the train"
+      ],
+      "after": [
+        "eats different food",
+        "hides under the sofa",
+        "climbs the walls",
+        "listens to his family"
+      ]
+    },
+    "speaking_mission": {
+      "title": "Gregor's New Routine",
+      "sentence_starters": [
+        "Every day, Gregor...",
+        "He usually...",
+        "He doesn't...",
+        "Grete...",
+        "His family..."
+      ],
+      "challenge_starters": [
+        "Before, Gregor...",
+        "Now, Gregor..."
+      ]
+    },
+    "writing_mission": {
+      "title": "A Day in Gregor's New Life",
+      "word_target": "25–35 words",
+      "instruction": "Write about a day in Gregor's new life.",
+      "sentence_starters": [
+        "Gregor stays...",
+        "Grete brings...",
+        "Gregor eats...",
+        "He listens...",
+        "He doesn't..."
+      ]
+    },
+    "story_image_activity": {
+      "title": "Gregor Listens to His Family",
+      "questions": [
+        "What can Gregor hear?",
+        "Can Gregor participate in the conversation?",
+        "How does this make him feel?"
+      ]
+    },
+    "kafkas_question": {
+      "prompt": "Is Gregor less important because he cannot work?",
+      "sentence_starters": [
+        "I think yes because...",
+        "I think no because..."
+      ]
+    },
+    "deeper_question": {
+      "prompt": "Who is Gregor protecting: himself or Grete?",
+      "sentence_starter": "I think Gregor is protecting..."
+    },
+    "prediction": {
+      "question": "What do you think Gregor wants?",
+      "sentence_starter": "I think Gregor wants..."
+    },
+    "learning_outcomes": [
+      "Use Simple Present for routines.",
+      "Talk about daily activities.",
+      "Understand Gregor's new routine.",
+      "Describe how Grete cares for Gregor.",
+      "Understand the family's financial problem.",
+      "Discuss Gregor's guilt and isolation.",
+      "Think about the relationship between work and personal value."
+    ],
+    "next_week": {
+      "chapter": "Chapter 4 — The Room Changes",
+      "teaser": "Grete wants to help Gregor. She wants to give him more space. But removing the furniture may mean removing something else too: Gregor's old life."
+    }
+  }
+}
