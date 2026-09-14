@@ -1,0 +1,471 @@
+{
+  "book": {
+    "title": "THE METAMORPHOSIS",
+    "subtitle": "A CEFR A1 Educational Adaptation of Franz Kafka",
+    "author": "Franz Kafka",
+    "cefr": "A1",
+    "audience": "Teenagers and adults",
+    "adaptation_note_pt": "Adaptação educacional com inglês simplificado. O enredo, a atmosfera sombria, os conflitos, a filosofia e o final da obra são preservados.",
+    "cover_asset": "assets/cover_the_metamorphosis_a1.png"
+  },
+  "week": {
+    "number": 4,
+    "of": 6,
+    "chapter_number": 4,
+    "title": "The Room Changes",
+    "main_language_focus": "Can / Can't",
+    "main_theme": "Identity, memory and loss",
+    "opening_illustration": {
+      "asset": "assets/week4_part1_remove_furniture.webp",
+      "alt_text": "Grete and Mrs. Samsa remove furniture from Gregor's bedroom while Gregor watches from the darker side of the room. The room is beginning to look empty."
+    },
+    "part_illustrations": [
+      {
+        "asset": "assets/week4_part1_remove_furniture.webp",
+        "alt_text": "Grete and Mrs. Samsa prepare to remove furniture while Gregor watches from the darker side of the bedroom."
+      },
+      {
+        "asset": "assets/week4_part2_human_memories.webp",
+        "alt_text": "Gregor looks at his desk, chair and framed picture and remembers his human life."
+      },
+      {
+        "asset": "assets/week4_part3_protects_picture.webp",
+        "alt_text": "Gregor covers the framed picture on the wall while Grete and Mrs. Samsa stand near the doorway."
+      },
+      {
+        "asset": "assets/week4_part4_mother_frightened.webp",
+        "alt_text": "Mrs. Samsa becomes frightened and weak while Grete supports her and Gregor stays back."
+      },
+      {
+        "asset": "assets/week4_part5_apple_attack.webp",
+        "alt_text": "Mr. Samsa throws apples while Gregor tries to retreat toward his bedroom."
+      },
+      {
+        "asset": "assets/week4_part6_empty_room.webp",
+        "alt_text": "Gregor lies weak in the nearly empty bedroom after the conflict, surrounded by very few reminders of his old life."
+      }
+    ],
+    "before_you_read": [
+      "Do objects in your room have special memories for you?",
+      "Can a room show something about a person's life?",
+      "How do you feel when someone changes your things without asking?"
+    ],
+    "story": [
+      "Gregor spends more time climbing the walls.",
+      "His new body can move easily on them.",
+      "Sometimes he climbs to the ceiling.",
+      "Grete notices this.",
+      "She thinks Gregor needs more space.",
+      "One day, she talks to her mother.",
+      "“We can remove some furniture,” Grete says.",
+      "“Then Gregor can move more easily.”",
+      "Mrs. Samsa is not sure.",
+      "She looks at Gregor's bedroom.",
+      "The bed is there.",
+      "The desk is there.",
+      "The chair is there.",
+      "His picture is still on the wall.",
+      "“But this is Gregor's room,” she says.",
+      "“Maybe he needs his things.”",
+      "Grete thinks differently.",
+      "She believes the furniture is now a problem.",
+      "Gregor listens to them from inside the room.",
+      "At first, he understands Grete's idea.",
+      "He can climb better without the furniture.",
+      "He can have more space.",
+      "But then he looks around.",
+      "He sees the desk.",
+      "Gregor remembers sitting there.",
+      "He remembers studying.",
+      "He remembers working.",
+      "He looks at the chair.",
+      "He remembers his human body sitting in it.",
+      "He looks at the walls.",
+      "He looks at the picture.",
+      "These things are not only furniture.",
+      "They are part of his old life.",
+      "Gregor becomes worried.",
+      "If everything leaves the room, what remains?",
+      "Grete and Mrs. Samsa enter.",
+      "Gregor hides.",
+      "They begin to move the furniture.",
+      "The room slowly changes.",
+      "A chair leaves.",
+      "Then another object leaves.",
+      "The women move the heavy desk.",
+      "Gregor watches.",
+      "He becomes more anxious.",
+      "He wants to stop them.",
+      "But he cannot speak.",
+      "He cannot say: “Please leave my things here.”",
+      "He cannot explain that the furniture is important.",
+      "Gregor moves across the room.",
+      "Then he sees the picture on the wall.",
+      "It is still there.",
+      "He does not want to lose it.",
+      "Gregor quickly climbs the wall.",
+      "He moves over the picture.",
+      "His body covers it.",
+      "He stays there.",
+      "He wants to protect it.",
+      "Mrs. Samsa returns to the room.",
+      "Then she sees Gregor clearly.",
+      "She becomes very frightened.",
+      "She steps back.",
+      "“Gregor!”",
+      "Her body becomes weak.",
+      "Grete quickly helps her mother.",
+      "Gregor does not want to hurt her.",
+      "He does not want to frighten her.",
+      "But he cannot change what he is.",
+      "Then the apartment door opens.",
+      "Mr. Samsa comes home.",
+      "He is wearing his work uniform.",
+      "His posture is different now.",
+      "He looks stronger and more serious.",
+      "Grete tells him that something happened.",
+      "Mr. Samsa sees Gregor outside his normal hiding place.",
+      "He becomes angry.",
+      "Gregor tries to return to his room.",
+      "But his father moves toward him.",
+      "Gregor moves away.",
+      "His father follows.",
+      "Gregor is afraid.",
+      "He cannot explain.",
+      "He cannot say: “I am not attacking anyone.”",
+      "He cannot say: “I only want my things.”",
+      "Mr. Samsa picks up apples from a bowl.",
+      "He throws them toward Gregor.",
+      "Gregor moves quickly.",
+      "One apple misses him.",
+      "Another rolls across the floor.",
+      "Then an apple hits Gregor.",
+      "Gregor is hurt.",
+      "He stops moving.",
+      "Mrs. Samsa becomes very upset.",
+      "She asks her husband to stop.",
+      "Gregor finally returns to his room.",
+      "He is weaker now.",
+      "His body hurts.",
+      "The door closes again.",
+      "The room is different.",
+      "His family is different.",
+      "His father is different.",
+      "Gregor looks at what is left.",
+      "He wanted more space.",
+      "But now the empty space feels strange.",
+      "The room gives him more freedom to move.",
+      "But it also has less of Gregor Samsa inside it."
+    ],
+    "visual_reflection": {
+      "title": "Gregor Protects the Picture",
+      "asset": "assets/week4_part3_protects_picture.webp",
+      "alt_text": "Gregor is on the wall of his bedroom, covering a framed picture with his transformed body. Some furniture has already been moved. Grete and Mrs. Samsa stand near the doorway.",
+      "questions": [
+        "What is Gregor protecting?",
+        "What is different about the room?",
+        "Why is the picture important to Gregor?"
+      ]
+    },
+    "vocabulary": [
+      {
+        "word": "furniture",
+        "pt": "móveis"
+      },
+      {
+        "word": "chair",
+        "pt": "cadeira"
+      },
+      {
+        "word": "desk",
+        "pt": "escrivaninha / mesa"
+      },
+      {
+        "word": "picture",
+        "pt": "quadro / imagem"
+      },
+      {
+        "word": "wall",
+        "pt": "parede"
+      },
+      {
+        "word": "move",
+        "pt": "mover"
+      },
+      {
+        "word": "remove",
+        "pt": "remover / retirar"
+      },
+      {
+        "word": "keep",
+        "pt": "manter / guardar"
+      },
+      {
+        "word": "protect",
+        "pt": "proteger"
+      },
+      {
+        "word": "empty",
+        "pt": "vazio"
+      },
+      {
+        "word": "angry",
+        "pt": "bravo / irritado"
+      },
+      {
+        "word": "weak",
+        "pt": "fraco"
+      }
+    ],
+    "vocabulary_in_context": {
+      "word_bank": [
+        "picture",
+        "furniture",
+        "protect",
+        "empty",
+        "weak"
+      ],
+      "items": [
+        "Grete wants to remove the ______.",
+        "Gregor wants to ______ something from his old life.",
+        "He covers the ______ on the wall.",
+        "The room becomes more ______.",
+        "After the conflict, Gregor is ______."
+      ],
+      "answers": [
+        "furniture",
+        "protect",
+        "picture",
+        "empty",
+        "weak"
+      ]
+    },
+    "reading_comprehension": [
+      {
+        "question": "Why does Grete want to remove the furniture?",
+        "suggested_answer": "Because she thinks Gregor needs more space to move and climb."
+      },
+      {
+        "question": "Why is Mrs. Samsa not sure about the idea?",
+        "suggested_answer": "Because the room and furniture are connected to Gregor's human life."
+      },
+      {
+        "question": "What does Gregor remember when he looks at his desk and chair?",
+        "suggested_answer": "He remembers studying, working and using them as a human."
+      },
+      {
+        "question": "Why does Gregor become anxious?",
+        "suggested_answer": "Because the furniture is being removed and he feels he is losing part of his old life."
+      },
+      {
+        "question": "What object does Gregor try to protect?",
+        "suggested_answer": "A picture on the wall."
+      },
+      {
+        "question": "What happens when Mrs. Samsa sees Gregor?",
+        "suggested_answer": "She becomes very frightened and weak."
+      },
+      {
+        "question": "How has Mr. Samsa changed?",
+        "suggested_answer": "He works again, wears a uniform and appears stronger and more authoritative."
+      },
+      {
+        "question": "Why does Mr. Samsa become angry?",
+        "suggested_answer": "He believes Gregor has caused a dangerous problem."
+      },
+      {
+        "question": "What does Mr. Samsa throw?",
+        "suggested_answer": "Apples."
+      },
+      {
+        "question": "Why does the empty room make Gregor sad?",
+        "suggested_answer": "Because it contains less of his old human life and identity."
+      }
+    ],
+    "true_false": [
+      {
+        "statement": "Grete wants Gregor to have more space.",
+        "answer": true
+      },
+      {
+        "statement": "Mrs. Samsa immediately wants to remove everything.",
+        "answer": false
+      },
+      {
+        "statement": "Gregor does not care about his old furniture.",
+        "answer": false
+      },
+      {
+        "statement": "Gregor protects a picture on the wall.",
+        "answer": true
+      },
+      {
+        "statement": "Mr. Samsa comes home wearing a work uniform.",
+        "answer": true
+      },
+      {
+        "statement": "Gregor attacks his father.",
+        "answer": false
+      },
+      {
+        "statement": "Gregor becomes weaker after the conflict.",
+        "answer": true
+      }
+    ],
+    "reflection": {
+      "title": "Think About the Story",
+      "prompt": "Can something help Gregor's new body but hurt Gregor emotionally?",
+      "sentence_starter": "Yes, because...",
+      "answer_type": "open"
+    },
+    "grammar_focus": {
+      "title": "Can / Can't",
+      "examples": [
+        "Gregor can climb the walls.",
+        "Grete can move some furniture.",
+        "Gregor can't speak normally.",
+        "He can't explain his feelings."
+      ],
+      "practice_1": {
+        "items": [
+          "Gregor ______ climb the walls.",
+          "Gregor ______ speak normally.",
+          "Grete ______ bring food to Gregor.",
+          "Gregor ______ explain his feelings to his family.",
+          "Mrs. Samsa ______ see Gregor without becoming frightened.",
+          "Gregor ______ remember his old life."
+        ],
+        "answers": [
+          "can",
+          "can't",
+          "can",
+          "can't",
+          "can't",
+          "can"
+        ]
+      },
+      "practice_2": {
+        "word_bank": [
+          "climb",
+          "speak",
+          "protect",
+          "move",
+          "work"
+        ],
+        "items": [
+          "Gregor can ______ the walls.",
+          "He cannot ______ normally.",
+          "Gregor wants to ______ the picture.",
+          "Grete can ______ the furniture.",
+          "Gregor cannot ______ at his old job."
+        ],
+        "answers": [
+          "climb",
+          "speak",
+          "protect",
+          "move",
+          "work"
+        ]
+      }
+    },
+    "can_cant_sort": {
+      "items": [
+        "climb walls",
+        "go to work",
+        "speak normally",
+        "listen to his family",
+        "protect the picture",
+        "use human hands"
+      ],
+      "can": [
+        "climb walls",
+        "listen to his family",
+        "protect the picture"
+      ],
+      "cant": [
+        "go to work",
+        "speak normally",
+        "use human hands"
+      ]
+    },
+    "speaking_mission": {
+      "title": "Keep It or Remove It?",
+      "objects": [
+        "bed",
+        "desk",
+        "chair",
+        "picture"
+      ],
+      "sentence_starters": [
+        "I think the ______ should stay.",
+        "Gregor needs it because...",
+        "Gregor can...",
+        "Gregor can't..."
+      ],
+      "challenge": "What is more important: space or memory?"
+    },
+    "writing_mission": {
+      "title": "Gregor's Room",
+      "word_target": "30–40 words",
+      "instruction": "Write about what should stay in Gregor's room and explain why.",
+      "sentence_starters": [
+        "I think...",
+        "Gregor needs...",
+        "The ______ is important because...",
+        "He can...",
+        "He can't..."
+      ]
+    },
+    "story_image_activity": {
+      "questions": [
+        "Is Gregor protecting an expensive object?",
+        "Or is he protecting a memory?",
+        "What can the picture represent?"
+      ],
+      "answer_type": "open"
+    },
+    "kafkas_question": {
+      "prompt": "If Gregor loses the things from his human life, does he lose part of his identity too?",
+      "sentence_starters": [
+        "I think yes because...",
+        "I think no because..."
+      ],
+      "answer_type": "open"
+    },
+    "deeper_question": {
+      "prompt": "Can a good intention still hurt someone?",
+      "sentence_starter": "I think...",
+      "answer_type": "open"
+    },
+    "father_and_son": {
+      "prompt": "How is the relationship between Gregor and his father changing?",
+      "sentence_starters": [
+        "Before...",
+        "Now..."
+      ],
+      "answer_type": "open"
+    },
+    "prediction": {
+      "context": "Gregor is hurt. He is weaker. The family needs money. Everyone is changing.",
+      "question": "What do you think happens next?",
+      "sentence_starters": [
+        "I think Gregor...",
+        "I think Grete...",
+        "I think the family..."
+      ]
+    },
+    "learning_outcomes": [
+      "Use can / can't.",
+      "Talk about abilities and limitations.",
+      "Identify objects in Gregor's room.",
+      "Understand why the furniture is important.",
+      "Discuss memory and identity.",
+      "Understand the changing relationship between Gregor and his father.",
+      "See how the whole Samsa family is changing."
+    ],
+    "next_week": {
+      "chapter": "Chapter 5 — The Family Moves On",
+      "teaser": "Time passes. Gregor becomes weaker. His room becomes less important. His family continues living. And one night, Gregor hears something beautiful: Grete's violin."
+    }
+  }
+}
