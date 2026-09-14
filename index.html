@@ -5329,9 +5329,20 @@ const READING_WEEK_CONFIGS={
       {start:68,end:81,title:"Gregor's old dream",question:'What did Gregor want to do for Grete?',options:['Send her to a music school','Buy her a new room','Help her find a lodger'],answer:0},
       {start:81,end:93,title:'The music stops',question:'What happens when a lodger sees Gregor?',options:['Grete plays louder','The music stops and everyone looks','Gregor returns to work'],answer:1}
     ]
+  },
+  6:{
+    file:'week6_app_content.json',global:'METAMORPHOSIS_WEEK6',focus:'Integrated A1 review · story conclusion',
+    parts:[
+      {start:0,end:20,title:'The lodgers are angry',question:'Why are the lodgers angry?',options:['They see Gregor in the apartment','The violin is too quiet','Breakfast is late'],answer:0},
+      {start:20,end:35,title:"Grete's decision",question:'What does Grete say the family needs to do?',options:['Move the violin','Get rid of the creature','Invite the lodgers back'],answer:1},
+      {start:35,end:49,title:'Gregor returns',question:"How does Gregor react to Grete's words?",options:['He attacks the family','He quietly returns to his room','He follows the lodgers'],answer:1},
+      {start:49,end:67,title:'The last night',question:'What happens before morning?',options:['Gregor becomes stronger','Gregor leaves the apartment','Gregor dies'],answer:2},
+      {start:67,end:81,title:'The family takes control',question:'What does Mr. Samsa tell the lodgers to do?',options:['Leave the apartment','Play the violin','Clean the bedroom'],answer:0},
+      {start:81,end:107,title:'A different future',question:'Where does the family go together?',options:['To Gregor\'s office','On a tram out of the city','To the music school'],answer:1}
+    ]
   }
 };
-const AVAILABLE_READING_WEEKS=[1,2,3,4,5];
+const AVAILABLE_READING_WEEKS=[1,2,3,4,5,6];
 let activeReadingWeek=1;
 let READING_PARTS=READING_WEEK_CONFIGS[1].parts;
 let readingData=null;
@@ -5468,7 +5479,6 @@ async function renderReadingLibrary(){
       </article>
       <div class="reading-weeks">
         ${AVAILABLE_READING_WEEKS.map(number=>{const data=dataByWeek[number];const unlocked=readingWeekUnlocked(number);const complete=readingIsComplete(number);return `<button class="reading-week-row ${unlocked?'':'locked'}" type="button" ${unlocked?`onclick="openReadingBook(${number})"`:'disabled'}><div class="reading-week-number">0${number}</div><div class="reading-week-copy"><strong>${htmlSafe(data.week.title)}</strong><span>${unlocked?readingWeekStatus(number):`Conclua a Semana ${number-1} para desbloquear`} · ${htmlSafe(READING_WEEK_CONFIGS[number].focus)}</span></div><i class="fa-solid fa-${complete?'circle-check':unlocked?'chevron-right':'lock'} reading-week-lock" style="color:${complete?'#0F766E':unlocked?'#7C2D12':''}"></i></button>`;}).join('')}
-        ${[6].map(number=>`<div class="reading-week-row locked"><div class="reading-week-number">0${number}</div><div class="reading-week-copy"><strong>Próximo capítulo</strong><span>Será liberado pela professora</span></div><i class="fa-solid fa-lock reading-week-lock"></i></div>`).join('')}
       </div>`;
   }catch(error){
     container.innerHTML=`<div class="reading-coming"><div class="reading-coming-icon"><i class="fa-solid fa-book-open-reader"></i></div><h2>Não foi possível abrir o livro</h2><p>Verifique sua conexão e tente novamente.</p><button class="btn btn-primary" style="margin-top:16px" onclick="renderReadingLibrary()">Tentar novamente</button></div>`;
@@ -5728,6 +5738,9 @@ function renderReadingStudy(){
   const reflectionStarter=readingData.week.reflection.sentence_starter||readingData.week.reflection.sentence_starters?.[0]||'I think...';
   const visualStarter=activeReadingWeek===1?'I think the closed door is important because...':'I can see...';
   const writingInstruction=writing.instruction||"Write about Gregor's new routine.";
+  const closingCard=readingData.week.next_week
+    ? `<section class="reading-overview-card"><h3>Next week</h3><p><strong>${htmlSafe(readingData.week.next_week.chapter)}</strong><br>${htmlSafe(readingData.week.next_week.teaser)}</p></section>`
+    : `<section class="reading-overview-card"><h3><i class="fa-solid fa-award"></i> Livro concluído!</h3><p>${htmlSafe(readingData.week.completion_message)}</p><p><strong>Você completou as seis semanas de A Metamorfose.</strong></p></section>`;
   document.getElementById('reading-content').innerHTML=`
     <section class="reading-complete"><div class="reading-complete-icon"><i class="fa-solid fa-book-open-reader"></i></div><h1>Week ${activeReadingWeek} complete!</h1><p>Você leu os seis trechos e demonstrou compreensão. Agora use o caderno para pensar sobre a história e praticar inglês.</p></section>
     <section class="reading-overview-card"><h3>Vocabulary review</h3><p>Toque em uma palavra para ouvir a pronúncia.</p><div class="reading-study-grid">${readingData.week.vocabulary.map(item=>`<div class="reading-vocab" role="button" tabindex="0" onclick="playTTS('${esc(item.word)}',.75,'en-US')"><strong>${htmlSafe(item.word)} <i class="fa-solid fa-volume-low"></i></strong><span>${htmlSafe(item.pt)}</span></div>`).join('')}</div></section>
@@ -5735,7 +5748,7 @@ function renderReadingStudy(){
     <section class="reading-overview-card"><h3>${htmlSafe(readingData.week.reflection.title)}</h3><p>${htmlSafe(readingData.week.reflection.prompt)}</p><textarea class="reading-notebook" oninput="saveReadingNote('think',this.value)" placeholder="${htmlSafe(reflectionStarter)}">${htmlSafe(readingNote('think'))}</textarea></section>
     <section class="reading-overview-card"><h3>${htmlSafe(writing.title)} · ${htmlSafe(writing.word_target)}</h3><p>${htmlSafe(writingInstruction)} ${writing.sentence_starters.map(htmlSafe).join(' ')}</p><textarea class="reading-notebook" oninput="saveReadingNote('writing',this.value)" placeholder="Gregor is...">${htmlSafe(readingNote('writing'))}</textarea></section>
     <section class="reading-overview-card"><h3><i class="fa-solid fa-paper-plane"></i> Enviar para a professora</h3><p>Quando terminar as três respostas, envie o caderno. Seu nome, sua turma e todas as respostas chegarão juntos no relatório de atividades.</p><button id="reading-submit-answers" class="btn btn-primary w-full" style="margin-top:12px" type="button" onclick="submitReadingAnswers()"><i class="fa-solid fa-paper-plane"></i> ${hasReadingMarker(readingAnswersMarker())?'Reenviar respostas':'Enviar minhas respostas'}</button><div id="reading-submission-status" style="margin-top:9px;font-size:11px;font-weight:750">${hasReadingMarker(readingAnswersMarker())?'<span style="color:#0F766E"><i class="fa-solid fa-circle-check"></i> Respostas já enviadas.</span>':'As respostas continuam salvas neste aparelho até você enviar.'}</div></section>
-    <section class="reading-overview-card"><h3>Next week</h3><p><strong>${htmlSafe(readingData.week.next_week.chapter)}</strong><br>${htmlSafe(readingData.week.next_week.teaser)}</p></section>`;
+    ${closingCard}`;
   readingScrollTop();
 }
 
@@ -5877,9 +5890,9 @@ function renderStudentHome(){
   const readingStarted=completedReadingWeeks.length>0||readingParts>0;
   const readingTitle=document.getElementById('home-reading-title');
   const readingDetail=document.getElementById('home-reading-detail');
-  if(readingTitle)readingTitle.textContent=allReadingWeeksDone?'Semanas 1 a 5 concluídas':readingParts?'Continue A Metamorfose':completedReadingWeeks.length?`Semana ${currentReadingWeek} disponível`:'Comece A Metamorfose';
+  if(readingTitle)readingTitle.textContent=allReadingWeeksDone?'Livro A Metamorfose concluído':readingParts?'Continue A Metamorfose':completedReadingWeeks.length?`Semana ${currentReadingWeek} disponível`:'Comece A Metamorfose';
   if(readingDetail)readingDetail.textContent=allReadingWeeksDone
-    ? 'Revise o vocabulário e suas anotações dos cinco capítulos.'
+    ? 'Revise o vocabulário e suas anotações das seis semanas.'
     : readingParts?`Semana ${currentReadingWeek}: ${readingParts} de ${READING_WEEK_CONFIGS[currentReadingWeek].parts.length} partes lidas.`:`Semana ${currentReadingWeek} disponível · leitura guiada em nível A1.`;
   setHomeStatus('home-reading-status',allReadingWeeksDone?'done':readingStarted?'started':'todo',allReadingWeeksDone?'Leitura concluída':readingStarted?'Em andamento':'Pronto para começar');
 
@@ -8464,7 +8477,7 @@ async function renderDashboard(){
       const currentWeek=AVAILABLE_READING_WEEKS.find(number=>!unlocked.includes(readingCompleteMarker(number)))||AVAILABLE_READING_WEEKS[AVAILABLE_READING_WEEKS.length-1];
       const readingParts=unlocked.filter(value=>String(value).startsWith(`reading__metamorphosis_w${currentWeek}_part_`)).length;
       const readingAnswersSent=unlocked.includes(readingAnswersMarker(currentWeek));
-      const readingLabel=allWeeksComplete?'📚 semanas 1–5 concluídas':readingAnswersSent?`📨 semana ${currentWeek}: respostas enviadas`:readingParts?`📖 semana ${currentWeek}: ${Math.min(readingParts,6)}/6`:completedWeeks.length?`📘 semana ${currentWeek} disponível`:'📕 leitura não iniciada';
+      const readingLabel=allWeeksComplete?'🏆 livro concluído · semanas 1–6':readingAnswersSent?`📨 semana ${currentWeek}: respostas enviadas`:readingParts?`📖 semana ${currentWeek}: ${Math.min(readingParts,6)}/6`:completedWeeks.length?`📘 semana ${currentWeek} disponível`:'📕 leitura não iniciada';
       const media=numNotas?(notas.reduce((sum,n)=>sum+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
       const nivel=Math.floor((a.xp||0)/200)+1;
       const dd=diasDesde(a.updated_at);

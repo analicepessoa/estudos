@@ -1,7 +1,7 @@
 // Service Worker — Analice Pessoa · English
 // Troque a versão (v1, v2...) sempre que publicar uma atualização do app,
 // para forçar os celulares a baixarem a versão nova.
-const CACHE = 'ap-english-v43';
+const CACHE = 'ap-english-v44';
 
 // Arquivos do "esqueleto" do app que ficam guardados para abrir offline.
 const APP_SHELL = [
@@ -14,6 +14,7 @@ const APP_SHELL = [
   './livros/a%20metamorfose/week3_app_content.json',
   './livros/a%20metamorfose/week4_app_content.json',
   './livros/a%20metamorfose/week5_app_content.json',
+  './livros/a%20metamorfose/week6_app_content.json',
   './livros/a%20metamorfose/assets/cover_the_metamorphosis_a1.png',
   './livros/a%20metamorfose/assets/week1_opening_gregor_wakes.png',
   './livros/a%20metamorfose/assets/week1_part2_clock_and_job.webp',
@@ -46,6 +47,12 @@ const APP_SHELL = [
   './livros/a%20metamorfose/assets/week5_part4_violin_music.webp',
   './livros/a%20metamorfose/assets/week5_part5_drawn_to_music.webp',
   './livros/a%20metamorfose/assets/week5_part6_lodgers_see_gregor.webp',
+  './livros/a%20metamorfose/assets/week6_part1_lodgers_angry.webp',
+  './livros/a%20metamorfose/assets/week6_part2_grete_decision.webp',
+  './livros/a%20metamorfose/assets/week6_part3_returns_to_room.webp',
+  './livros/a%20metamorfose/assets/week6_part4_last_night.webp',
+  './livros/a%20metamorfose/assets/week6_part5_lodgers_leave.webp',
+  './livros/a%20metamorfose/assets/week6_part6_family_tram.webp',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

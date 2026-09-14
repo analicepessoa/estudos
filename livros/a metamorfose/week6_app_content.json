@@ -1,0 +1,460 @@
+{
+  "book": {
+    "title": "THE METAMORPHOSIS",
+    "subtitle": "A CEFR A1 Educational Adaptation of Franz Kafka",
+    "author": "Franz Kafka",
+    "cefr": "A1",
+    "cover_asset": "assets/cover_the_metamorphosis_a1.png",
+    "adaptation_note_pt": "Adaptação educacional com inglês simplificado. O enredo, a atmosfera sombria, os conflitos, a filosofia e o final da obra são preservados."
+  },
+  "week": {
+    "number": 6,
+    "of": 6,
+    "chapter_number": 6,
+    "title": "The Last Night",
+    "main_language_focus": "Integrated A1 Review",
+    "main_theme": "Rejection, death and transformation",
+    "opening_illustration": {
+      "asset": "assets/week6_part1_lodgers_angry.webp",
+      "alt_text": "Grete stands with her parents in the living room and tells them the family cannot continue this way. Gregor is in the foreground, separated from them and listening."
+    },
+    "part_illustrations": [
+      {
+        "asset": "assets/week6_part1_lodgers_angry.webp",
+        "alt_text": "The angry lodgers point toward Gregor while Grete lowers her violin and the Samsa family reacts."
+      },
+      {
+        "asset": "assets/week6_part2_grete_decision.webp",
+        "alt_text": "An exhausted Grete speaks seriously to her parents while Gregor listens in silence from the foreground."
+      },
+      {
+        "asset": "assets/week6_part3_returns_to_room.webp",
+        "alt_text": "Gregor slowly returns to his dark bedroom by himself while Grete stands beside the door."
+      },
+      {
+        "asset": "assets/week6_part4_last_night.webp",
+        "alt_text": "Gregor lies completely still near the window as the dark night slowly becomes dawn."
+      },
+      {
+        "asset": "assets/week6_part5_lodgers_leave.webp",
+        "alt_text": "Mr. Samsa firmly tells the three surprised lodgers to leave the apartment."
+      },
+      {
+        "asset": "assets/week6_part6_family_tram.webp",
+        "alt_text": "Mr. Samsa, Mrs. Samsa and Grete travel together on a bright tram and look toward the open landscape."
+      }
+    ],
+    "before_you_read": [
+      "Can love change when life becomes difficult?",
+      "Can a person love someone and still want to leave them?",
+      "What does the word transformation mean to you now?"
+    ],
+    "story": [
+      "The three lodgers look at Gregor.",
+      "They are angry.",
+      "One man stands up.",
+      "He points toward Gregor.",
+      "“This is unacceptable,” he says.",
+      "He says that he does not want to stay in the apartment.",
+      "The other men agree.",
+      "Mr. Samsa tries to move them away.",
+      "Mrs. Samsa looks frightened.",
+      "Grete holds her violin.",
+      "The music is over.",
+      "Gregor stays on the floor.",
+      "He looks at Grete.",
+      "Grete is tired.",
+      "Very tired.",
+      "She has worked.",
+      "She has studied.",
+      "She has helped the family.",
+      "She has cared for Gregor.",
+      "But now she looks at her brother differently.",
+      "She begins to speak.",
+      "“Mother. Father.”",
+      "Her voice is serious.",
+      "“We cannot continue like this.”",
+      "Mr. and Mrs. Samsa listen.",
+      "Grete looks toward Gregor.",
+      "“We need to get rid of it.”",
+      "Gregor hears her words.",
+      "Grete does not call him Gregor.",
+      "She says it.",
+      "Mr. Samsa is quiet.",
+      "Grete continues.",
+      "“If this were Gregor, he would understand us.”",
+      "She believes her brother is gone.",
+      "She believes this creature cannot be Gregor anymore.",
+      "Gregor listens.",
+      "He does not attack.",
+      "He does not become angry.",
+      "He looks at his family.",
+      "He thinks about them.",
+      "He thinks about Grete.",
+      "Then Gregor slowly turns around.",
+      "He goes back to his bedroom.",
+      "Moving is difficult.",
+      "His body is weak.",
+      "But nobody pushes him this time.",
+      "Gregor enters the room.",
+      "Grete quickly closes the door.",
+      "Gregor is alone.",
+      "The apartment becomes quiet.",
+      "Gregor thinks about his family.",
+      "He still loves them.",
+      "He knows they are tired.",
+      "He knows their lives are difficult.",
+      "His body hurts.",
+      "He cannot move much now.",
+      "The night becomes darker.",
+      "Gregor looks toward the window.",
+      "He stays quiet.",
+      "Slowly, his head falls toward the floor.",
+      "Gregor Samsa dies before morning.",
+      "Early in the morning, the cleaning woman enters Gregor's room.",
+      "She sees him.",
+      "She touches his body carefully.",
+      "Gregor does not move.",
+      "She understands.",
+      "Gregor is dead.",
+      "She tells the family.",
+      "Mr. Samsa looks at Gregor.",
+      "Then he says: “Thank God.”",
+      "Mrs. Samsa and Grete are quiet.",
+      "The three lodgers come out of their room.",
+      "They want breakfast.",
+      "Mr. Samsa is different now.",
+      "He tells them to leave.",
+      "The men are surprised.",
+      "But they leave the apartment.",
+      "For the first time in a long time, the Samsa family decides not to work that day.",
+      "Mr. Samsa writes a message to his employer.",
+      "Mrs. Samsa does the same.",
+      "Grete also stays home.",
+      "The three of them leave the apartment together.",
+      "They take a tram out of the city.",
+      "The day is bright.",
+      "They talk about their lives.",
+      "They all have jobs now.",
+      "Their work is not perfect, but they have a future.",
+      "They talk about finding a smaller apartment.",
+      "A cheaper apartment.",
+      "A better place for the three of them.",
+      "Mr. and Mrs. Samsa look at Grete.",
+      "She is not the young girl from the beginning anymore.",
+      "She has grown.",
+      "She is becoming a young woman.",
+      "Her parents begin to think about her future.",
+      "Outside the tram, the world is open and bright.",
+      "Gregor is not there.",
+      "At the beginning of the story, Gregor's body changes.",
+      "But that is not the only transformation.",
+      "His father changes.",
+      "His mother changes.",
+      "Grete changes.",
+      "The family changes.",
+      "Their home changes.",
+      "And finally, their future changes.",
+      "Gregor's metamorphosis begins the story.",
+      "But it does not belong only to Gregor."
+    ],
+    "visual_reflection": {
+      "title": "The Family Moves Forward",
+      "asset": "assets/week6_part6_family_tram.webp",
+      "alt_text": "Mr. Samsa, Mrs. Samsa and Grete ride together on a tram on a bright day. The city and open landscape can be seen beyond them. Gregor is absent.",
+      "questions": [
+        "How is this image different from the other illustrations?",
+        "Where is Gregor?",
+        "Why can a bright image still feel sad?"
+      ]
+    },
+    "vocabulary": [
+      {
+        "word": "leave",
+        "pt": "sair / deixar"
+      },
+      {
+        "word": "die",
+        "pt": "morrer"
+      },
+      {
+        "word": "dead",
+        "pt": "morto"
+      },
+      {
+        "word": "future",
+        "pt": "futuro"
+      },
+      {
+        "word": "together",
+        "pt": "juntos"
+      },
+      {
+        "word": "change",
+        "pt": "mudar / mudança"
+      },
+      {
+        "word": "grow",
+        "pt": "crescer"
+      },
+      {
+        "word": "bright",
+        "pt": "claro / luminoso"
+      },
+      {
+        "word": "family",
+        "pt": "família"
+      },
+      {
+        "word": "life",
+        "pt": "vida"
+      },
+      {
+        "word": "understand",
+        "pt": "entender"
+      },
+      {
+        "word": "remember",
+        "pt": "lembrar"
+      }
+    ],
+    "reading_comprehension": [
+      {
+        "question": "Why are the lodgers angry?",
+        "suggested_answer": "Because they see Gregor in the apartment."
+      },
+      {
+        "question": "What does Grete say the family must do?",
+        "suggested_answer": "She says they cannot continue like this and must get rid of the creature."
+      },
+      {
+        "question": "Does Grete call the creature Gregor?",
+        "suggested_answer": "No. She calls him 'it'."
+      },
+      {
+        "question": "How does Gregor react to Grete's words?",
+        "suggested_answer": "He does not attack or become angry. He returns quietly to his room."
+      },
+      {
+        "question": "Where does Gregor go?",
+        "suggested_answer": "Back to his bedroom."
+      },
+      {
+        "question": "What happens during the night?",
+        "suggested_answer": "Gregor dies."
+      },
+      {
+        "question": "Who finds Gregor in the morning?",
+        "suggested_answer": "The cleaning woman."
+      },
+      {
+        "question": "What does Mr. Samsa do with the lodgers?",
+        "suggested_answer": "He tells them to leave."
+      },
+      {
+        "question": "Where does the family go?",
+        "suggested_answer": "They take a tram out of the city."
+      },
+      {
+        "question": "What do Mr. and Mrs. Samsa notice about Grete?",
+        "suggested_answer": "They notice that she has grown and is becoming a young woman."
+      }
+    ],
+    "true_false": [
+      {
+        "statement": "Gregor attacks Grete.",
+        "answer": false
+      },
+      {
+        "statement": "Grete says the family cannot continue living like this.",
+        "answer": true
+      },
+      {
+        "statement": "Gregor returns to his room by himself.",
+        "answer": true
+      },
+      {
+        "statement": "Gregor dies during the night.",
+        "answer": true
+      },
+      {
+        "statement": "The lodgers stay with the Samsa family.",
+        "answer": false
+      },
+      {
+        "statement": "The family goes to work normally the next morning.",
+        "answer": false
+      },
+      {
+        "statement": "The family begins thinking about a new future.",
+        "answer": true
+      }
+    ],
+    "reflection": {
+      "title": "Final Reflection",
+      "prompt": "Is the ending happy or sad? Why?",
+      "sentence_starter": "I think the ending is...",
+      "answer_type": "open"
+    },
+    "grammar_review": {
+      "to_be": {
+        "items": [
+          "Gregor ______ weak.",
+          "Grete and her parents ______ tired.",
+          "The lodgers ______ angry.",
+          "The apartment ______ quiet after Gregor returns to his room."
+        ],
+        "answers": [
+          "is",
+          "are",
+          "are",
+          "is"
+        ]
+      },
+      "there_is_are": {
+        "items": [
+          "______ three lodgers in the apartment.",
+          "______ a violin in Grete's hands.",
+          "______ many changes in the Samsa family."
+        ],
+        "answers": [
+          "There are",
+          "There is",
+          "There are"
+        ]
+      },
+      "can_cant": {
+        "items": [
+          "Gregor ______ speak normally.",
+          "Grete ______ play the violin.",
+          "Gregor ______ work anymore.",
+          "The family ______ continue living exactly as before."
+        ],
+        "answers": [
+          "can't",
+          "can",
+          "can't",
+          "can't"
+        ]
+      },
+      "have_has": {
+        "items": [
+          "Grete ______ a violin.",
+          "The family ______ new jobs.",
+          "Mr. Samsa ______ a uniform.",
+          "Gregor ______ memories of his human life."
+        ],
+        "answers": [
+          "has",
+          "has",
+          "has",
+          "has"
+        ]
+      },
+      "simple_present": {
+        "items": [
+          "Grete play / plays the violin.",
+          "Gregor love / loves his family.",
+          "The lodgers want / wants to leave.",
+          "Mr. Samsa tell / tells them to go."
+        ],
+        "answers": [
+          "plays",
+          "loves",
+          "want",
+          "tells"
+        ]
+      }
+    },
+    "story_review": {
+      "items": [
+        "Grete plays the violin.",
+        "Gregor wakes up transformed.",
+        "Gregor dies.",
+        "Grete brings Gregor food.",
+        "Mr. Samsa hurts Gregor.",
+        "The family leaves the apartment together.",
+        "Gregor opens his bedroom door."
+      ],
+      "correct_order": [
+        "Gregor wakes up transformed.",
+        "Gregor opens his bedroom door.",
+        "Grete brings Gregor food.",
+        "Mr. Samsa hurts Gregor.",
+        "Grete plays the violin.",
+        "Gregor dies.",
+        "The family leaves the apartment together."
+      ]
+    },
+    "speaking_mission": {
+      "title": "Who Changes the Most?",
+      "choices": [
+        "Gregor",
+        "Grete",
+        "Mr. Samsa",
+        "Mrs. Samsa",
+        "the family"
+      ],
+      "sentence_starters": [
+        "At first...",
+        "Later...",
+        "At the end...",
+        "I think ______ changes the most because..."
+      ]
+    },
+    "writing_mission": {
+      "title": "What Does The Metamorphosis Mean?",
+      "word_target": "40–60 words",
+      "instruction": "Write about Gregor's transformation and how his family changes from the beginning to the end.",
+      "sentence_starters": [
+        "The story is about...",
+        "Gregor changes...",
+        "His family changes...",
+        "At first...",
+        "At the end...",
+        "I think..."
+      ]
+    },
+    "kafkas_final_question": {
+      "prompt": "Who really changes in The Metamorphosis?",
+      "answer_type": "open"
+    },
+    "love_or_need": {
+      "questions": [
+        "Does the family love Gregor?",
+        "Does the family need Gregor?",
+        "Are love and need the same thing?"
+      ],
+      "answer_type": "open"
+    },
+    "human_or_not": {
+      "prompt": "When does Gregor stop being human? Or does he ever stop being human?",
+      "answer_type": "open"
+    },
+    "ending_reflection": {
+      "prompt": "Is the ending happy or sad? Why?",
+      "sentence_starter": "I think the ending is...",
+      "answer_type": "open"
+    },
+    "final_visual_question": {
+      "prompt": "Why does freedom appear only after Gregor is gone?",
+      "answer_type": "open"
+    },
+    "final_reading_reflection": [
+      "The character I understand the most is...",
+      "The character I understand the least is...",
+      "The saddest moment is...",
+      "The most important object is...",
+      "The most important idea is...",
+      "One question I still have is..."
+    ],
+    "experience_rating": [
+      "I understood the story.",
+      "The illustrations helped me understand.",
+      "The vocabulary was useful.",
+      "The activities helped me think about the story.",
+      "I would like to read another classic in English."
+    ],
+    "completion_message": "You read a classic story in English. You learned new vocabulary. You practiced grammar. You talked about characters and emotions. But most importantly: you did not only learn English. You used English to think about literature."
+  }
+}
