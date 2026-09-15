@@ -5455,6 +5455,8 @@ let readingState={mode:'overview',part:0,completed:new Set(),quizAnswers:{}};
 let readingSessionOwner='';
 let readingFontSize=Math.min(24,Math.max(15,Number(localStorage.getItem('ap_reading_font_size'))||18));
 let readingAudioPaused=false;
+const READING_PART_XP=8;
+const READING_WEEK_XP=30;
 
 function readingAsset(path){return `${READING_BASE}${String(path||'').replace(/^\.\//,'')}`;}
 function readingPartMarker(index,week=activeReadingWeek){return `reading__metamorphosis_w${week}_part_${index+1}`;}
@@ -5721,7 +5723,8 @@ async function checkReadingCheckpoint(partIndex,optionIndex,button){
   }
   document.querySelectorAll('#reading-content .reading-answer').forEach(item=>item.disabled=true);
   button.classList.add('correct');
-  feedback.innerHTML='<div class="reading-feedback ok">Muito bem — essa resposta está no trecho que você leu.</div>';
+  const readingReward=currentUser?.role==='teacher'?'':` · +${READING_PART_XP} XP`;
+  feedback.innerHTML=`<div class="reading-feedback ok">Muito bem — essa resposta está no trecho que você leu${readingReward}.</div>`;
   document.getElementById('reading-next')?.classList.remove('hidden');
   await completeReadingPart(partIndex);
 }
@@ -5733,7 +5736,7 @@ async function completeReadingPart(index){
   if(!currentUser||currentUser.role==='teacher')return;
   currentUser.unlockedFases=currentUser.unlockedFases||[];
   currentUser.unlockedFases.push(marker);
-  const reward=claimXpReward(marker,5);
+  const reward=claimXpReward(marker,READING_PART_XP);
   await saveStudentProgress({xpGain:reward.amount,silent:true});
   renderStudentHome();
 }
@@ -5782,7 +5785,8 @@ async function submitReadingQuiz(){
     document.getElementById('reading-quiz-submit')?.classList.add('hidden');
     return;
   }
-  feedback.innerHTML=`<div class="reading-feedback ok">Excelente: ${score} de ${items.length}. Capítulo concluído e progresso salvo.</div>`;
+  const completionReward=currentUser?.role==='teacher'?'':` Você ganhou +${READING_WEEK_XP} XP pelo capítulo.`;
+  feedback.innerHTML=`<div class="reading-feedback ok">Excelente: ${score} de ${items.length}. Capítulo concluído e progresso salvo.${completionReward}</div>`;
   document.getElementById('reading-quiz-submit')?.classList.add('hidden');
   await completeReadingWeek();
   setTimeout(renderReadingStudy,700);
@@ -5795,7 +5799,7 @@ async function completeReadingWeek(){
   if(!currentUser||currentUser.role==='teacher')return;
   currentUser.unlockedFases=currentUser.unlockedFases||[];
   currentUser.unlockedFases.push(marker);
-  const reward=claimXpReward(marker,20);
+  const reward=claimXpReward(marker,READING_WEEK_XP);
   await saveStudentProgress({xpGain:reward.amount,silent:true});
   renderStudentHome();
   renderReadingLibrary();
