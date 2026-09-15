@@ -7314,8 +7314,10 @@ function startTrilhaGame(faseId,mode,turmaKey){
   else queue=(fase.teoria||[]).filter(x=>x.en&&x.pt);
   if(!queue||queue.length===0)return alert("Esta fase ainda não tem conteúdo para este modo.");
   const gameTitle=fase.title+' — '+(mode==='teoria'?'Teoria':mode==='vocab'?'Vocabulário':mode==='pratica'?'Teste':mode==='erros'?'Ache o Erro':mode==='wordorder'?'Organizar':mode==='fillblank'?'Complete':mode==='memoria'?'Memória':'Quiz');
-  const freshGame={type:'trilha_'+mode,queue:[...queue].sort(()=>Math.random()-.5),index:0,score:0,total:queue.length,context:faseId,titleName:fase.title};
-  beginResumableGame(freshGame,`trilha:${turmaKey}:${faseId}:${mode}`,gameTitle);
+  const activityQueue=mode==='teoria'?[...queue]:[...queue].sort(()=>Math.random()-.5);
+  const freshGame={type:'trilha_'+mode,queue:activityQueue,index:0,score:0,total:queue.length,context:faseId,titleName:fase.title};
+  const sessionVersion=mode==='teoria'?':ordered-v2':'';
+  beginResumableGame(freshGame,`trilha:${turmaKey}:${faseId}:${mode}${sessionVersion}`,gameTitle);
 }
 
 const WEEKLY_QUIZ_ITEMS=25;
