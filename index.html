@@ -5455,8 +5455,9 @@ let readingState={mode:'overview',part:0,completed:new Set(),quizAnswers:{}};
 let readingSessionOwner='';
 let readingFontSize=Math.min(24,Math.max(15,Number(localStorage.getItem('ap_reading_font_size'))||18));
 let readingAudioPaused=false;
-const READING_PART_XP=8;
-const READING_WEEK_XP=30;
+const READING_PART_XP=20;
+const READING_FINAL_CHECK_XP=50;
+const READING_CHAPTER_XP=200;
 
 function readingAsset(path){return `${READING_BASE}${String(path||'').replace(/^\.\//,'')}`;}
 function readingPartMarker(index,week=activeReadingWeek){return `reading__metamorphosis_w${week}_part_${index+1}`;}
@@ -5785,7 +5786,7 @@ async function submitReadingQuiz(){
     document.getElementById('reading-quiz-submit')?.classList.add('hidden');
     return;
   }
-  const completionReward=currentUser?.role==='teacher'?'':` Você ganhou +${READING_WEEK_XP} XP pelo capítulo.`;
+  const completionReward=currentUser?.role==='teacher'?'':` Você ganhou +${READING_FINAL_CHECK_XP} XP pela revisão final e +${READING_CHAPTER_XP} XP por concluir o capítulo!`;
   feedback.innerHTML=`<div class="reading-feedback ok">Excelente: ${score} de ${items.length}. Capítulo concluído e progresso salvo.${completionReward}</div>`;
   document.getElementById('reading-quiz-submit')?.classList.add('hidden');
   await completeReadingWeek();
@@ -5799,8 +5800,9 @@ async function completeReadingWeek(){
   if(!currentUser||currentUser.role==='teacher')return;
   currentUser.unlockedFases=currentUser.unlockedFases||[];
   currentUser.unlockedFases.push(marker);
-  const reward=claimXpReward(marker,READING_WEEK_XP);
-  await saveStudentProgress({xpGain:reward.amount,silent:true});
+  const finalCheckReward=claimXpReward(`${marker}:final-check`,READING_FINAL_CHECK_XP);
+  const chapterReward=claimXpReward(marker,READING_CHAPTER_XP);
+  await saveStudentProgress({xpGain:finalCheckReward.amount+chapterReward.amount,silent:true});
   renderStudentHome();
   renderReadingLibrary();
 }
