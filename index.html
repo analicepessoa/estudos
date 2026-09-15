@@ -1213,6 +1213,16 @@ select.input { appearance: none; cursor: pointer; }
   letter-spacing: .1em; text-transform: uppercase; color: var(--slate);
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;
 }
+.game-header-actions { display:flex; align-items:center; gap:7px; }
+.speech-voice-trigger {
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+}
+.game-voice-trigger {
+  min-width:62px; height:36px; padding:0 10px; border-radius:999px;
+  border:1px solid var(--border); background:var(--white); color:var(--ink2);
+  font:800 10px 'Inter',sans-serif; cursor:pointer;
+}
+.game-voice-trigger:hover { border-color:#7C3AED; color:#6D28D9; background:#F5F3FF; }
 .game-back {
   min-width: 74px; height: 36px; padding: 0 11px; border-radius: 999px;
   border: 1px solid var(--border); background: var(--white); color: var(--ink2);
@@ -1224,6 +1234,38 @@ select.input { appearance: none; cursor: pointer; }
   border-color: var(--teal); color: var(--teal-dark); background: var(--teal-light);
   transform: translateX(-2px);
 }
+
+/* Seletor leve de voz do aparelho */
+.speech-voice-overlay {
+  position:fixed; inset:0; z-index:180; padding:18px; display:flex; align-items:center; justify-content:center;
+  background:rgba(8,14,28,.78); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+}
+.speech-voice-modal {
+  width:min(440px,100%); max-height:min(680px,88vh); overflow:auto; border-radius:24px;
+  background:var(--white); box-shadow:0 30px 90px rgba(0,0,0,.38); padding:22px;
+}
+.speech-voice-head { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:16px; }
+.speech-voice-head h2 { font-size:20px; color:var(--ink); }
+.speech-voice-head p { font-size:12px; line-height:1.5; color:var(--slate); margin-top:4px; }
+.speech-voice-list { display:flex; flex-direction:column; gap:9px; }
+.speech-voice-option {
+  display:grid; grid-template-columns:minmax(0,1fr) 40px; align-items:center; gap:8px;
+  border:1.5px solid var(--border); border-radius:15px; padding:7px; background:var(--surface);
+}
+.speech-voice-option.selected { border-color:#7C3AED; background:#F5F3FF; box-shadow:0 0 0 2px rgba(124,58,237,.08); }
+.speech-voice-select {
+  border:0; background:transparent; padding:7px 8px; cursor:pointer; text-align:left; min-width:0;
+  color:var(--ink); font:inherit;
+}
+.speech-voice-name { display:block; font-size:13px; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.speech-voice-detail { display:block; font-size:10px; font-weight:650; color:var(--slate); margin-top:3px; }
+.speech-voice-preview {
+  width:38px; height:38px; border-radius:50%; border:0; background:var(--white); color:#6D28D9;
+  cursor:pointer; box-shadow:var(--shadow-xs); font-size:13px;
+}
+.speech-voice-option.selected .speech-voice-preview { background:#7C3AED; color:white; }
+.speech-voice-status { min-height:18px; margin-top:12px; font-size:11px; font-weight:750; color:var(--teal-dark); }
+.speech-voice-note { margin-top:11px; padding:10px 12px; border-radius:12px; background:var(--orange-pale); color:var(--orange-dark); font-size:10px; line-height:1.45; }
 .game-back:disabled {
   opacity: .35; cursor: not-allowed;
 }
@@ -1940,6 +1982,8 @@ select.input { appearance: none; cursor: pointer; }
   .daily-word-en { font-size: 23px; }
   .daily-word-level { max-width: 46%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .daily-word-actions { flex-direction:column; }
+  .game-voice-trigger span { display:none; }
+  .game-voice-trigger { min-width:36px; width:36px; padding:0; }
 
   .xp-bar-wrap { padding: 12px 14px; gap: 10px; }
   .xp-value { font-size: 17px; }
@@ -2887,7 +2931,10 @@ select.input { appearance: none; cursor: pointer; }
         <i class="fa-solid fa-arrow-left"></i><span>Voltar</span>
       </button>
       <span id="game-title" class="game-modal-title">Atividade</span>
-      <button onclick="closeGame()" class="game-close"><i class="fa-solid fa-xmark"></i></button>
+      <div class="game-header-actions">
+        <button type="button" class="game-voice-trigger speech-voice-trigger" onclick="openSpeechVoicePicker()" aria-label="Escolher voz do áudio"><i class="fa-solid fa-microphone-lines"></i><span>Voz</span></button>
+        <button onclick="closeGame()" class="game-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
     </div>
     <div class="game-footer" style="padding:14px 26px 10px">
       <div class="progress-track"><div id="game-progress-bar" class="progress-fill" style="width:0%"></div></div>
@@ -2898,6 +2945,22 @@ select.input { appearance: none; cursor: pointer; }
       </div>
     </div>
     <div id="game-body" class="game-body"></div>
+  </div>
+</div>
+
+<!-- ══ ESCOLHER VOZ AUTOMÁTICA ══ -->
+<div id="speech-voice-overlay" class="speech-voice-overlay hidden" onclick="if(event.target===this)closeSpeechVoicePicker()">
+  <div class="speech-voice-modal" role="dialog" aria-modal="true" aria-labelledby="speech-voice-title">
+    <div class="speech-voice-head">
+      <div>
+        <h2 id="speech-voice-title"><i class="fa-solid fa-microphone-lines" style="color:#7C3AED"></i> Escolher voz</h2>
+        <p>Use uma das vozes inglesas disponíveis neste aparelho. A escolha ficará salva.</p>
+      </div>
+      <button type="button" class="btn-icon" onclick="closeSpeechVoicePicker()" aria-label="Fechar escolha de voz"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="speech-voice-list" class="speech-voice-list"></div>
+    <div id="speech-voice-status" class="speech-voice-status" aria-live="polite"></div>
+    <div class="speech-voice-note"><i class="fa-solid fa-mobile-screen"></i> As opções dependem das vozes instaladas no celular. Nenhum áudio extra será baixado pelo portal.</div>
   </div>
 </div>
 
@@ -2955,6 +3018,9 @@ let dailyWordCurrent = null;
 let dailyWordCache = {key:'',word:null};
 const dailyWordListened = new Set();
 let dashboardStudentCache = {};
+const SPEECH_VOICE_STORAGE_KEY='ap_english_voice';
+let selectedSpeechVoiceId=localStorage.getItem(SPEECH_VOICE_STORAGE_KEY)||'';
+let speechPickerVoices=[];
 
 const withTimeout = (p, ms=5000) => Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
 
@@ -5599,6 +5665,7 @@ function renderReadingPart(index){
     <div class="reading-tools">
       <div class="reading-audio-controls" aria-label="Controles do áudio">
         <button id="reading-audio-play" class="reading-audio-btn" type="button" onclick="listenReadingPart()"><i class="fa-solid fa-volume-high"></i> Ouvir e acompanhar</button>
+        <button class="reading-audio-btn speech-voice-trigger" type="button" onclick="openSpeechVoicePicker()"><i class="fa-solid fa-microphone-lines"></i> Voz</button>
         <button id="reading-audio-pause" class="reading-audio-btn" type="button" onclick="toggleReadingAudio()" disabled><i class="fa-solid fa-pause"></i> Pausar</button>
         <button id="reading-audio-stop" class="reading-audio-btn" type="button" onclick="stopReadingAudio()" disabled><i class="fa-solid fa-stop"></i> Parar</button>
       </div>
@@ -6329,6 +6396,7 @@ function renderDailyWord(){
       </div>
       <div class="daily-word-actions">
         <button class="btn btn-ghost" type="button" onclick="listenDailyWord('${esc(word.activityKey)}')"><i class="fa-solid fa-volume-high"></i> Ouvir</button>
+        <button class="btn btn-ghost speech-voice-trigger" type="button" onclick="openSpeechVoicePicker()"><i class="fa-solid fa-microphone-lines"></i> Voz</button>
         <button id="daily-word-study-btn" class="btn btn-primary" type="button" onclick="studyDailyWord('${esc(word.activityKey)}')" ${studied||!listened?'disabled':''}>
           ${studied?'<i class="fa-solid fa-circle-check"></i> Estudada hoje':listened?'<i class="fa-solid fa-bolt"></i> Estudei · +2 XP':'Ouça para liberar · +2 XP'}
         </button>
@@ -6798,6 +6866,128 @@ function bestSpeechVoice(voices,targetLanguage){
     .sort((a,b)=>speechVoiceScore(b,targetLanguage)-speechVoiceScore(a,targetLanguage))[0]||null;
 }
 
+function speechVoiceId(voice){
+  return String(voice?.voiceURI||`${voice?.name||''}|${voice?.lang||''}`);
+}
+
+function speechVoiceAccent(lang){
+  const normalized=String(lang||'').replace('_','-').toLocaleLowerCase();
+  if(normalized.startsWith('en-gb'))return 'Inglês britânico';
+  if(normalized.startsWith('en-au'))return 'Inglês australiano';
+  if(normalized.startsWith('en-ca'))return 'Inglês canadense';
+  if(normalized.startsWith('en-in'))return 'Inglês indiano';
+  if(normalized.startsWith('en-us'))return 'Inglês americano';
+  return 'Inglês';
+}
+
+function preferredSpeechVoice(voices,targetLanguage){
+  const base=String(targetLanguage||'').replace('_','-').toLocaleLowerCase().split('-')[0];
+  if(base==='en'&&selectedSpeechVoiceId){
+    const selected=voices.find(voice=>speechVoiceId(voice)===selectedSpeechVoiceId);
+    if(selected&&String(selected.lang||'').replace('_','-').toLocaleLowerCase().startsWith('en'))return selected;
+  }
+  return bestSpeechVoice(voices,targetLanguage);
+}
+
+function englishSpeechVoices(voices){
+  const unique=[];
+  const seen=new Set();
+  (voices||[]).filter(voice=>String(voice.lang||'').replace('_','-').toLocaleLowerCase().startsWith('en')).forEach(voice=>{
+    const id=speechVoiceId(voice);
+    if(!id||seen.has(id))return;
+    seen.add(id);unique.push(voice);
+  });
+  unique.sort((a,b)=>speechVoiceScore(b,'en-US')-speechVoiceScore(a,'en-US'));
+  const selected=unique.find(voice=>speechVoiceId(voice)===selectedSpeechVoiceId);
+  return selected
+    ? [selected,...unique.filter(voice=>voice!==selected).slice(0,4)]
+    : unique.slice(0,5);
+}
+
+function renderSpeechVoicePicker(voices){
+  const list=document.getElementById('speech-voice-list');
+  const status=document.getElementById('speech-voice-status');
+  if(!list)return;
+  speechPickerVoices=englishSpeechVoices(voices);
+  const selectedAvailable=speechPickerVoices.some(voice=>speechVoiceId(voice)===selectedSpeechVoiceId);
+  const automaticSelected=!selectedSpeechVoiceId||!selectedAvailable;
+  const automatic=`
+    <div class="speech-voice-option${automaticSelected?' selected':''}">
+      <button class="speech-voice-select" type="button" onclick="selectSpeechVoice(-1)">
+        <span class="speech-voice-name">${automaticSelected?'✓ ':''}Automática</span>
+        <span class="speech-voice-detail">O portal escolhe a melhor voz disponível</span>
+      </button>
+      <button class="speech-voice-preview" type="button" onclick="previewSpeechVoice(-1)" aria-label="Ouvir voz automática"><i class="fa-solid fa-play"></i></button>
+    </div>`;
+  const options=speechPickerVoices.map((voice,index)=>{
+    const selected=speechVoiceId(voice)===selectedSpeechVoiceId;
+    return `
+      <div class="speech-voice-option${selected?' selected':''}">
+        <button class="speech-voice-select" type="button" onclick="selectSpeechVoice(${index})">
+          <span class="speech-voice-name">${selected?'✓ ':''}Voz ${index+1} · ${htmlSafe(voice.name||'Inglês')}</span>
+          <span class="speech-voice-detail">${htmlSafe(speechVoiceAccent(voice.lang))}</span>
+        </button>
+        <button class="speech-voice-preview" type="button" onclick="previewSpeechVoice(${index})" aria-label="Ouvir prévia da voz ${index+1}"><i class="fa-solid fa-play"></i></button>
+      </div>`;
+  }).join('');
+  list.innerHTML=automatic+options;
+  if(status)status.textContent=speechPickerVoices.length
+    ? `${speechPickerVoices.length} ${speechPickerVoices.length===1?'voz encontrada':'vozes encontradas'} neste aparelho.`
+    : 'Este aparelho disponibilizou apenas a voz automática do navegador.';
+}
+
+async function openSpeechVoicePicker(){
+  const overlay=document.getElementById('speech-voice-overlay');
+  const list=document.getElementById('speech-voice-list');
+  const status=document.getElementById('speech-voice-status');
+  if(!overlay)return;
+  overlay.classList.remove('hidden');
+  if(list)list.innerHTML='<div style="padding:18px;text-align:center;color:var(--slate)"><i class="fa-solid fa-spinner fa-spin"></i> Procurando vozes do aparelho...</div>';
+  if(status)status.textContent='';
+  if(!('speechSynthesis' in window)){
+    if(list)list.innerHTML='<div class="text-sm text-muted">A escolha de voz não está disponível neste navegador.</div>';
+    return;
+  }
+  const voices=await waitForSpeechVoices();
+  if(!overlay.classList.contains('hidden'))renderSpeechVoicePicker(voices);
+}
+
+function closeSpeechVoicePicker(){
+  document.getElementById('speech-voice-overlay')?.classList.add('hidden');
+}
+
+function updateSpeechVoiceButtons(){
+  document.querySelectorAll('.speech-voice-trigger').forEach(button=>{
+    button.title=selectedSpeechVoiceId?'Voz personalizada selecionada':'Escolher voz do áudio';
+    button.classList.toggle('selected',Boolean(selectedSpeechVoiceId));
+  });
+}
+
+function previewSpeechVoice(index){
+  if(!('speechSynthesis' in window))return;
+  speechRequestId++;
+  window.speechSynthesis.cancel();
+  const available=window.speechSynthesis.getVoices();
+  const voice=index>=0?speechPickerVoices[index]:bestSpeechVoice(available,'en-US');
+  const utterance=new SpeechSynthesisUtterance("Hello! Let's practice English together.");
+  utterance.lang=voice?.lang||'en-US';
+  utterance.rate=.86;utterance.pitch=1.02;utterance.volume=1;
+  if(voice)utterance.voice=voice;
+  window.speechSynthesis.speak(utterance);
+}
+
+function selectSpeechVoice(index){
+  const voice=index>=0?speechPickerVoices[index]:null;
+  selectedSpeechVoiceId=voice?speechVoiceId(voice):'';
+  if(selectedSpeechVoiceId)localStorage.setItem(SPEECH_VOICE_STORAGE_KEY,selectedSpeechVoiceId);
+  else localStorage.removeItem(SPEECH_VOICE_STORAGE_KEY);
+  renderSpeechVoicePicker(window.speechSynthesis?.getVoices?.()||[]);
+  updateSpeechVoiceButtons();
+  previewSpeechVoice(voice?speechPickerVoices.findIndex(item=>speechVoiceId(item)===selectedSpeechVoiceId):-1);
+  const status=document.getElementById('speech-voice-status');
+  if(status)status.textContent=voice?'Voz escolhida e salva neste aparelho.':'Seleção automática restaurada.';
+}
+
 function waitForSpeechVoices(){
   const available=window.speechSynthesis.getVoices();
   if(available.length)return Promise.resolve(available);
@@ -6834,7 +7024,7 @@ async function playTTS(text,rate=0.8,language='auto',context=''){
   const targetLanguage=language==='auto'?detectSpeechLanguage(text,context):language;
   const voices=await waitForSpeechVoices();
   if(requestId!==speechRequestId)return null;
-  const voice=bestSpeechVoice(voices,targetLanguage);
+  const voice=preferredSpeechVoice(voices,targetLanguage);
   const baseLanguage=targetLanguage.replace('_','-').toLocaleLowerCase().split('-')[0];
   const naturalRate=Math.max(Number(rate)||.8,baseLanguage==='en'?.82:.86);
   const utterances=speechChunks(text).map(chunk=>{
