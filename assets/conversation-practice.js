@@ -646,6 +646,9 @@
       saved.correctionRequested=true;
       requestLiveCorrections(saved);
     }
+    if(saved?.final&&saved.role==='user'&&state.liveTranscripts.filter(item=>item.role==='user'&&item.final).length===1){
+      reportConversationStudy({mode:'live_voice'});
+    }
   }
 
   function correctionContextFor(item){
@@ -1003,6 +1006,9 @@
       };
       state.messages.push(tutorMessage);
       persistMessageSilently(tutorMessage);
+      if(state.messages.filter(message=>message.role==='user').length===1){
+        reportConversationStudy({mode:'text'});
+      }
     }catch(error){
       console.warn('Conversation Practice aguardando nova tentativa:',error);
       setConversationError(error?.message?.startsWith('Supabase')?error.message:await friendlyFunctionError(error));
