@@ -398,6 +398,7 @@
       listening:'● Listening',
       'student-speaking':'● Student speaking',
       'ai-speaking':'● Tutor speaking',
+      'audio-error':'Audio needs attention',
       reconnecting:'Reconnecting...',
       disconnected:'Disconnected',
       error:'Could not connect',
@@ -415,9 +416,9 @@
       connect.disabled=status==='connecting'||status==='connected'||status==='requesting-microphone'||status==='reconnecting';
       connect.classList.toggle('hidden',status==='listening'||status==='student-speaking'||status==='ai-speaking');
     }
-    if(end)end.classList.toggle('hidden',status!=='listening'&&status!=='student-speaking'&&status!=='ai-speaking');
+    if(end)end.classList.toggle('hidden',status!=='listening'&&status!=='student-speaking'&&status!=='ai-speaking'&&status!=='audio-error');
     if(mute){
-      mute.classList.toggle('hidden',status!=='listening'&&status!=='student-speaking'&&status!=='ai-speaking');
+      mute.classList.toggle('hidden',status!=='listening'&&status!=='student-speaking'&&status!=='ai-speaking'&&status!=='audio-error');
       mute.textContent='Mute';
       mute.setAttribute('aria-pressed','false');
     }
@@ -527,6 +528,7 @@
     ensureConversationSession().catch(error=>console.warn('A sessão Live será salva quando houver uma transcrição:',error));
     setLiveStatus('connecting');
     try{
+      await window.ConversationLiveClient.preparePlayback();
       await openLiveConnection();
     }catch(error){
       state.liveStarted=false;

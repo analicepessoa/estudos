@@ -365,6 +365,12 @@ RULES:
     return playback;
   }
 
+  async function preparePlayback(){
+    const output=await playbackContext();
+    if(output.context.state==='suspended')await output.context.resume();
+    return output;
+  }
+
   async function queueAudioResponse(encoded,onState){
     try{
       const samples=pcmFloat32FromBase64(encoded);
@@ -389,6 +395,7 @@ RULES:
       onState?.('ai-speaking');
     }catch(error){
       console.warn('Não foi possível reproduzir este trecho de áudio:',error);
+      onState?.('audio-error','Check your media volume and try starting the conversation again.');
     }
   }
 
@@ -441,6 +448,7 @@ RULES:
     startMicrophone,
     stopMicrophone,
     stopPlayback,
+    preparePlayback,
     toggleMute
   };
 })();

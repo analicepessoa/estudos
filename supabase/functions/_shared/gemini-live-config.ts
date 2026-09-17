@@ -2,7 +2,7 @@ import { AIProviderError } from "./ai/provider.ts";
 
 export const GEMINI_LIVE_TOKEN_START_WINDOW_MS = 60_000;
 export const GEMINI_LIVE_TOKEN_CONNECTION_WINDOW_MS = 12 * 60_000;
-export const LIVE_SESSION_MAX_MINUTES_DEFAULT = 10;
+export const LIVE_SESSION_MAX_MINUTES_DEFAULT = 9;
 
 export interface GeminiLiveConfig {
   apiKey: string;
