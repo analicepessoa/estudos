@@ -2747,6 +2747,7 @@ select.input { appearance: none; cursor: pointer; }
         <div style="display:flex;align-items:center;gap:7px">
           <span id="conversation-level-badge" class="conversation-level-badge">A1</span>
           <button type="button" class="conversation-change-btn" onclick="changeConversationLevel()" aria-label="Alterar nível">Alterar</button>
+          <button type="button" class="conversation-change-btn" onclick="finishTextConversation()" aria-label="Finalizar conversa">Finalizar</button>
         </div>
       </div>
 
@@ -8415,12 +8416,16 @@ function closeResult(){
   renderStudentHome();
 }
 
-async function dispatchReport(act,result){
+async function dispatchReport(act,result,{keepalive=false}={}){
   if(!currentUser||currentUser.role==='teacher')return false;
   const turmaName=DATABASE.turmas[currentUser.turma]?.name||'';
+  const payload=JSON.stringify({aluno:currentUser.name,turma:turmaName,atividade:act,resultado:result});
   try{
+    if(keepalive&&navigator.sendBeacon){
+      return navigator.sendBeacon(SHEET_WEB_API,new Blob([payload],{type:'text/plain;charset=UTF-8'}));
+    }
     await fetch(SHEET_WEB_API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=UTF-8'},
-      body:JSON.stringify({aluno:currentUser.name,turma:turmaName,atividade:act,resultado:result})});
+      body:payload});
     return true;
   }catch(error){
     console.warn('Relatório aguardando conexão:',error);

@@ -23,7 +23,9 @@
     sessionId:'',
     sessionCreation:null,
     persistenceChain:Promise.resolve(),
-    sessionMode:'text'
+    sessionMode:'text',
+    startedAt:0,
+    sheetReportSent:false
   };
 
   function element(id){return document.getElementById(id);}
@@ -79,6 +81,59 @@
     state.sessionCreation=null;
     state.persistenceChain=Promise.resolve();
     state.sessionMode='text';
+    state.startedAt=0;
+    state.sheetReportSent=false;
+  }
+
+  function canTrackConversation(){
+    return Boolean(currentUser?.id&&currentUser?.role==='student'&&!teacherPreviewActive());
+  }
+
+  function compactText(value,limit=140){
+    const text=String(value||'').replace(/\s+/g,' ').trim();
+    if(text.length<=limit)return text;
+    return `${text.slice(0,Math.max(0,limit-1)).trimEnd()}…`;
+  }
+
+  function conversationDuration(){
+    const elapsed=Math.max(0,Date.now()-(state.startedAt||Date.now()));
+    const totalSeconds=Math.max(1,Math.round(elapsed/1000));
+    const minutes=Math.floor(totalSeconds/60);
+    const seconds=totalSeconds%60;
+    return minutes?`${minutes} min ${String(seconds).padStart(2,'0')} s`:`${seconds} s`;
+  }
+
+  function reportConversationStudy({mode=state.sessionMode,report=null,keepalive=false}={}){
+    if(state.sheetReportSent||!canTrackConversation())return;
+    const turns=mode==='live_voice'?state.liveTranscripts:state.messages;
+    const studentTurns=turns.filter(item=>item?.role==='user'&&item.content);
+    const tutorTurns=turns.filter(item=>item?.role==='assistant'&&item.content);
+    if(!studentTurns.length)return;
+
+    const excerpts=studentTurns.slice(0,3).map(item=>compactText(item.content,110)).filter(Boolean);
+    const details=[
+      `Nível: ${state.level}`,
+      `Duração: ${conversationDuration()}`,
+      `Participação: ${studentTurns.length} fala${studentTurns.length===1?'':'s'} do aluno e ${tutorTurns.length} resposta${tutorTurns.length===1?'':'s'} do tutor`
+    ];
+    if(excerpts.length)details.push(`Falas do aluno: ${excerpts.join(' | ')}`);
+    if(report?.suggestedPractice)details.push(`Próxima prática: ${compactText(report.suggestedPractice,150)}`);
+
+    const activity=mode==='live_voice'
+      ? `🎧 Live Conversation · ${state.level}`
+      : `💬 Conversation Practice · Texto · ${state.level}`;
+    const reporter=typeof dispatchReport==='function'?dispatchReport:window.dispatchReport;
+    if(typeof reporter!=='function')return;
+
+    state.sheetReportSent=true;
+    Promise.resolve(reporter(activity,compactText(details.join(' · '),850),{keepalive}))
+      .then(sent=>{
+        if(!sent)state.sheetReportSent=false;
+      })
+      .catch(error=>{
+        state.sheetReportSent=false;
+        console.warn('Não foi possível enviar o resumo da conversa para a planilha:',error);
+      });
   }
 
   async function ensureConversationSession(){
@@ -354,6 +409,9 @@
     state.started=true;
     const greetingMessage={role:'assistant',content:greeting()};
     state.messages=[greetingMessage];
+    state.sessionMode='text';
+    state.startedAt=Date.now();
+    state.sheetReportSent=false;
     saveLevel();
     element('conversation-setup')?.classList.add('hidden');
     element('conversation-chat')?.classList.remove('hidden');
@@ -366,6 +424,12 @@
 
   function changeConversationLevel(){
     if(state.pending||state.livePending)return;
+    if(state.sessionMode==='live_voice'){
+      reportConversationStudy({mode:'live_voice',report:state.liveReport});
+    }else if(state.started){
+      finishConversationSessionSilently();
+      reportConversationStudy({mode:'text'});
+    }
     state.liveEnding=true;
     clearLiveTimer();
     window.ConversationLiveClient?.disconnect();
@@ -377,6 +441,8 @@
     state.persistenceChain=Promise.resolve();
     state.sessionMode='text';
     state.liveReport=null;
+    state.startedAt=0;
+    state.sheetReportSent=false;
     setConversationError('');
     element('conversation-chat')?.classList.add('hidden');
     element('conversation-live')?.classList.add('hidden');
@@ -515,6 +581,8 @@
     state.liveReconnectAttempts=0;
     clearLiveTimer();
     state.sessionMode='live_voice';
+    state.startedAt=Date.now();
+    state.sheetReportSent=false;
     setConversationError('');
     element('conversation-setup')?.classList.add('hidden');
     element('conversation-live')?.classList.remove('hidden');
@@ -546,7 +614,7 @@
     state.livePending=false;
     setLiveStatus('disconnected',timeExpired?'Your practice session has finished.':'Conversation ended.');
     finishConversationSessionSilently();
-    generateLiveReport();
+    generateLiveReport().finally(()=>reportConversationStudy({mode:'live_voice',report:state.liveReport}));
   }
 
   function toggleLiveMute(){
@@ -967,13 +1035,40 @@
   }
 
   function closeConversationPractice(){
+    if(state.sessionMode==='live_voice'){
+      if(!state.liveEnding){
+        state.liveEnding=true;
+        clearLiveTimer();
+        window.ConversationLiveClient?.disconnect();
+        finishConversationSessionSilently();
+        generateLiveReport().finally(()=>reportConversationStudy({mode:'live_voice',report:state.liveReport}));
+      }
+    }else if(state.started){
+      finishConversationSessionSilently();
+      reportConversationStudy({mode:'text'});
+    }
     state.liveEnding=true;
     clearLiveTimer();
     window.ConversationLiveClient?.disconnect();
-    if(state.sessionMode==='live_voice')finishConversationSessionSilently();
     state.liveStarted=false;
     state.livePending=false;
     element('conversation-teacher-preview')?.classList.add('hidden');
+    showView('student');
+    switchStudentTab('inicio');
+  }
+
+  async function finishTextConversation(){
+    if(!state.started||state.pending)return;
+    finishConversationSessionSilently();
+    reportConversationStudy({mode:'text'});
+    await state.persistenceChain;
+    state.started=false;
+    state.messages=[];
+    state.sessionId='';
+    state.sessionCreation=null;
+    state.startedAt=0;
+    state.sheetReportSent=false;
+    element('conversation-chat')?.classList.add('hidden');
     showView('student');
     switchStudentTab('inicio');
   }
@@ -994,10 +1089,18 @@
     });
     input?.addEventListener('keydown',handleComposerKeydown);
     updateComposer();
+    window.addEventListener('pagehide',()=>{
+      if(state.sessionMode==='live_voice'){
+        reportConversationStudy({mode:'live_voice',report:state.liveReport,keepalive:true});
+      }else if(state.started){
+        reportConversationStudy({mode:'text',keepalive:true});
+      }
+    });
   });
 
   window.openConversationPractice=openConversationPractice;
   window.closeConversationPractice=closeConversationPractice;
+  window.finishTextConversation=finishTextConversation;
   window.setConversationLevel=setConversationLevel;
   window.setConversationMode=setConversationMode;
   window.changeConversationLevel=changeConversationLevel;
