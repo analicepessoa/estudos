@@ -103,23 +103,21 @@ async function createEphemeralToken(): Promise<string> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      authToken: {
-        uses: 1,
-        newSessionExpireTime: new Date(
-          now + GEMINI_LIVE_TOKEN_START_WINDOW_MS,
-        ).toISOString(),
-        expireTime: new Date(
-          now + GEMINI_LIVE_TOKEN_CONNECTION_WINDOW_MS,
-        ).toISOString(),
-        fieldMask:
-          "model,generationConfig.responseModalities,sessionResumption,inputAudioTranscription,outputAudioTranscription",
-        bidiGenerateContentSetup: {
-          model: modelName(config.model),
-          generationConfig: { responseModalities: ["AUDIO"] },
-          inputAudioTranscription: {},
-          outputAudioTranscription: {},
-          sessionResumption: {},
-        },
+      uses: 1,
+      newSessionExpireTime: new Date(
+        now + GEMINI_LIVE_TOKEN_START_WINDOW_MS,
+      ).toISOString(),
+      expireTime: new Date(
+        now + GEMINI_LIVE_TOKEN_CONNECTION_WINDOW_MS,
+      ).toISOString(),
+      fieldMask:
+        "model,generationConfig.responseModalities,sessionResumption,inputAudioTranscription,outputAudioTranscription",
+      bidiGenerateContentSetup: {
+        model: modelName(config.model),
+        generationConfig: { responseModalities: ["AUDIO"] },
+        inputAudioTranscription: {},
+        outputAudioTranscription: {},
+        sessionResumption: {},
       },
     }),
   });
