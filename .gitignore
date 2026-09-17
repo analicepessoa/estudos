@@ -1,0 +1,4 @@
+# Segredos locais das Supabase Edge Functions
+supabase/.env
+supabase/.env.*
+!supabase/.env.example

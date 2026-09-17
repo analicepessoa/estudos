@@ -2326,6 +2326,7 @@ select.input { appearance: none; cursor: pointer; }
   .book-audio-vocab-grid { grid-template-columns:1fr; }
 }
 </style>
+<link rel="stylesheet" href="./assets/conversation-practice.css">
 </head>
 <body>
 
@@ -2560,6 +2561,17 @@ select.input { appearance: none; cursor: pointer; }
           </div>
           <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
         </button>
+
+        <button class="home-card conversation" type="button" onclick="openConversationPractice()">
+          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-comments"></i></span>
+          <div class="home-card-copy">
+            <span class="home-card-kicker">Prática com inteligência artificial</span>
+            <h2>Conversation Practice</h2>
+            <span class="home-card-detail">Converse em inglês no seu nível, com respostas curtas e naturais.</span>
+            <span class="home-card-status todo"><i class="fa-solid fa-comment-dots"></i> Pronto para conversar</span>
+          </div>
+          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        </button>
       </div>
     </section>
 
@@ -2656,6 +2668,102 @@ select.input { appearance: none; cursor: pointer; }
       <i class="fa-solid fa-music"></i>Músicas
     </button>
   </nav>
+</div>
+
+<!-- ══ CONVERSATION PRACTICE ══ -->
+<div id="view-conversation" class="hidden">
+  <header class="app-header conversation-header">
+    <button type="button" class="btn-icon" onclick="closeConversationPractice()" aria-label="Voltar ao início" style="border:none;cursor:pointer;color:var(--ink);font-size:17px">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+    <div class="conversation-header-copy">
+      <div class="conversation-header-title">Conversation Practice</div>
+      <div class="conversation-header-subtitle">Pratique inglês em uma conversa natural</div>
+    </div>
+    <div class="badge" style="background:#ECFEFF;color:#0E7490;border:1px solid rgba(8,145,178,.18)">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> AI Tutor
+    </div>
+  </header>
+
+  <main class="conversation-shell">
+    <div id="conversation-teacher-preview" class="conversation-teacher-preview hidden" role="status">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <div><strong>Prévia visual da professora</strong><span>Esta tela demonstra respostas e correções. Para avaliar a IA real e o contexto completo, entre com uma conta de aluno de teste.</span></div>
+    </div>
+
+    <section id="conversation-setup" class="conversation-setup" aria-labelledby="conversation-setup-title">
+      <div class="conversation-setup-icon" aria-hidden="true"><i class="fa-solid fa-comments"></i></div>
+      <h1 id="conversation-setup-title">Let's talk!</h1>
+      <p>Escolha seu nível e converse em inglês com respostas curtas, naturais e adequadas para você.</p>
+
+      <div class="conversation-choice-group">
+        <span class="conversation-choice-label">Choose your level</span>
+        <div class="conversation-levels" role="group" aria-label="Nível de inglês">
+          <button type="button" class="conversation-level-btn active" data-conversation-level="A1" aria-pressed="true" onclick="setConversationLevel('A1')">A1</button>
+          <button type="button" class="conversation-level-btn" data-conversation-level="A2" aria-pressed="false" onclick="setConversationLevel('A2')">A2</button>
+          <button type="button" class="conversation-level-btn" data-conversation-level="B1" aria-pressed="false" onclick="setConversationLevel('B1')">B1</button>
+          <button type="button" class="conversation-level-btn" data-conversation-level="B2" aria-pressed="false" onclick="setConversationLevel('B2')">B2</button>
+        </div>
+      </div>
+
+      <div class="conversation-choice-group">
+        <span class="conversation-choice-label">Choose a mode</span>
+        <div class="conversation-modes">
+          <button type="button" class="conversation-mode-btn active" data-conversation-mode="text" aria-pressed="true" onclick="setConversationMode('text')"><i class="fa-solid fa-comment"></i> Text</button>
+          <button id="conversation-live-mode" type="button" class="conversation-mode-btn hidden" data-conversation-mode="live" aria-pressed="false" onclick="setConversationMode('live')"><i class="fa-solid fa-headphones"></i> Live</button>
+        </div>
+      </div>
+
+      <button id="conversation-start" type="button" class="btn btn-orange btn-lg w-full conversation-start-btn" onclick="startConversation()">
+        Start conversation <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </section>
+
+    <section id="conversation-live" class="conversation-live hidden" aria-label="Conversa ao vivo em inglês">
+      <div class="conversation-live-card">
+        <div class="conversation-live-orb" aria-hidden="true"><i class="fa-solid fa-headphones"></i></div>
+        <span class="conversation-live-kicker">LIVE CONVERSATION</span>
+        <h1>Speak naturally</h1>
+        <p id="conversation-live-status" role="status">Ready to connect</p>
+        <p id="conversation-live-note" class="conversation-live-note">Your microphone will be requested when you start.</p>
+        <p id="conversation-live-time" class="conversation-live-time" aria-live="polite"></p>
+        <div id="conversation-live-transcript" class="conversation-live-transcript" role="log" aria-live="polite"></div>
+        <div class="conversation-live-actions">
+          <button id="conversation-live-connect" type="button" class="btn btn-orange" onclick="startLiveConversation()"><i class="fa-solid fa-headphones"></i> Start Live Conversation</button>
+          <button id="conversation-live-mute" type="button" class="conversation-live-end hidden" onclick="toggleLiveMute()" aria-pressed="false"><i class="fa-solid fa-volume-xmark"></i> Mute</button>
+          <button id="conversation-live-end" type="button" class="conversation-live-end hidden" onclick="endLiveConversation()"><i class="fa-solid fa-stop"></i> End conversation</button>
+        </div>
+        <div id="conversation-live-report" class="conversation-live-report hidden" aria-live="polite"></div>
+        <button type="button" class="conversation-change-btn conversation-live-back" onclick="changeConversationLevel()">Change level or mode</button>
+      </div>
+    </section>
+
+    <section id="conversation-chat" class="conversation-chat hidden" aria-label="Conversa com o tutor">
+      <div class="conversation-chat-top">
+        <div class="conversation-tutor">
+          <div class="conversation-tutor-avatar" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div><strong>English Tutor</strong><span>Online · One question at a time</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <span id="conversation-level-badge" class="conversation-level-badge">A1</span>
+          <button type="button" class="conversation-change-btn" onclick="changeConversationLevel()" aria-label="Alterar nível">Alterar</button>
+        </div>
+      </div>
+
+      <div id="conversation-messages" class="conversation-messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+      <div id="conversation-error" class="conversation-error hidden" role="alert"></div>
+
+      <div class="conversation-composer">
+        <div class="conversation-input-wrap">
+          <textarea id="conversation-input" class="conversation-input" maxlength="1500" rows="1" placeholder="Type your message..." aria-label="Mensagem em inglês"></textarea>
+          <span id="conversation-count" class="conversation-count">0/1500</span>
+        </div>
+        <button id="conversation-send" type="button" class="btn btn-orange conversation-send" onclick="sendConversationMessage()" aria-label="Enviar mensagem" disabled>
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+    </section>
+  </main>
 </div>
 
 <!-- ══ TEACHER ══ -->
@@ -5032,7 +5140,7 @@ window.onload = async () => {
 };
 
 function showView(v){
-  ['loading','auth','student','teacher'].forEach(x=>{
+  ['loading','auth','student','conversation','teacher'].forEach(x=>{
     const el=document.getElementById('view-'+x);
     if(el) el.classList.add('hidden');
   });
@@ -9858,6 +9966,8 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
     });
   }
 </script>
+<script src="./assets/conversation-live.js"></script>
+<script src="./assets/conversation-practice.js"></script>
 </body>
 </html>
 
