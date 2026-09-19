@@ -780,6 +780,70 @@ select.input { appearance: none; cursor: pointer; }
 .music-card-status { margin-left:auto; align-self:center; }
 .home-card-copy { min-width:0; }
 
+/* ══ HOME VISUAL — ACESSO RÁPIDO ÀS ÁREAS ══ */
+.home-next-card {
+  min-height:174px; padding:22px; border:0; border-radius:28px; color:white; text-align:left; cursor:pointer;
+  background:linear-gradient(128deg,#FFB800 0%,#FF9F1A 58%,#F57C00 100%); box-shadow:0 18px 34px rgba(245,124,0,.24);
+  position:relative; overflow:hidden; font:inherit; display:flex; align-items:flex-end;
+  transition:transform .25s var(--ease-out),box-shadow .25s var(--ease-out);
+}
+.home-next-card:hover { transform:translateY(-2px); box-shadow:0 22px 38px rgba(245,124,0,.3); }
+.home-next-card:active { transform:scale(.985); }
+.home-next-card::before { content:''; position:absolute; width:210px; height:210px; right:-62px; top:-86px; border:18px solid rgba(255,255,255,.16); border-radius:45%; transform:rotate(27deg); }
+.home-next-card::after { content:'✦'; position:absolute; right:27px; bottom:20px; color:rgba(255,255,255,.52); font-size:88px; line-height:1; transform:rotate(13deg); }
+.home-next-copy { position:relative; z-index:1; max-width:76%; }
+.home-next-kicker { display:flex; align-items:center; gap:7px; font-size:11px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:rgba(11,20,38,.72); }
+.home-next-card h2 { margin-top:7px; color:var(--ink); font-size:27px; line-height:1.06; letter-spacing:-.035em; }
+.home-next-card p { margin-top:7px; color:rgba(11,20,38,.78); font-size:13px; font-weight:650; line-height:1.35; }
+.home-next-bottom { display:flex; align-items:center; gap:10px; margin-top:14px; }
+.home-next-card .home-card-status { margin:0; background:rgba(255,255,255,.75); color:#9A3412; }
+.home-next-arrow { width:30px; height:30px; border-radius:10px; display:grid; place-items:center; color:var(--ink); background:rgba(255,255,255,.72); font-size:14px; }
+.home-next-progress { display:block; width:min(164px,42vw); height:6px; margin-top:13px; overflow:hidden; border-radius:99px; background:rgba(11,20,38,.15); }
+.home-next-progress span { display:block; height:100%; border-radius:inherit; background:var(--ink); }
+.home-explore-heading { display:flex; align-items:end; justify-content:space-between; gap:12px; margin:3px 2px -5px; }
+.home-explore-heading h2 { font-size:20px; color:var(--ink); letter-spacing:-.025em; }
+.home-explore-heading span { color:var(--slate); font-size:12px; font-weight:650; text-align:right; }
+.home-area-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.home-area-tile {
+  min-height:168px; padding:16px; border:0; border-radius:21px; overflow:hidden; position:relative; text-align:left; cursor:pointer;
+  font:inherit; color:white; display:flex; flex-direction:column; justify-content:flex-end;
+  transition:transform .22s var(--ease-out),filter .22s var(--ease-out),box-shadow .22s;
+}
+.home-area-tile:hover { transform:translateY(-2px); filter:saturate(1.06); box-shadow:0 14px 24px rgba(11,20,38,.16); }
+.home-area-tile:active { transform:scale(.975); }
+.home-area-tile::before { content:''; position:absolute; width:116px; height:116px; top:-47px; right:-32px; border:10px solid rgba(255,255,255,.16); border-radius:40%; transform:rotate(-28deg); }
+.home-area-tile::after { content:''; position:absolute; width:58px; height:58px; right:13px; top:16px; border-radius:19px; background:rgba(255,255,255,.18); transform:rotate(-7deg); }
+.home-area-tile.lesson { background:linear-gradient(145deg,#45CDA4,#12AD91); }
+.home-area-tile.audio { background:linear-gradient(145deg,#66AFFF,#377BDB); }
+.home-area-tile.reading { background:linear-gradient(145deg,#9A7AF6,#7353D4); }
+.home-area-tile.music { background:linear-gradient(145deg,#35B7D0,#247DCE); }
+.home-area-tile.conversation { background:linear-gradient(145deg,#FA926E,#E96D62); }
+.home-area-tile.trail { background:linear-gradient(145deg,#F8C229,#F29725); }
+.home-area-icon { position:absolute; z-index:1; top:27px; right:25px; font-size:31px; color:white; text-shadow:0 4px 12px rgba(11,20,38,.15); }
+.home-area-copy { position:relative; z-index:1; min-width:0; }
+.home-area-copy small { display:block; margin-bottom:4px; font-size:10px; font-weight:850; letter-spacing:.065em; text-transform:uppercase; color:rgba(255,255,255,.78); }
+.home-area-copy h2 { font-size:18px; line-height:1.08; letter-spacing:-.02em; color:white; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
+.home-area-copy p { min-height:31px; margin-top:5px; overflow:hidden; color:rgba(255,255,255,.84); font-size:11px; line-height:1.32; font-weight:600; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+.home-area-tile .home-card-status { margin-top:8px; max-width:max-content; padding:4px 7px; border-radius:9px; font-size:9px; color:#334155; background:rgba(255,255,255,.8); }
+.home-area-tile .home-card-status.done { color:#047857; background:rgba(236,253,245,.9); }
+.home-area-tile .home-card-status.started { color:#4338CA; background:rgba(238,242,255,.9); }
+.home-overview.home-progress-summary { padding:15px 17px; border-radius:20px; grid-template-columns:auto 1fr; }
+.home-progress-summary .home-progress-ring { width:54px; height:54px; }
+.home-progress-summary .home-progress-ring::before { width:40px; height:40px; }
+.home-progress-summary .home-overview-copy strong { font-size:15px; }
+.home-progress-summary .home-overview-copy span { font-size:11px; }
+
+/* Atalhos contextuais, no estilo de uma barra de ícones simples. */
+.student-contextual-nav { display:flex; gap:8px; margin:0 0 18px; overflow-x:auto; padding:2px 1px 6px; scrollbar-width:none; }
+.student-contextual-nav::-webkit-scrollbar { display:none; }
+.student-contextual-nav button {
+  min-width:70px; padding:8px 7px; border:1px solid var(--border); border-radius:14px; background:white; color:var(--slate);
+  font:750 10px 'Inter',sans-serif; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:5px; white-space:nowrap; box-shadow:var(--shadow-xs);
+}
+.student-contextual-nav button i { color:var(--orange); font-size:18px; }
+.student-contextual-nav button.active { color:var(--ink); background:#FFF7ED; border-color:#FED7AA; }
+.student-contextual-nav button.active i { color:var(--orange-dark); }
+
 .audio-hub-hero {
   padding:22px; margin-bottom:22px; border-radius:26px; color:white;
   background:linear-gradient(135deg,#0B1A4A 0%,#1D4ED8 65%,#3B82F6 100%);
@@ -941,6 +1005,12 @@ select.input { appearance: none; cursor: pointer; }
   .home-card { min-height:138px; padding:17px; grid-template-columns:64px minmax(0,1fr) 16px; gap:13px; }
   .home-card-icon { width:64px; height:64px; border-radius:21px; font-size:27px; }
   .home-card h2 { font-size:19px; }
+  .home-next-card { min-height:164px; padding:19px; }
+  .home-next-card h2 { font-size:24px; }
+  .home-area-tile { min-height:154px; padding:14px; border-radius:19px; }
+  .home-area-icon { top:25px; right:21px; font-size:27px; }
+  .home-area-copy h2 { font-size:16px; }
+  .home-area-copy p { font-size:10px; }
   .semana-header > div:first-child { align-items:flex-start !important; flex-direction:column; }
   .music-card { gap:10px; padding:13px; }
   .music-icon { width:44px; height:44px; font-size:20px; }
@@ -2497,7 +2567,17 @@ select.input { appearance: none; cursor: pointer; }
         <div class="home-avatar" aria-hidden="true"><i class="fa-solid fa-graduation-cap"></i></div>
       </div>
 
-      <div class="home-overview" aria-label="Resumo do progresso na trilha">
+      <button class="home-next-card" type="button" onclick="switchStudentTab('trilha')" aria-label="Continuar sua trilha de aprendizado">
+        <div class="home-next-copy">
+          <span class="home-next-kicker"><i class="fa-solid fa-play"></i> Continue agora</span>
+          <h2 id="home-trail-title">Continuar aprendendo</h2>
+          <p id="home-trail-detail">Carregando seu progresso...</p>
+          <span class="home-next-progress"><span id="home-trail-progress" style="width:0%"></span></span>
+          <span class="home-next-bottom"><span class="home-card-status todo" id="home-trail-status"><i class="fa-regular fa-circle"></i> Não iniciada</span><i class="fa-solid fa-arrow-right home-next-arrow" aria-hidden="true"></i></span>
+        </div>
+      </button>
+
+      <div class="home-overview home-progress-summary" aria-label="Resumo do progresso na trilha">
         <div class="home-progress-ring" id="home-progress-ring"><span id="home-progress-percent">0%</span></div>
         <div class="home-overview-copy">
           <strong id="home-progress-title">Sua jornada começa aqui</strong>
@@ -2505,75 +2585,30 @@ select.input { appearance: none; cursor: pointer; }
         </div>
       </div>
 
-      <div class="home-cards">
-        <button class="home-card trail" type="button" onclick="switchStudentTab('trilha')">
-          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-route"></i></span>
-          <div class="home-card-copy">
-            <span class="home-card-kicker">Sua trilha</span>
-            <h2 id="home-trail-title">Continuar aprendendo</h2>
-            <span class="home-card-detail" id="home-trail-detail">Carregando seu progresso...</span>
-            <span class="home-card-progress"><span id="home-trail-progress" style="width:0%"></span></span>
-            <span class="home-card-status todo" id="home-trail-status"><i class="fa-regular fa-circle"></i> Não iniciada</span>
-          </div>
-          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+      <div class="home-explore-heading"><h2>O que você quer praticar?</h2><span>Escolha uma área</span></div>
+      <div class="home-area-grid">
+        <button class="home-area-tile lesson" type="button" onclick="switchStudentTab('semanas')">
+          <i class="fa-solid fa-chalkboard-user home-area-icon" aria-hidden="true"></i><div class="home-area-copy"><small>Aulas e jogos</small><h2 id="home-lesson-title">Suas aulas</h2><p id="home-lesson-detail">Conteúdo semanal para praticar.</p><span class="home-card-status todo" id="home-lesson-status"><i class="fa-regular fa-circle"></i> Ainda não vista</span></div>
         </button>
-
-        <button class="home-card lesson" type="button" onclick="switchStudentTab('semanas')">
-          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-chalkboard-user"></i></span>
-          <div class="home-card-copy">
-            <span class="home-card-kicker">Aula mais recente</span>
-            <h2 id="home-lesson-title">Suas aulas</h2>
-            <span class="home-card-detail" id="home-lesson-detail">Confira o conteúdo liberado para você.</span>
-            <span class="home-card-status todo" id="home-lesson-status"><i class="fa-regular fa-circle"></i> Ainda não vista</span>
-          </div>
-          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        <button class="home-area-tile audio" type="button" onclick="switchStudentTab('audios')">
+          <i class="fa-solid fa-headphones-simple home-area-icon" aria-hidden="true"></i><div class="home-area-copy"><small>Escuta</small><h2 id="home-audio-title">Áudios do livro</h2><p id="home-audio-detail">Pratique sua compreensão.</p><span class="home-card-status todo" id="home-audio-status"><i class="fa-regular fa-circle"></i> Pronto para ouvir</span></div>
         </button>
-
-        <button class="home-card audio" type="button" onclick="switchStudentTab('audios')">
-          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-book-open-reader"></i></span>
-          <div class="home-card-copy">
-            <span class="home-card-kicker">Áudios do seu livro</span>
-            <h2 id="home-audio-title">Pratique sua escuta</h2>
-            <span class="home-card-detail" id="home-audio-detail">Ouça novamente o conteúdo trabalhado em aula.</span>
-            <span class="home-card-status todo" id="home-audio-status"><i class="fa-regular fa-circle"></i> Pronto para ouvir</span>
-          </div>
-          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        <button class="home-area-tile music" type="button" onclick="switchStudentTab('musica')">
+          <i class="fa-solid fa-music home-area-icon" aria-hidden="true"></i><div class="home-area-copy"><small>Música</small><h2 id="home-music-title">Learn with Music</h2><p id="home-music-detail">Ouça e acompanhe a letra.</p><span class="home-card-status todo" id="home-music-status"><i class="fa-regular fa-circle"></i> Ainda não ouvida</span></div>
         </button>
-
-        <button class="home-card reading" type="button" onclick="switchStudentTab('leitura')">
-          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></span>
-          <div class="home-card-copy">
-            <span class="home-card-kicker">Biblioteca de leitura</span>
-            <h2 id="home-reading-title">Leia em inglês</h2>
-            <span class="home-card-detail" id="home-reading-detail">Histórias adaptadas para você praticar no seu nível.</span>
-            <span class="home-card-status todo" id="home-reading-status"><i class="fa-regular fa-circle"></i> Pronto para começar</span>
-          </div>
-          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        <button class="home-area-tile reading" type="button" onclick="switchStudentTab('leitura')">
+          <i class="fa-solid fa-book-open home-area-icon" aria-hidden="true"></i><div class="home-area-copy"><small>Leitura</small><h2 id="home-reading-title">Leia em inglês</h2><p id="home-reading-detail">Histórias para seu nível.</p><span class="home-card-status todo" id="home-reading-status"><i class="fa-regular fa-circle"></i> Pronto para começar</span></div>
         </button>
-
-        <button class="home-card music" type="button" onclick="switchStudentTab('musica')">
-          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-headphones-simple"></i></span>
-          <div class="home-card-copy">
-            <span class="home-card-kicker">Última música adicionada</span>
-            <h2 id="home-music-title">Learn with Music</h2>
-            <span class="home-card-detail" id="home-music-detail">Ouça, acompanhe a letra e pratique.</span>
-            <span class="home-card-status todo" id="home-music-status"><i class="fa-regular fa-circle"></i> Ainda não ouvida</span>
-          </div>
-          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        <button class="home-area-tile trail" type="button" onclick="switchStudentTab('trilha')">
+          <i class="fa-solid fa-route home-area-icon" aria-hidden="true"></i><div class="home-area-copy"><small>Progresso</small><h2>Sua trilha</h2><p>Veja todas as fases disponíveis.</p><span class="home-card-status todo"><i class="fa-solid fa-map-location-dot"></i> Ver trilha</span></div>
         </button>
-
-        <button class="home-card conversation" type="button" onclick="openConversationPractice()">
-          <span class="home-card-icon" aria-hidden="true"><i class="fa-solid fa-comments"></i></span>
-          <div class="home-card-copy">
-            <span class="home-card-kicker">Prática com inteligência artificial</span>
-            <h2>Conversation Practice</h2>
-            <span class="home-card-detail">Converse em inglês no seu nível, com respostas curtas e naturais.</span>
-            <span class="home-card-status todo"><i class="fa-solid fa-comment-dots"></i> Pronto para conversar</span>
-          </div>
-          <i class="fa-solid fa-chevron-right home-card-arrow" aria-hidden="true"></i>
+        <button class="home-area-tile conversation" type="button" onclick="openConversationPractice()">
+          <i class="fa-solid fa-comments home-area-icon" aria-hidden="true"></i><div class="home-area-copy"><small>Prática com IA</small><h2>Conversação</h2><p>Fale ou escreva em inglês.</p><span class="home-card-status todo"><i class="fa-solid fa-comment-dots"></i> Começar</span></div>
         </button>
       </div>
     </section>
+
+    <nav id="student-contextual-nav" class="student-contextual-nav hidden" aria-label="Atalhos de estudo"></nav>
 
     <!-- TRILHA TAB -->
     <section id="stab-trilha" class="hidden">
@@ -5970,6 +6005,38 @@ function renderReadingStudy(){
   readingScrollTop();
 }
 
+function renderStudentContextualNav(activeTab){
+  const nav=document.getElementById('student-contextual-nav');
+  if(!nav)return;
+  if(activeTab==='inicio'){
+    nav.classList.add('hidden');
+    nav.replaceChildren();
+    return;
+  }
+  const links=[
+    {tab:'inicio',label:'Início',icon:'fa-house'},
+    {tab:'trilha',label:'Trilha',icon:'fa-route'},
+    {tab:'semanas',label:'Aulas',icon:'fa-chalkboard-user'},
+    {tab:'audios',label:'Escuta',icon:'fa-headphones-simple'},
+    {tab:'leitura',label:'Ler',icon:'fa-book-open'},
+    {tab:'musica',label:'Música',icon:'fa-music'},
+    {tab:'conversation',label:'Falar',icon:'fa-comments'}
+  ];
+  nav.replaceChildren(...links.map(link=>{
+    const button=document.createElement('button');
+    button.type='button';
+    button.classList.toggle('active',link.tab===activeTab);
+    button.setAttribute('aria-current',link.tab===activeTab?'page':'false');
+    button.innerHTML=`<i class="fa-solid ${link.icon}" aria-hidden="true"></i><span>${link.label}</span>`;
+    button.addEventListener('click',()=>{
+      if(link.tab==='conversation')openConversationPractice();
+      else switchStudentTab(link.tab);
+    });
+    return button;
+  }));
+  nav.classList.remove('hidden');
+}
+
 function switchStudentTab(tab){
   ['inicio','trilha','semanas','audios','leitura','musica'].forEach(t=>{
     const el=document.getElementById('stab-'+t);
@@ -5977,6 +6044,7 @@ function switchStudentTab(tab){
     const btn=document.getElementById('snav-'+t);
     if(btn)btn.classList.toggle('active',t===tab);
   });
+  renderStudentContextualNav(tab);
   if(tab==='inicio')renderStudentHome();
   if(tab==='trilha')renderStudentTrilha();
   if(tab==='semanas')renderStudentSemanas();
