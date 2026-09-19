@@ -4,6 +4,7 @@
   const GEMINI_SDK_URL='https://cdn.jsdelivr.net/npm/@google/genai@2.22.0/+esm';
   const TARGET_SAMPLE_RATE=16000;
   const PCM_CHUNK_MS=100;
+  const TUTOR_PLAYBACK_GAIN=2.8;
   let sdkPromise=null;
   let activeSession=null;
   let closedByStudent=false;
@@ -375,7 +376,17 @@ RULES:
     if(!playback){
       const AudioContextClass=window.AudioContext||window.webkitAudioContext;
       if(!AudioContextClass)throw new Error('Áudio não é compatível com este navegador.');
-      playback={context:new AudioContextClass({sampleRate:24000}),nextStartTime:0,sources:new Set(),generation:0};
+      const context=new AudioContextClass({sampleRate:24000});
+      const gain=context.createGain();
+      gain.gain.value=TUTOR_PLAYBACK_GAIN;
+      const compressor=context.createDynamicsCompressor();
+      compressor.threshold.value=-16;
+      compressor.knee.value=12;
+      compressor.ratio.value=8;
+      compressor.attack.value=0.003;
+      compressor.release.value=0.18;
+      gain.connect(compressor).connect(context.destination);
+      playback={context,gain,compressor,nextStartTime:0,sources:new Set(),generation:0};
     }
     if(playback.context.state==='suspended')await playback.context.resume();
     if(playback.context.state!=='running')throw new Error('A saída de áudio permanece bloqueada pelo navegador.');
@@ -403,7 +414,7 @@ RULES:
       const source=output.context.createBufferSource();
       const generation=output.generation;
       source.buffer=buffer;
-      source.connect(output.context.destination);
+      source.connect(output.gain);
       const startAt=Math.max(output.context.currentTime+.02,output.nextStartTime);
       output.nextStartTime=startAt+buffer.duration;
       output.sources.add(source);
@@ -444,6 +455,8 @@ RULES:
     current.sources.clear();
     if(dispose){
       playback=null;
+      try{current.gain?.disconnect();}catch(error){}
+      try{current.compressor?.disconnect();}catch(error){}
       try{await current.context.close();}catch(error){}
     }
   }
