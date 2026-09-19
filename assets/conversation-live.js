@@ -13,6 +13,8 @@
   let transcriptDrafts={user:'',assistant:''};
   let transcriptTimers={user:null,assistant:null};
   let activeTranscriptHandler=null;
+  let playbackQueue=Promise.resolve();
+  let playbackQueueGeneration=0;
 
   function friendlyError(error){
     const message=String(error?.message||'').toLowerCase();
@@ -342,13 +344,26 @@ RULES:
     return muted;
   }
 
-  function pcmFloat32FromBase64(encoded){
-    const binary=atob(String(encoded||''));
-    const buffer=new ArrayBuffer(binary.length);
-    const bytes=new Uint8Array(buffer);
+  function bytesFromAudioData(audioData){
+    if(audioData instanceof ArrayBuffer)return new Uint8Array(audioData);
+    if(ArrayBuffer.isView(audioData)){
+      return new Uint8Array(audioData.buffer,audioData.byteOffset,audioData.byteLength);
+    }
+    let encoded=String(audioData||'').trim().replace(/-/g,'+').replace(/_/g,'/');
+    if(!encoded)throw new Error('O trecho de áudio veio vazio.');
+    encoded+= '='.repeat((4-encoded.length%4)%4);
+    const binary=atob(encoded);
+    const bytes=new Uint8Array(binary.length);
     for(let index=0;index<binary.length;index++)bytes[index]=binary.charCodeAt(index);
-    const source=new DataView(buffer);
-    const samples=new Float32Array(Math.floor(source.byteLength/2));
+    return bytes;
+  }
+
+  function pcmFloat32FromAudioData(audioData){
+    const bytes=bytesFromAudioData(audioData);
+    const usableLength=bytes.byteLength-bytes.byteLength%2;
+    if(!usableLength)return new Float32Array(0);
+    const source=new DataView(bytes.buffer,bytes.byteOffset,usableLength);
+    const samples=new Float32Array(Math.floor(usableLength/2));
     for(let index=0;index<samples.length;index++){
       samples[index]=source.getInt16(index*2,true)/0x8000;
     }
@@ -356,12 +371,14 @@ RULES:
   }
 
   async function playbackContext(){
-    if(playback?.context?.state!=='closed')return playback;
-    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
-    if(!AudioContextClass)throw new Error('Áudio não é compatível com este navegador.');
-    const context=new AudioContextClass({sampleRate:24000});
-    await context.resume();
-    playback={context,nextStartTime:0,sources:new Set(),generation:0};
+    if(playback?.context?.state==='closed')playback=null;
+    if(!playback){
+      const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+      if(!AudioContextClass)throw new Error('Áudio não é compatível com este navegador.');
+      playback={context:new AudioContextClass({sampleRate:24000}),nextStartTime:0,sources:new Set(),generation:0};
+    }
+    if(playback.context.state==='suspended')await playback.context.resume();
+    if(playback.context.state!=='running')throw new Error('A saída de áudio permanece bloqueada pelo navegador.');
     return playback;
   }
 
@@ -371,12 +388,17 @@ RULES:
     return output;
   }
 
-  async function queueAudioResponse(encoded,onState){
+  function sampleRateFromMimeType(mimeType){
+    const match=String(mimeType||'').match(/rate\s*=\s*(\d+)/i);
+    return match?Number(match[1]):24000;
+  }
+
+  async function queueAudioResponse(audioData,mimeType,onState){
     try{
-      const samples=pcmFloat32FromBase64(encoded);
+      const samples=pcmFloat32FromAudioData(audioData);
       if(!samples.length)return;
       const output=await playbackContext();
-      const buffer=output.context.createBuffer(1,samples.length,24000);
+      const buffer=output.context.createBuffer(1,samples.length,sampleRateFromMimeType(mimeType));
       buffer.getChannelData(0).set(samples);
       const source=output.context.createBufferSource();
       const generation=output.generation;
@@ -399,11 +421,23 @@ RULES:
     }
   }
 
+  function enqueueAudioResponse(audioData,mimeType,onState){
+    const generation=playbackQueueGeneration;
+    playbackQueue=playbackQueue
+      .then(()=>{
+        if(generation!==playbackQueueGeneration)return;
+        return queueAudioResponse(audioData,mimeType,onState);
+      })
+      .catch(error=>console.warn('A fila de áudio do tutor não pôde continuar:',error));
+  }
+
   async function stopPlayback({dispose=false}={}){
     const current=playback;
     if(!current)return;
     current.generation++;
     current.nextStartTime=0;
+    playbackQueueGeneration++;
+    playbackQueue=Promise.resolve();
     current.sources.forEach(source=>{
       try{source.stop();}catch(error){}
     });
@@ -435,8 +469,12 @@ RULES:
       finalizeTranscript('user',onTranscript);
     }
     parts.forEach(part=>{
-      const audio=part?.inlineData?.data;
-      if(audio)queueAudioResponse(audio,onState);
+      const inlineData=part?.inlineData;
+      const audio=inlineData?.data;
+      const mimeType=String(inlineData?.mimeType||'').toLowerCase();
+      if(audio&&(!mimeType||mimeType.startsWith('audio/pcm'))){
+        enqueueAudioResponse(audio,mimeType,onState);
+      }
     });
     if(content.turnComplete)finalizeTranscript('assistant',onTranscript);
   }
