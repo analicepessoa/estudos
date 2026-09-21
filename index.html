@@ -10299,10 +10299,20 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
   // Registra o app instalável (PWA). Funciona apenas em hospedagem HTTPS.
   if ('serviceWorker' in navigator) {
     let reloadingForAppUpdate = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
+    function reloadForPortalUpdate(){
       if(reloadingForAppUpdate) return;
       reloadingForAppUpdate = true;
       window.location.reload();
+    }
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      // Do not replace the page while a student is in an active conversation.
+      // The fresh version will be used on the next normal visit or refresh.
+      if(typeof window.isConversationInProgress === 'function' && window.isConversationInProgress()){
+        console.info('Atualização pronta; ela será aplicada depois da conversa.');
+        return;
+      }
+      reloadForPortalUpdate();
     });
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')

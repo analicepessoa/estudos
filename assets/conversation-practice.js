@@ -38,6 +38,37 @@
     return Boolean(currentUser?.id&&currentUser?.role==='student'&&sbClient&&!teacherPreviewActive());
   }
 
+  // A session pointer lives only for this browser tab. It lets a service-worker
+  // update restore an interrupted text conversation without reopening an old
+  // conversation the student deliberately left on another day.
+  function activeTextSessionStorageKey(){
+    return currentUser?.id?`ap_active_text_conversation_${currentUser.id}`:'';
+  }
+
+  function saveActiveTextSession(sessionId){
+    const key=activeTextSessionStorageKey();
+    if(!key||!sessionId)return;
+    try{sessionStorage.setItem(key,String(sessionId));}catch(error){
+      console.warn('Não foi possível guardar a conversa em andamento:',error);
+    }
+  }
+
+  function readActiveTextSession(){
+    const key=activeTextSessionStorageKey();
+    if(!key)return '';
+    try{return String(sessionStorage.getItem(key)||'').trim();}catch(error){
+      return '';
+    }
+  }
+
+  function clearActiveTextSession(){
+    const key=activeTextSessionStorageKey();
+    if(!key)return;
+    try{sessionStorage.removeItem(key);}catch(error){
+      console.warn('Não foi possível limpar a conversa finalizada:',error);
+    }
+  }
+
   function levelStorageKey(){
     if(teacherPreviewActive())return 'ap_conversation_preview_level';
     return currentUser?.id?`ap_conversation_level_${currentUser.id}`:'ap_conversation_level';
@@ -151,6 +182,7 @@
       const sessionId=String(data?.id||'');
       if(!sessionId)throw new Error('A sessão não recebeu uma identificação.');
       state.sessionId=sessionId;
+      if(state.sessionMode==='text')saveActiveTextSession(sessionId);
       return sessionId;
     })();
 
@@ -207,6 +239,54 @@
         if(error)throw error;
       })
       .catch(error=>console.warn('Não foi possível finalizar esta sessão de conversa:',error));
+  }
+
+  async function restoreInterruptedTextConversation(){
+    const sessionId=readActiveTextSession();
+    if(!sessionId||!canPersistConversation())return false;
+
+    const {data:session,error:sessionError}=await sbClient
+      .from('conversation_sessions')
+      .select('id,level,mode,started_at')
+      .eq('id',sessionId)
+      .eq('user_id',currentUser.id)
+      .eq('mode','text')
+      .is('finished_at',null)
+      .maybeSingle();
+    if(sessionError)throw sessionError;
+    if(!session){
+      clearActiveTextSession();
+      return false;
+    }
+
+    const {data:storedMessages,error:messagesError}=await sbClient
+      .from('conversation_messages')
+      .select('id,role,content,corrections,vocabulary,created_at')
+      .eq('session_id',sessionId)
+      .order('created_at',{ascending:true});
+    if(messagesError)throw messagesError;
+
+    const messages=(storedMessages||[]).map(message=>({
+      dbId:String(message?.id||''),
+      role:message?.role==='assistant'?'assistant':'user',
+      content:String(message?.content||'').trim(),
+      corrections:Array.isArray(message?.corrections)?message.corrections:[],
+      vocabulary:Array.isArray(message?.vocabulary)?message.vocabulary:[]
+    })).filter(message=>message.content);
+    // Do not reopen an empty greeting if an update happened before the student
+    // had started to participate.
+    if(!messages.some(message=>message.role==='user'))return false;
+
+    state.sessionId=String(session.id);
+    state.sessionCreation=null;
+    state.persistenceChain=Promise.resolve();
+    state.sessionMode='text';
+    state.started=true;
+    state.startedAt=Date.parse(session.started_at)||Date.now();
+    state.messages=messages;
+    state.level=VALID_LEVELS.has(session.level)?session.level:state.level;
+    saveLevel();
+    return true;
   }
 
   function saveLiveReportSilently(report){
@@ -429,6 +509,7 @@
     }else if(state.started){
       finishConversationSessionSilently();
       reportConversationStudy({mode:'text'});
+      clearActiveTextSession();
     }
     state.liveEnding=true;
     clearLiveTimer();
@@ -1021,13 +1102,20 @@
     }
   }
 
-  function openConversationPractice(){
+  async function openConversationPractice(){
     const realStudent=currentUser?.role==='student'&&Boolean(currentUser?.id);
     if(!realStudent&&!teacherPreviewActive()){
       alert('A conversa com IA está disponível para alunos conectados. Entre com uma conta de aluno para testar.');
       return;
     }
     resetForCurrentStudent();
+    if(!state.started&&!teacherPreviewActive()){
+      try{
+        await restoreInterruptedTextConversation();
+      }catch(error){
+        console.warn('Não foi possível recuperar a conversa interrompida:',error);
+      }
+    }
     showView('conversation');
     element('conversation-teacher-preview')?.classList.toggle('hidden',!teacherPreviewActive());
     element('conversation-setup')?.classList.toggle('hidden',state.started);
@@ -1052,6 +1140,7 @@
     }else if(state.started){
       finishConversationSessionSilently();
       reportConversationStudy({mode:'text'});
+      clearActiveTextSession();
     }
     state.liveEnding=true;
     clearLiveTimer();
@@ -1067,6 +1156,7 @@
     if(!state.started||state.pending)return;
     finishConversationSessionSilently();
     reportConversationStudy({mode:'text'});
+    clearActiveTextSession();
     await state.persistenceChain;
     state.started=false;
     state.messages=[];
@@ -1105,6 +1195,9 @@
   });
 
   window.openConversationPractice=openConversationPractice;
+  window.isConversationInProgress=()=>Boolean(
+    (state.sessionMode==='text'&&state.started)||state.livePending||state.liveStarted
+  );
   window.closeConversationPractice=closeConversationPractice;
   window.finishTextConversation=finishTextConversation;
   window.setConversationLevel=setConversationLevel;
