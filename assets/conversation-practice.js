@@ -242,22 +242,34 @@
   }
 
   async function restoreInterruptedTextConversation(){
-    const sessionId=readActiveTextSession();
-    if(!sessionId||!canPersistConversation())return false;
+    const rememberedSessionId=readActiveTextSession();
+    if(!canPersistConversation())return false;
 
-    const {data:session,error:sessionError}=await sbClient
+    let sessionQuery=sbClient
       .from('conversation_sessions')
       .select('id,level,mode,started_at')
-      .eq('id',sessionId)
       .eq('user_id',currentUser.id)
       .eq('mode','text')
-      .is('finished_at',null)
-      .maybeSingle();
+      .is('finished_at',null);
+    if(rememberedSessionId){
+      sessionQuery=sessionQuery.eq('id',rememberedSessionId);
+    }else{
+      // Supports the one-time recovery of a session interrupted just before
+      // this protection was installed, without reviving older conversations.
+      const recentCutoff=new Date(Date.now()-3*60*60*1000).toISOString();
+      sessionQuery=sessionQuery
+        .gte('started_at',recentCutoff)
+        .order('started_at',{ascending:false})
+        .limit(1);
+    }
+    const {data:session,error:sessionError}=await sessionQuery.maybeSingle();
     if(sessionError)throw sessionError;
     if(!session){
-      clearActiveTextSession();
+      if(rememberedSessionId)clearActiveTextSession();
       return false;
     }
+
+    const sessionId=String(session.id);
 
     const {data:storedMessages,error:messagesError}=await sbClient
       .from('conversation_messages')
@@ -285,6 +297,7 @@
     state.startedAt=Date.parse(session.started_at)||Date.now();
     state.messages=messages;
     state.level=VALID_LEVELS.has(session.level)?session.level:state.level;
+    saveActiveTextSession(sessionId);
     saveLevel();
     return true;
   }
