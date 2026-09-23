@@ -2908,7 +2908,10 @@ select.input { appearance: none; cursor: pointer; }
             <div><label class="label">Turma</label><select id="admin-semana-room" class="input" onchange="changeAdminRoom(this.value)"></select></div>
             <div><label class="label">Módulo</label><input type="text" id="admin-semana-modulo" class="input" list="admin-semana-modulos" placeholder="Ex.: Módulo 1 · Basic 01"><datalist id="admin-semana-modulos"></datalist></div>
           </div>
-          <div><label class="label">Título</label><input type="text" id="admin-semana-title" class="input" placeholder="Semana 12"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label class="label">Fase do módulo</label><select id="admin-semana-fase" class="input"><option value="">Selecione a fase</option><option value="MID TERM">MID TERM</option><option value="END TERM">END TERM</option></select></div>
+            <div><label class="label">Título</label><input type="text" id="admin-semana-title" class="input" placeholder="Semana 12"></div>
+          </div>
           <div><label class="label">📅 Publicar em (opcional)</label><input type="datetime-local" id="admin-semana-publish-at" class="input"><div class="text-xs text-muted" style="margin-top:5px">A aula ficará invisível para os alunos até esta data e horário.</div></div>
           <div class="book-audio-admin-box">
             <label class="label" style="color:#4338CA">🎧 Áudio do Livro (opcional)</label>
@@ -2959,7 +2962,9 @@ select.input { appearance: none; cursor: pointer; }
         <div><h2>Aulas da turma selecionada</h2><p>Organize por módulo e arquive o que não deve mais aparecer para os alunos.</p></div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <select id="admin-semana-module-filter" class="input" style="width:min(240px,100%);margin:0" onchange="renderAdminSemanas()"><option value="">Todos os módulos</option></select>
-          <button class="btn btn-ghost btn-sm" type="button" onclick="adminArchiveModule()"><i class="fa-solid fa-box-archive"></i> Arquivar módulo</button>
+          <select id="admin-semana-phase-filter" class="input" style="width:min(180px,100%);margin:0" onchange="renderAdminSemanas()"><option value="">Todas as fases</option></select>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="adminArchivePhase()"><i class="fa-solid fa-box-archive"></i> Arquivar fase</button>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="adminArchiveModule()"><i class="fa-solid fa-boxes-stacked"></i> Módulo completo</button>
         </div>
       </div>
       <div id="admin-semanas-list"></div>
@@ -9641,11 +9646,12 @@ function adminSaveSemana(){
   const editIdx = document.getElementById('admin-semana-idx').value;
   const rKey=document.getElementById('admin-semana-room').value;
   const modulo=document.getElementById('admin-semana-modulo').value.trim();
+  const faseModulo=document.getElementById('admin-semana-fase').value;
   const title=document.getElementById('admin-semana-title').value.trim();
   const publishAt=publishAtFromInput('admin-semana-publish-at');
   const bookLevel=document.getElementById('admin-semana-book-level').value;
   const bookAudioIds=bookLevel?[...adminSelectedBookAudioIds].filter(id=>bookAudioItem(id)?.level===bookLevel):[];
-  if(!rKey||!title)return alert("Selecione a turma e dê um título.");
+  if(!rKey||!title||!modulo||!faseModulo)return alert("Selecione a turma, informe o módulo, a fase e o título da aula.");
   const parseLines=(id,keys)=>document.getElementById(id).value.trim().split('\n').filter(Boolean).map(l=>{
     const p=l.split('|');const obj={};keys.forEach((k,i)=>obj[k]=(p[i]||'').trim());return obj;
   });
@@ -9653,6 +9659,7 @@ function adminSaveSemana(){
   const novaSemana = {
     title,
     modulo,
+    faseModulo,
     publishAt,
     bookLevel,
     bookAudioIds,
@@ -9683,7 +9690,8 @@ function adminEditSemana(rKey, idx) {
   
   document.getElementById('admin-semana-idx').value = idx;
   document.getElementById('admin-semana-room').value = rKey;
-  document.getElementById('admin-semana-modulo').value = sem.modulo||'';
+  document.getElementById('admin-semana-modulo').value = lessonModuleName(sem)==='Sem módulo'?'':lessonModuleName(sem);
+  document.getElementById('admin-semana-fase').value = lessonPhaseName(sem)==='Sem fase'?'':lessonPhaseName(sem);
   document.getElementById('admin-semana-title').value = sem.title;
   document.getElementById('admin-semana-publish-at').value = publishAtToInput(sem.publishAt);
   document.getElementById('admin-semana-book-level').value = sem.bookLevel||'';
@@ -9704,6 +9712,7 @@ function adminCancelEditSemana() {
   document.getElementById('btn-cancel-semana').classList.add('hidden');
   document.getElementById('admin-semana-idx').value = '';
   document.getElementById('admin-semana-modulo').value = '';
+  document.getElementById('admin-semana-fase').value = '';
   document.getElementById('admin-semana-title').value = '';
   document.getElementById('admin-semana-publish-at').value = '';
   document.getElementById('admin-semana-book-level').value = '';
@@ -9715,7 +9724,19 @@ function adminCancelEditSemana() {
   document.getElementById('admin-semana-ditado').value = '';
 }
 
-function lessonModuleName(lesson){return cleanGameText(lesson?.modulo)||'Sem módulo';}
+function lessonModuleName(lesson){
+  const module=cleanGameText(lesson?.modulo).replace(/(?:\s*[·|—-]?\s*)(?:MID|END)\s*TERM\s*$/i,'').trim();
+  return module||'Sem módulo';
+}
+
+function lessonPhaseName(lesson){
+  const explicit=cleanGameText(lesson?.faseModulo).toUpperCase();
+  if(explicit==='MID TERM'||explicit==='END TERM')return explicit;
+  const legacy=`${lesson?.modulo||''} ${lesson?.title||''}`;
+  if(/\bMID\s*TERM\b/i.test(legacy))return 'MID TERM';
+  if(/\bEND\s*TERM\b/i.test(legacy))return 'END TERM';
+  return 'Sem fase';
+}
 
 function lessonAdminMeta(lesson){
   return `${(lesson.vocab||[]).length} vocab · ${(lesson.chunks||[]).length} chunks · ${(lesson.ditado||[]).length} ditado${(lesson.bookAudioIds||[]).length?` · 🎧 ${lesson.bookAudioIds.length} áudio(s) ${BOOK_AUDIO_LEVELS[lesson.bookLevel]?.label||''}`:''}`;
@@ -9764,14 +9785,27 @@ async function adminArchiveSemana(rKey,idx){
   alert(linkedArchive?'✅ Aula retirada da turma. O modelo já estava guardado na biblioteca.':'✅ Aula arquivada! Ela saiu da turma e ficou guardada na biblioteca.');
 }
 
+async function adminArchivePhase(){
+  const module=document.getElementById('admin-semana-module-filter')?.value||'';
+  const phase=document.getElementById('admin-semana-phase-filter')?.value||'';
+  if(!module||!phase)return alert('Escolha o módulo e a fase antes de arquivar.');
+  await adminArchiveLessonSelection(module,phase);
+}
+
 async function adminArchiveModule(){
-  const rKey=adminSelectedRoom;
   const module=document.getElementById('admin-semana-module-filter')?.value||'';
   if(!module)return alert('Escolha um módulo no filtro antes de arquivar.');
+  await adminArchiveLessonSelection(module,'');
+}
+
+async function adminArchiveLessonSelection(module,phase=''){
+  const rKey=adminSelectedRoom;
   const lessons=DATABASE.semanas[rKey]||[];
-  const toArchive=lessons.filter(lesson=>lessonModuleName(lesson)===module);
-  if(!toArchive.length)return alert('Não há aulas ativas deste módulo nesta turma.');
-  if(!confirm(`Arquivar ${toArchive.length} aula(s) do módulo "${module}"?\n\nElas sairão da turma e continuarão disponíveis na biblioteca.`))return;
+  const matches=lesson=>lessonModuleName(lesson)===module&&(!phase||lessonPhaseName(lesson)===phase);
+  const toArchive=lessons.filter(matches);
+  const scope=phase?`${module} · ${phase}`:`módulo completo ${module}`;
+  if(!toArchive.length)return alert(`Não há aulas ativas de ${scope} nesta turma.`);
+  if(!confirm(`Arquivar ${toArchive.length} aula(s) de ${scope}?\n\nElas sairão da turma e continuarão disponíveis na biblioteca.`))return;
   const previousLessons=JSON.parse(JSON.stringify(lessons));
   const previousArchive=JSON.parse(JSON.stringify(DATABASE.aulasArquivadas||[]));
   DATABASE.aulasArquivadas=Array.isArray(DATABASE.aulasArquivadas)?DATABASE.aulasArquivadas:[];
@@ -9788,7 +9822,7 @@ async function adminArchiveModule(){
     delete archived.locked;delete archived.libraryId;
     DATABASE.aulasArquivadas.unshift(archived);
   });
-  DATABASE.semanas[rKey]=lessons.filter(lesson=>lessonModuleName(lesson)!==module);
+  DATABASE.semanas[rKey]=lessons.filter(lesson=>!matches(lesson));
   renderAdminSemanas();
   const saved=await saveCloudDB();
   if(!saved){
@@ -9798,7 +9832,7 @@ async function adminArchiveModule(){
     alert('O módulo não foi arquivado porque não foi possível salvar na nuvem.');
     return;
   }
-  alert(`✅ Módulo arquivado! ${toArchive.length} aula(s) foram retiradas da turma e preservadas na biblioteca.`);
+  alert(`✅ ${phase?'Fase':'Módulo'} arquivado! ${toArchive.length} aula(s) foram retiradas da turma e preservadas na biblioteca.`);
 }
 
 async function adminReuseArchivedSemana(index){
@@ -9846,22 +9880,39 @@ function renderAdminSemanas(){
   const aulas=DATABASE.semanas[k]||[];
   const archived=Array.isArray(DATABASE.aulasArquivadas)?DATABASE.aulasArquivadas:[];
   const filter=document.getElementById('admin-semana-module-filter');
+  const phaseFilter=document.getElementById('admin-semana-phase-filter');
   let selectedModule=filter?.value||'';
+  let selectedPhase=phaseFilter?.value||'';
   const modules=[...new Set([...aulas,...archived].map(lessonModuleName))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
   if(selectedModule&&!modules.includes(selectedModule))selectedModule='';
   if(filter){
     filter.innerHTML='<option value="">Todos os módulos</option>'+modules.map(module=>`<option value="${htmlSafe(module)}">${htmlSafe(module)}</option>`).join('');
     filter.value=selectedModule;
   }
+  const phaseSource=[...aulas,...archived].filter(lesson=>!selectedModule||lessonModuleName(lesson)===selectedModule);
+  const phaseOrder={'MID TERM':1,'END TERM':2,'Sem fase':3};
+  const phases=[...new Set(phaseSource.map(lessonPhaseName))].sort((a,b)=>(phaseOrder[a]||9)-(phaseOrder[b]||9)||a.localeCompare(b,'pt-BR'));
+  if(selectedPhase&&!phases.includes(selectedPhase))selectedPhase='';
+  if(phaseFilter){
+    phaseFilter.innerHTML='<option value="">Todas as fases</option>'+phases.map(phase=>`<option value="${htmlSafe(phase)}">${htmlSafe(phase)}</option>`).join('');
+    phaseFilter.value=selectedPhase;
+  }
   const moduleSuggestions=document.getElementById('admin-semana-modulos');
   if(moduleSuggestions)moduleSuggestions.innerHTML=modules.filter(module=>module!=='Sem módulo').map(module=>`<option value="${htmlSafe(module)}"></option>`).join('');
-  const visible=aulas.map((lesson,index)=>({lesson,index})).filter(item=>!selectedModule||lessonModuleName(item.lesson)===selectedModule);
+  const visible=aulas.map((lesson,index)=>({lesson,index})).filter(item=>(!selectedModule||lessonModuleName(item.lesson)===selectedModule)&&(!selectedPhase||lessonPhaseName(item.lesson)===selectedPhase));
   if(k&&DATABASE.turmas[k]&&visible.length){
     const groups={};
-    visible.forEach(item=>{const module=lessonModuleName(item.lesson);(groups[module]||(groups[module]=[])).push(item);});
-    cont.innerHTML=Object.entries(groups).map(([module,items])=>`
+    visible.forEach(item=>{
+      const module=lessonModuleName(item.lesson);
+      const phase=lessonPhaseName(item.lesson);
+      const key=`${module}\u0000${phase}`;
+      if(!groups[key])groups[key]={module,phase,items:[]};
+      groups[key].items.push(item);
+    });
+    const sortedGroups=Object.values(groups).sort((a,b)=>a.module.localeCompare(b.module,'pt-BR')||(phaseOrder[a.phase]||9)-(phaseOrder[b.phase]||9));
+    cont.innerHTML=sortedGroups.map(({module,phase,items})=>`
       <div style="margin-bottom:18px">
-        <div class="label" style="margin-bottom:8px">${htmlSafe(module)} · ${items.length} aula(s)</div>
+        <div class="label" style="margin-bottom:8px">${htmlSafe(module)} · ${htmlSafe(phase)} · ${items.length} aula(s)</div>
         ${items.map(({lesson:s,index:i})=>{
           const lock=s.locked;
           const scheduled=!isContentPublished(s);
@@ -9877,18 +9928,18 @@ function renderAdminSemanas(){
           </div>`;}).join('')}
       </div>`).join('');
   }else{
-    cont.innerHTML=`<div class="text-muted text-sm text-center">${selectedModule?'Nenhuma aula deste módulo está ativa nesta turma.':'Nenhuma aula cadastrada para esta turma.'}</div>`;
+    cont.innerHTML=`<div class="text-muted text-sm text-center">${selectedModule||selectedPhase?'Nenhuma aula desta seleção está ativa nesta turma.':'Nenhuma aula cadastrada para esta turma.'}</div>`;
   }
   if(!archiveCont)return;
-  const archivedVisible=archived.map((lesson,index)=>({lesson,index})).filter(item=>!selectedModule||lessonModuleName(item.lesson)===selectedModule);
+  const archivedVisible=archived.map((lesson,index)=>({lesson,index})).filter(item=>(!selectedModule||lessonModuleName(item.lesson)===selectedModule)&&(!selectedPhase||lessonPhaseName(item.lesson)===selectedPhase));
   archiveCont.innerHTML=archivedVisible.length?archivedVisible.map(({lesson,index})=>`
     <div class="admin-item" style="margin-bottom:8px">
-      <div><div class="admin-item-name">📦 ${htmlSafe(lesson.title)}</div><div class="admin-item-sub">${htmlSafe(lessonModuleName(lesson))} · ${lessonAdminMeta(lesson)} · origem: ${htmlSafe(lesson.sourceRoomName||'turma anterior')}</div></div>
+      <div><div class="admin-item-name">📦 ${htmlSafe(lesson.title)}</div><div class="admin-item-sub">${htmlSafe(lessonModuleName(lesson))} · ${htmlSafe(lessonPhaseName(lesson))} · ${lessonAdminMeta(lesson)} · origem: ${htmlSafe(lesson.sourceRoomName||'turma anterior')}</div></div>
       <div style="display:flex;gap:4px">
         <button class="admin-edit" title="Usar uma cópia em uma turma" onclick="adminReuseArchivedSemana(${index})"><i class="fa-solid fa-share-from-square"></i></button>
         <button class="admin-delete" title="Excluir definitivamente da biblioteca" onclick="adminDeleteArchivedSemana(${index})"><i class="fa-solid fa-trash"></i></button>
       </div>
-    </div>`).join(''):`<div class="text-muted text-sm text-center">${selectedModule?'Nenhuma aula arquivada neste módulo.':'Sua biblioteca ainda está vazia. Use o botão de arquivar em uma aula da turma.'}</div>`;
+    </div>`).join(''):`<div class="text-muted text-sm text-center">${selectedModule||selectedPhase?'Nenhuma aula arquivada nesta seleção.':'Sua biblioteca ainda está vazia. Use o botão de arquivar em uma aula da turma.'}</div>`;
 }
 function adminCopySemana(rKey,i){
   const s=DATABASE.semanas[rKey][i];
