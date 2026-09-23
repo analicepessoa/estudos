@@ -8,127 +8,134 @@ const BOOK2_AUDIO_CATALOG = [
     expressions:[["The game ended with no winner.","O jogo terminou sem vencedor.","Passado simples"],["We tried our best.","Nós demos o nosso melhor.","Esforço"]]
   },
   {
-    id:"book2_intermediate01_02", level:"intermediate01", order:2, unit:"1", lesson:"2", page:"",
-    title:"Uma manhã cheia de imprevistos", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 1_Lesson 2.mp3", duration:51.06,
+    id:"book2_intermediate01_02", level:"intermediate01", order:2, unit:"1", lesson:"2", page:"18",
+    title:"Uma manhã cheia de imprevistos", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/2 - pag 18 - Intermediate 1_Unit 1_Lesson 2.mp3", duration:51.06,
     transcript:`Michael? Hi, Megan. Oh, what's wrong? You really don't sound well. Yeah, the day didn't start very well, you see. Oh, what happened? You know, today I woke up late and I didn't have breakfast. I ran to the bus stop, but I didn't catch the bus on time. Wow, tough morning, huh? Yeah, and when I arrived here, I remembered I didn't bring the reports we worked on the whole weekend. That's why I called you. Well, I have a copy here with me. Do you want me to take it to you? Oh, yes, please. Okay, I'll be in your room in a minute.`,
     vocab:[["wake up late","acordar tarde"],["bus stop","ponto de ônibus"],["catch the bus","pegar o ônibus"],["on time","no horário"],["tough morning","manhã difícil"],["report","relatório"]],
     expressions:[["What's wrong?","O que aconteceu?","Perguntar sobre um problema"],["That's why I called you.","Foi por isso que liguei para você.","Explicar uma razão"],["I'll be there in a minute.","Estarei aí em um minuto.","Promessa imediata"]]
   },
   {
-    id:"book2_intermediate01_03", level:"intermediate01", order:3, unit:"1", lesson:"3", page:"",
-    title:"Entrevista de emprego — formação", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 1_Lesson 3_Dialogue 1.mp3", duration:20.43,
+    id:"book2_intermediate01_03", level:"intermediate01", order:3, unit:"1", lesson:"3", page:"23",
+    title:"Entrevista de emprego — formação", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/3 - pag 23 - Intermediate 1_Unit 1_Lesson 3_Dialogue 1.mp3", duration:20.43,
     transcript:`Welcome to our office, Mrs. Allen. Thank you, Mr. Johnson. It's my pleasure. Would you like anything? Maybe a cup of coffee? I'm fine. We can start anytime you want. All right. First question is: where did you study?`,
     vocab:[["office","escritório"],["pleasure","prazer"],["anytime","a qualquer momento"],["first question","primeira pergunta"]],
     expressions:[["It's my pleasure.","O prazer é meu.","Cortesia formal"],["Would you like anything?","Você gostaria de alguma coisa?","Oferta educada"],["We can start anytime.","Podemos começar a qualquer momento.","Disponibilidade"]]
   },
   {
-    id:"book2_intermediate01_04", level:"intermediate01", order:4, unit:"1", lesson:"3", page:"",
-    title:"Entrevista de emprego — experiência", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 1_Lesson 3_Dialogue 2.mp3", duration:22.98,
+    id:"book2_intermediate01_04", level:"intermediate01", order:4, unit:"1", lesson:"3", page:"23",
+    title:"Entrevista de emprego — experiência", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/4 - pag 23 - IIntermediate 1_Unit 1_Lesson 3_Dialogue 2.mp3", duration:22.98,
     transcript:`Very interesting. I've always wanted to study in that institution. It was hard, but I fulfilled that dream. I really admire that. Now tell me, do you have any previous experience? Certainly, sir. In my last job, I worked for CSS Offices. What did you do there?`,
     vocab:[["institution","instituição"],["fulfill a dream","realizar um sonho"],["previous experience","experiência anterior"],["last job","emprego anterior"]],
     expressions:[["I've always wanted to...","Eu sempre quis...","Desejo de longa duração"],["I fulfilled that dream.","Eu realizei esse sonho.","Conquista"],["What did you do there?","O que você fazia lá?","Experiência profissional"]]
   },
   {
-    id:"book2_intermediate01_05", level:"intermediate01", order:5, unit:"1", lesson:"3", page:"",
-    title:"Entrevista de emprego — desligamento", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 1_Lesson 3_Dialogue 3.mp3", duration:17.87,
+    id:"book2_intermediate01_05", level:"intermediate01", order:5, unit:"1", lesson:"3", page:"23",
+    title:"Entrevista de emprego — desligamento", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/5 - pag 23 - IIntermediate 1_Unit 1_Lesson 3_Dialogue 3.mp3", duration:17.87,
     transcript:`You have what we are looking for, Mrs. Allen. That's good. Thank you. I really hope we can work together. I just have one question about your previous job. As you wish. Why did you leave?`,
     vocab:[["look for","procurar"],["work together","trabalhar juntos"],["previous job","emprego anterior"],["leave a job","deixar um emprego"]],
     expressions:[["You have what we are looking for.","Você tem o que estamos procurando.","Avaliação profissional"],["I hope we can work together.","Espero que possamos trabalhar juntos.","Expectativa"],["Why did you leave?","Por que você saiu?","Pergunta no passado"]]
   },
   {
-    id:"book2_intermediate01_06", level:"intermediate01", order:6, unit:"2", lesson:"5", page:"",
-    title:"Conselho sobre um animal perigoso", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 2_Lesson 5.mp3", duration:58.72,
+    id:"book2_intermediate01_06_lesson4", level:"intermediate01", order:6, unit:"1", lesson:"4", page:"25",
+    title:"Entrevista completa para uma vaga", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/6 - pag 25 - IIntermediate 1_Unit 1_Lesson 4_ enterview.wav", duration:61.28,
+    transcript:`Welcome, Miss Williams. I'm Jason White. Thank you, Mr. White. Please call me Patricia. All right. So, I wanted to start by asking you about your educational background. Where did you study? I studied at the University of Utah for four years. Great. What did you study there? I studied administration. I have an undergraduate degree. That's interesting. Now, Patricia, tell me about your last job. Where did you work? I worked for BBB Offices in Salt Lake City. I was a secretary. What were your responsibilities there? I answered phone calls, received emails, printed documents and scheduled meetings. I'm impressed you did all that. I guess you're the perfect person for this position. I'd like you to start on Monday. Is that possible? Thank you, Mr. White. I'm really looking forward to this.`,
+    vocab:[["educational background","formação acadêmica"],["undergraduate degree","diploma de graduação"],["last job","emprego anterior"],["secretary","secretária"],["responsibilities","responsabilidades"],["schedule meetings","agendar reuniões"],["position","vaga / cargo"]],
+    expressions:[["Please call me Patricia.","Por favor, me chame de Patricia.","Apresentação"],["What were your responsibilities?","Quais eram suas responsabilidades?","Entrevista de emprego"],["I'm looking forward to this.","Estou ansiosa por isso.","Expectativa positiva"]]
+  },
+  {
+    id:"book2_intermediate01_06", level:"intermediate01", order:7, unit:"2", lesson:"5", page:"32",
+    title:"Conselho sobre um animal perigoso", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/7 - pag 32 - Intermediate 1_Unit 2_Lesson 5.mp3", duration:58.72,
     transcript:`Welcome to another edition of Agony Aunt. Today I have a letter here from Agnes Jones, and she has quite a serious problem. She says she loves pets, but her neighbor got a snake recently and the snake frequently escapes from its cage. She has found this snake many times in her house, especially in the corridors and on the floor. Well, here's my advice, Agnes: people should not put other people in danger. I think it's dangerous to have a snake around, so you ought to talk to your neighbor. This is a situation you could bring to the condo meetings. There, you could establish an exotic animal room. That's it! We'll be back soon. Don't change channels!`,
     vocab:[["neighbor","vizinho"],["snake","cobra"],["escape from its cage","escapar da gaiola"],["put someone in danger","colocar alguém em perigo"],["advice","conselho"],["condo meeting","reunião de condomínio"]],
     expressions:[["Here's my advice.","Aqui está meu conselho.","Dar conselho"],["You ought to talk to your neighbor.","Você deveria conversar com seu vizinho.","Recomendação"],["Don't change channels!","Não mude de canal!","Programa de rádio/TV"]]
   },
   {
-    id:"book2_intermediate01_07", level:"intermediate01", order:7, unit:"2", lesson:"6", page:"",
-    title:"Segredos para um bom churrasco", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 2_Lesson 6.mp3", duration:45.96,
+    id:"book2_intermediate01_07", level:"intermediate01", order:8, unit:"2", lesson:"6", page:"37",
+    title:"Segredos para um bom churrasco", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/8 - pag 37 - Intermediate 1_Unit 2_Lesson 6.mp3", duration:45.96,
     transcript:`You know, my family's specialty is barbecue. Whenever we get together, there's barbecue and I'm always the one responsible for the grill. I'll tell you some secrets to prepare the perfect meat. First, you need to marinate it. After that, you have to pay attention to the embers. You must use high-quality coal to have good embers. You need to fire up the grill carefully and don't get burned, please. You mustn't forget any vegetarian friends. For them, I prepare some skewers and they usually love them. With these tips, your barbecue will be perfect, trust me.`,
     vocab:[["barbecue","churrasco"],["grill","churrasqueira"],["marinate","marinar"],["embers","brasas"],["coal","carvão"],["skewer","espetinho"]],
     expressions:[["You have to pay attention.","Você precisa prestar atenção.","Obrigação"],["You mustn't forget.","Você não pode esquecer.","Alerta"],["Trust me.","Confie em mim.","Garantia informal"]]
   },
   {
-    id:"book2_intermediate01_08", level:"intermediate01", order:8, unit:"Revisão 1", lesson:"Unidades 1 e 2", page:"",
-    title:"Reencontro e convite para um churrasco", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 2.1_Review  Units 1_2.mp3", duration:35.74,
+    id:"book2_intermediate01_08", level:"intermediate01", order:9, unit:"Revisão 1", lesson:"Unidades 1 e 2", page:"48",
+    title:"Reencontro e convite para um churrasco", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/9 - pag 48 - Intermediate 1_Unit 2.1_Review  Units 1_2.mp3", duration:35.74,
     transcript:`I loved last night at Edward's. Oh, me too. The best part was when they opened the dance floor. Yeah, exactly. I danced a lot. You know, I missed Edward. I'm glad he came back to the neighborhood. Yeah, he visited me some weeks ago and said he was coming back. By the way, he invited us for a barbecue at his house next weekend. Are you going? Oh, yeah, of course.`,
     vocab:[["dance floor","pista de dança"],["miss someone","sentir falta de alguém"],["neighborhood","bairro"],["come back","voltar"],["by the way","a propósito"],["invite","convidar"]],
     expressions:[["The best part was...","A melhor parte foi...","Relatar experiência"],["I'm glad he came back.","Fico feliz que ele voltou.","Satisfação"],["Are you going?","Você vai?","Perguntar sobre plano"]]
   },
   {
-    id:"book2_intermediate01_09", level:"intermediate01", order:9, unit:"3", lesson:"9", page:"",
-    title:"Planos de viagem que mudaram", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 3_Lesson 9.mp3", duration:68.94,
+    id:"book2_intermediate01_09", level:"intermediate01", order:10, unit:"3", lesson:"9", page:"55",
+    title:"Planos de viagem que mudaram", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/10 - pag 55 - Intermediate 1_Unit 3_Lesson 9.mp3", duration:68.94,
     transcript:`Hello, Amanda. How are you? Hi, Jennifer. I'm fine, and you? I'm fine too. Listen, Peter's just called and told me about our weekend trip. We're taking the executive bus at 6 a.m. and we're making two stops on the road. Jennifer, I have also planned the activities we're doing. We're visiting some art galleries, museums and theaters. The prices are quite reasonable. Jennifer. Oh, the hotel. We're staying at a hotel downtown, near all the attractions we want to visit. You and Edward are staying in a room right next to ours. Jennifer, listen, please. Sure. Are you as excited as I am? I was, but unfortunately Edward and I aren't going on this trip with you and Peter. What? Yeah, I'm sorry. Edward received a call from his boss yesterday and now he's working the whole weekend. He really couldn't change that. We'll have to leave it for another time. Oh, my. How unfortunate. But that's okay. I'll talk to Peter and see what we can do.`,
     vocab:[["weekend trip","viagem de fim de semana"],["executive bus","ônibus executivo"],["art gallery","galeria de arte"],["reasonable price","preço razoável"],["downtown","centro da cidade"],["attraction","atração"]],
     expressions:[["We're taking the bus.","Nós vamos de ônibus.","Plano futuro"],["Are you as excited as I am?","Você está tão animada quanto eu?","Comparação"],["We'll leave it for another time.","Deixaremos para outra ocasião.","Adiar plano"]]
   },
   {
-    id:"book2_intermediate01_10", level:"intermediate01", order:10, unit:"3", lesson:"10", page:"",
-    title:"Preparativos para uma festa", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 3_Lesson 10.mp3", duration:48.51,
+    id:"book2_intermediate01_10", level:"intermediate01", order:11, unit:"3", lesson:"10", page:"60",
+    title:"Preparativos para uma festa", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/11 - pag 60 - Intermediate 1_Unit 3_Lesson 10.mp3", duration:48.51,
     transcript:`Anthony, will you come to my get-together this weekend? I'm sorry, but I definitely won't. What? I'm kidding, man. Of course I will. Jerk, you got me! How about the preparations? Well, everything is okay so far. On Friday, I'll buy the food and drinks. The DJ will arrive early. What time do I have to be there? I'll wait for you by 4 p.m. Janice will leave work a little later this weekend, so we'll be there at about 6. Is that okay? Yeah, she told me she'll work overtime this weekend. Great. I can wait. Thanks, dude. See ya.`,
     vocab:[["get-together","encontro informal"],["kid someone","brincar com alguém"],["preparations","preparativos"],["so far","até agora"],["work overtime","fazer hora extra"]],
     expressions:[["You got me!","Você me pegou!","Brincadeira"],["Everything is okay so far.","Está tudo bem até agora.","Situação atual"],["What time do I have to be there?","A que horas preciso estar lá?","Perguntar horário"]]
   },
   {
-    id:"book2_intermediate01_11", level:"intermediate01", order:11, unit:"3", lesson:"11", page:"",
-    title:"Pedido de demissão e novo negócio", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 3_Lesson 11_Passage 1.mp3", duration:17.87,
+    id:"book2_intermediate01_11", level:"intermediate01", order:12, unit:"3", lesson:"11", page:"64",
+    title:"Pedido de demissão e novo negócio", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/12 -pag 64 - Intermediate 1_Unit 3_Lesson 11_Passage 1.mp3", duration:17.87,
     transcript:`Take a look at this, Chris. What is it? My resignation letter. Why? Why are you leaving? I'm leaving because I'm going to open my own company. Really? I'm happy for you, then. I hope only the best for you.`,
     vocab:[["take a look","dar uma olhada"],["resignation letter","carta de demissão"],["leave","sair"],["open a company","abrir uma empresa"]],
     expressions:[["Why are you leaving?","Por que você está saindo?","Perguntar motivo"],["I'm going to open my own company.","Vou abrir minha própria empresa.","Plano"],["I'm happy for you.","Fico feliz por você.","Boa notícia"]]
   },
   {
-    id:"book2_intermediate01_12", level:"intermediate01", order:12, unit:"3", lesson:"11", page:"",
-    title:"Previsão de uma promoção", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 3_Lesson 11_Passage 2.mp3", duration:30.64,
+    id:"book2_intermediate01_12", level:"intermediate01", order:13, unit:"3", lesson:"11", page:"64",
+    title:"Previsão de uma promoção", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/13 - pag 64 - Intermediate 1_Unit 3_Lesson 11_Passage 2.mp3", duration:30.64,
     transcript:`I can see something. What? It's not clear. I don't know exactly what it is. Please, please try. Oh, it's clear now. Your future is bright. Seriously? Yes, it's certain. You will get a wonderful promotion.`,
     vocab:[["clear","claro"],["exactly","exatamente"],["future","futuro"],["bright","promissor"],["promotion","promoção"]],
     expressions:[["I don't know exactly.","Eu não sei exatamente.","Incerteza"],["Your future is bright.","Seu futuro é promissor.","Previsão positiva"],["You will get a promotion.","Você receberá uma promoção.","Futuro com will"]]
   },
   {
-    id:"book2_intermediate01_13", level:"intermediate01", order:13, unit:"3", lesson:"11", page:"",
-    title:"Previsão do tempo", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 3_Lesson 11_Passage 3.mp3", duration:17.87,
+    id:"book2_intermediate01_13", level:"intermediate01", order:14, unit:"3", lesson:"11", page:"64",
+    title:"Previsão do tempo", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/14 - pag 64 - Intermediate 1_Unit 3_Lesson 11_Passage 3.mp3", duration:17.87,
     transcript:`Now, the forecast. The temperatures have been rising in the last few days and the maximum continues to rise. We have clear skies and some warm breeze, especially near the coast. Tomorrow is going to be a sunny and hot day.`,
     vocab:[["forecast","previsão do tempo"],["temperature","temperatura"],["rise","subir"],["clear skies","céu limpo"],["warm breeze","brisa morna"],["coast","litoral"]],
     expressions:[["Temperatures have been rising.","As temperaturas vêm subindo.","Tendência recente"],["Tomorrow is going to be sunny.","Amanhã será ensolarado.","Previsão"]]
   },
   {
-    id:"book2_intermediate01_14", level:"intermediate01", order:14, unit:"3", lesson:"12", page:"",
-    title:"Possibilidade de faltar à festa", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 3_Lesson 12_Situation 1.mp3", duration:12.77,
+    id:"book2_intermediate01_14", level:"intermediate01", order:15, unit:"3", lesson:"12", page:"69",
+    title:"Possibilidade de faltar à festa", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/15 - pag 69 - Intermediate 1_Unit 3_Lesson 12_Situation 1.mp3", duration:12.77,
     transcript:`We will go to Megan's party. Well, I might not go. I have to study for college.`,
     vocab:[["party","festa"],["might not","talvez não"],["have to","ter que"],["college","faculdade"]],
     expressions:[["I might not go.","Talvez eu não vá.","Possibilidade"],["I have to study.","Eu tenho que estudar.","Obrigação"]]
   },
   {
-    id:"book2_intermediate01_15", level:"intermediate01", order:15, unit:"3", lesson:"12", page:"",
-    title:"Possibilidade de promoção", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 3_Lesson 12_Situation 2.mp3", duration:10.21,
+    id:"book2_intermediate01_15", level:"intermediate01", order:16, unit:"3", lesson:"12", page:"69",
+    title:"Possibilidade de promoção", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/16 - pag 69 - Intermediate 1_Unit 3_Lesson 12_Situation 2.mp3", duration:10.21,
     transcript:`Why are you so happy? I may get the promotion very soon.`,
     vocab:[["happy","feliz"],["may","talvez"],["get a promotion","receber uma promoção"],["very soon","muito em breve"]],
     expressions:[["Why are you so happy?","Por que você está tão feliz?","Perguntar motivo"],["I may get the promotion.","Talvez eu receba a promoção.","Possibilidade"]]
   },
   {
-    id:"book2_intermediate01_16", level:"intermediate01", order:16, unit:"3", lesson:"12", page:"",
-    title:"Possível viagem pela Europa", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 3_Lesson 12_Situation 3.mp3", duration:12.77,
+    id:"book2_intermediate01_16", level:"intermediate01", order:17, unit:"3", lesson:"12", page:"69",
+    title:"Possível viagem pela Europa", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/17 - pag 69 - Intermediate 1_Unit 3_Lesson 12_Situation 3.mp3", duration:12.77,
     transcript:`Have you decided where you're going on your vacation? I might travel around Europe. I don't know yet.`,
     vocab:[["decide","decidir"],["vacation","férias"],["travel around","viajar por"],["Europe","Europa"],["yet","ainda"]],
     expressions:[["Have you decided...?","Você já decidiu...?","Present Perfect"],["I don't know yet.","Eu ainda não sei.","Decisão pendente"]]
   },
   {
-    id:"book2_intermediate01_17", level:"intermediate01", order:17, unit:"3", lesson:"12", page:"",
-    title:"Horário de chegada do voo", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 3_Lesson 12_Situation 4.mp3", duration:10.21,
+    id:"book2_intermediate01_17", level:"intermediate01", order:18, unit:"3", lesson:"12", page:"69",
+    title:"Horário de chegada do voo", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/18 - pag 69 - Intermediate 1_Unit 3_Lesson 12_Situation 4.mp3", duration:10.21,
     transcript:`When will Barry arrive? His plane lands at five. He'll soon be here.`,
     vocab:[["arrive","chegar"],["plane","avião"],["land","pousar"],["soon","em breve"]],
     expressions:[["When will he arrive?","Quando ele chegará?","Pergunta futura"],["His plane lands at five.","O avião dele pousa às cinco.","Horário programado"]]
   },
   {
-    id:"book2_intermediate01_18", level:"intermediate01", order:18, unit:"4", lesson:"15", page:"",
-    title:"Orientações para a prova de software", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 4_Lesson 15.mp3", duration:58.72,
+    id:"book2_intermediate01_18", level:"intermediate01", order:19, unit:"4", lesson:"15", page:"82",
+    title:"Orientações para a prova de software", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/19 - pag 82 - Intermediate 1_Unit 4_Lesson 15.mp3", duration:58.72,
     transcript:`All right, everybody. Good evening. If you open your books to page 55, you will find today's lesson. Well, this lesson is very important and you will have to talk about it at the midterm exam. If you don't pay attention to it, you won't pass the test, I'm sure. Now, this software in the picture is one of the most used editing programs on the market. If you know how to use it well, you will have a guaranteed position. That's certain. Mr. Banks? Yes? Will we have the chance to use the software before the exam? Well, right now we will only check the theory, but if you want, I will give you a week or two of practice. Yes, sir. That would be awesome. All right. Now, let's start with the whole thing regarding the...`,
     vocab:[["midterm exam","prova do meio do curso"],["pay attention","prestar atenção"],["pass the test","passar na prova"],["editing software","programa de edição"],["theory","teoria"],["practice","prática"]],
     expressions:[["If you don't pay attention, you won't pass.","Se você não prestar atenção, não passará.","Primeira condicional"],["Will we have the chance...?","Teremos a oportunidade...?","Pergunta educada"],["That would be awesome.","Isso seria incrível.","Reação positiva"]]
   },
   {
-    id:"book2_intermediate01_19", level:"intermediate01", order:19, unit:"Revisão 2", lesson:"Unidades 3 e 4", page:"",
-    title:"Notícia sobre uma falsa denúncia", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/Intermediate 1_Unit 4.1_Review Units 3_4.mp3", duration:43.4,
+    id:"book2_intermediate01_19", level:"intermediate01", order:20, unit:"Revisão 2", lesson:"Unidades 3 e 4", page:"91",
+    title:"Notícia sobre uma falsa denúncia", file:"Audios One World/LIVRO 02/INTERMEDIATE 01/20 - pag 91 - Intermediate 1_Unit 4.1_Review Units 3_4.mp3", duration:43.4,
     transcript:`Olympic swimmer Ryan Lochte loses all his major sponsors after the Rio incident. The athlete alleged he had been robbed at gunpoint in Rio. However, investigators discovered that Lochte and his friends had actually vandalized a gas station's bathroom after leaving a party in Barra, one of the wealthiest neighborhoods in Rio. The security guard pointed a gun in order to stop the athletes from escaping the place. The athletes paid for the vandalism and were released. That's what we say: lies are never worth it. Besides that, they can really cost you money.`,
     vocab:[["sponsor","patrocinador"],["allege","alegar"],["at gunpoint","sob ameaça de arma"],["vandalize","depredar"],["security guard","segurança"],["be released","ser liberado"]],
     expressions:[["He alleged he had been robbed.","Ele alegou que havia sido roubado.","Discurso indireto"],["Lies are never worth it.","Mentiras nunca valem a pena.","Consequência"]]
