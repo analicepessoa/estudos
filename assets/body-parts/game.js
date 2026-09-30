@@ -130,7 +130,7 @@
   function action(a){
     if(['learn','practice','listen'].includes(a)){start(a);return;}
     if(a==='open'||a==='open-basic'){chapter='basic-body';screen='setup';}
-    if(a==='open-details'){if(!adminPreview()&&!phaseOnePassed()&&!sessionPassed()){screen='home';message='Conclua o teste da Fase 1 antes de abrir os detalhes.';}else{chapter='body-details';detailArea=null;screen='setup';}}
+    if(a==='open-details'){if(!adminPreview()&&!phaseOnePassed()&&!sessionPassed()){screen='home';message='Conclua o teste da Fase 1 antes de abrir os detalhes.';}else{chapter='body-details';detailArea=null;screen='detail-map';}}
     if(a==='locked-regions'){message='Conclua o teste da Fase 1 para liberar os detalhes por região.';screen='home';}
     if(a==='home'){cancelAudio();screen='home';}
     if(a==='exit'){if(!leave())return;}
