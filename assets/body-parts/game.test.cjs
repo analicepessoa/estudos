@@ -27,5 +27,6 @@ action('home');assert.match(host.innerHTML,/Fase 2/);assert.match(host.innerHTML
 context.BodyParts.reset();context.BodyParts.open('student-B');assert.doesNotMatch(host.innerHTML,/Seus recordes/);
 context.BodyParts.open('student-A');assert.match(host.innerHTML,/Fase 2/);assert.match(host.innerHTML,/Disponível/);
 storage.set('ap_body_parts_v1_student-A','broken');context.BodyParts.open('student-A');assert.match(host.innerHTML,/Bloqueada/);
+context.isTeacherPreview=()=>true;context.BodyParts.open('teacher-preview');assert.match(host.innerHTML,/Prévia administrativa/);action('open-details');assert.match(host.innerHTML,/Detalhes por região/);context.isTeacherPreview=()=>false;
 synth.voices=[];action('open-basic');action('listen');assert.match(host.innerHTML,/voz em inglês não está disponível/);choose('eye');assert.doesNotMatch(host.innerHTML,/Correct!/);
 console.log('PASS: completed session, answer pronunciation, rapid duplicate, assisted answer, review, idempotent save, account isolation, corrupt storage and missing audio.');
