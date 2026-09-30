@@ -55,8 +55,8 @@
     {id:'heel',area:'lower',en:'heels',pt:'calcanhares',example:'My heels hurt in these shoes.',examplePt:'Meus calcanhares doem com estes sapatos.',regions:[[402,1400,31,28],[633,1400,31,28]]}
   ];
   const chapters={
-    'basic-body':{id:'basic-body',phase:1,title:'Corpo básico',short:'corpo inteiro',description:'Explore o personagem inteiro e aprenda o vocabulário básico antes de fazer o teste.',words:basicBodyWords,total:40,passPoints:280},
-    'body-details':{id:'body-details',phase:2,title:'Detalhes por região',short:'detalhes',description:'Toque primeiro em uma grande região do corpo para ampliar e explorar seus detalhes.',words:detailWords,total:46}
+    'basic-body':{id:'basic-body',phase:1,title:'Corpo básico',short:'corpo inteiro',description:'Explore o personagem inteiro e faça um teste curto com perguntas sorteadas.',words:basicBodyWords,total:12,passPoints:90},
+    'body-details':{id:'body-details',phase:2,title:'Detalhes por região',short:'detalhes',description:'Toque primeiro em uma grande região do corpo para ampliar e pratique com perguntas sorteadas.',words:detailWords,total:12,passPoints:90}
   };
   const words=basicBodyWords;
   function rounds(list=words,random=Math.random){
@@ -83,7 +83,8 @@
     const isChapterFour=r?.version===4&&((r.chapter==='basic-body'&&r.total===40&&r.points<=400&&r.first<=40)||(r.chapter==='body-details'&&r.total===18&&r.points<=180&&r.first<=18));
     const isChapterFive=r?.version===5&&((r.chapter==='basic-body'&&r.total===40&&r.points<=400&&r.first<=40)||(r.chapter==='body-details'&&r.total===26&&r.points<=260&&r.first<=26));
     const isChapterSix=r?.version===6&&((r.chapter==='basic-body'&&r.total===40&&r.points<=400&&r.first<=40)||(r.chapter==='body-details'&&r.total===46&&r.points<=460&&r.first<=46));
-    return r && typeof r.id==='string' && ['practice','listen'].includes(r.mode) && ['visual','list'].includes(r.format) && Number.isInteger(r.points) && r.points>=0 && Number.isInteger(r.first) && r.first>=0 && (isOriginal||isExpanded||isChapterThree||isChapterFour||isChapterFive||isChapterSix);
+    const isChapterSeven=r?.version===7&&((r.chapter==='basic-body'||r.chapter==='body-details')&&r.total===12&&r.points<=120&&r.first<=12);
+    return r && typeof r.id==='string' && ['practice','listen'].includes(r.mode) && ['visual','list'].includes(r.format) && Number.isInteger(r.points) && r.points>=0 && Number.isInteger(r.first) && r.first>=0 && (isOriginal||isExpanded||isChapterThree||isChapterFour||isChapterFive||isChapterSix||isChapterSeven);
   }
   const api={words,chapters,detailAreas,rounds,answer,validRecord};
   if(typeof module!=='undefined')module.exports=api;

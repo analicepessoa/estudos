@@ -1,7 +1,7 @@
 /* First playable chapter: head and face. Scores stay separate from class XP. */
 (()=>{
   'use strict';
-  const C=BodyPartsCore, image='./assets/body-parts/character.png', SET_VERSION=6;
+  const C=BodyPartsCore, image='./assets/body-parts/character.png', SET_VERSION=7;
   let host,owner=null,screen='home',mode='learn',format='visual',zoom=false,selected=null,chapter='basic-body',detailArea=null;
   let order=[],index=0,round=null,results=[],sessionId='',saved=false,saveError=false,scoreFormat='visual';
   let review=false,reviewQueue=[],reviewTeaching=false,lock=false,sound=true,audioReady=false,audioToken=0;
@@ -11,7 +11,7 @@
   const word=id=>chapterWords().find(w=>w.id===id);
   const sessionPoints=()=>results.reduce((s,r)=>s+r.points,0);
   const adminPreview=()=>typeof window.isTeacherPreview==='function'&&window.isTeacherPreview();
-  const phaseOnePassed=()=>records().some(r=>(r.version===4||r.version===5||r.version===SET_VERSION)&&r.chapter==='basic-body'&&r.mode==='practice'&&r.points>=C.chapters['basic-body'].passPoints);
+  const phaseOnePassed=()=>records().some(r=>[4,5,6,SET_VERSION].includes(r.version)&&r.chapter==='basic-body'&&r.mode==='practice'&&r.points>=C.chapters['basic-body'].passPoints);
   const sessionPassed=()=>chapter==='basic-body'&&mode==='practice'&&sessionPoints()>=current().passPoints;
   const button=(label,action,primary=false,extra='')=>`<button type="button" class="bp-btn${primary?' primary':''}" data-action="${action}" ${extra}>${label}</button>`;
   function key(){return owner?`ap_body_parts_v1_${encodeURIComponent(owner)}`:null;}
@@ -41,7 +41,7 @@
       cancelAudio();mode='learn';screen='detail-map';selected=null;detailArea=null;message='';render(true);return;
     }
     cancelAudio();mode=nextMode;screen='play';review=false;selected=null;index=0;results=[];saved=false;saveError=false;
-    order=C.rounds(chapterWords());scoreFormat=format;sessionId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;
+    order=C.rounds(chapterWords()).slice(0,current().total);scoreFormat=format;sessionId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;
     zoom=false;message='';newRound();
   }
   function newRound(){
@@ -92,6 +92,12 @@
     const regions=Object.values(C.detailAreas).filter(area=>area.primary!==false).flatMap(area=>area.regions.map(([x,y,rx,ry])=>`<ellipse class="bp-region bp-detail-region" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" data-detail-area="${area.id}" role="button" tabindex="0" aria-label="${area.label}"><title>${area.label}</title></ellipse>`)).join('');
     return `<div class="bp-art bp-detail-map"><svg viewBox="0 0 1024 1536" role="img" aria-label="Corpo inteiro. Escolha uma região para ver os detalhes."><image href="${image}" width="1024" height="1536"/>${regions}</svg></div>`;
   }
+  function compactChoices(targetId){
+    const items=chapterWords(),targetIndex=items.findIndex(item=>item.id===targetId);
+    if(targetIndex<0)return items;
+    const indexes=[targetIndex,(targetIndex+3)%items.length,(targetIndex+7)%items.length,(targetIndex+11)%items.length];
+    return [...new Map(indexes.map(index=>[items[index].id,items[index]])).values()];
+  }
   function render(focus=false){
     if(!host)return;
     const focused=document.activeElement;
@@ -117,10 +123,10 @@
       const total=order.length||current().total;
       const example=learning&&selected?`<div class="bp-example"><span>Use em uma frase</span><strong>${word(target).example}</strong><small>${word(target).examplePt}</small></div>`:'';
       const modeLabel=learning?'Exploração livre · sem pontuação':review?'Revisão · sem alterar seus pontos':`${mode==='listen'?'Ouvir':'Teste'} · Rodada ${index+1} de ${total} · ${sessionPoints()} pontos`;
-      const options=learning&&chapter==='body-details'&&detailArea?chapterWords().filter(w=>w.area===detailArea):chapterWords();
+      const options=learning&&chapter==='body-details'&&detailArea?chapterWords().filter(w=>w.area===detailArea):!learning&&format==='visual'?compactChoices(round.target):chapterWords();
       const detailBack=detailArea==='fingers'?button('← Braços e mãos','open-hands'):button('← Regiões','detail-map');
       const fingerShortcut=learning&&detailArea==='hands'?button('Dedos da mão','open-fingers',true):'';
-      host.innerHTML=`<div class="bp-actions">${learning&&chapter==='body-details'?detailBack:button(review?'Continuar depois':'← Sair','exit')}${fingerShortcut}${button(sound?'Som ligado':'Som desligado','sound',false,`aria-pressed="${sound}"`)}</div><div class="bp-card"><span class="bp-kicker">${modeLabel}</span>${!learning&&!review?`<progress class="bp-progress" value="${index}" max="${total}" aria-label="Rodadas concluídas"></progress>`:''}<div class="bp-stage${format==='visual'?' bp-study-stage':''}">${format==='visual'?art():''}<div><h2 class="bp-word" tabindex="-1">${title}</h2>${learning&&selected||reviewTeaching?`<p>${word(target).pt}</p>`:''}${example}<p class="bp-muted">${learning?'Passe o mouse para destacar uma região e clique para ouvir a palavra. Você também pode escolher abaixo.':mode==='listen'&&!sound?'Exercício pausado. Ligue o som para continuar.':'Selecione no desenho ou nos botões abaixo.'}</p>${target?button('Ouvir novamente','audio'):''}<div class="bp-options" aria-label="Partes do corpo">${options.map(w=>`<button type="button" data-word="${w.id}" class="${(reviewTeaching?round.target:selected)===w.id?'selected':''}" ${!learning&&(round.done||reviewTeaching||mode==='listen'&&(!sound||!audioReady))?'disabled':''}>${learning?w.en+' · ':''}${w.pt}</button>`).join('')}</div><div class="bp-status" role="status" aria-live="polite">${message}</div>${reviewTeaching?button('Tentar sem ajuda','try',true):!learning&&round.done?button(review?'Próxima palavra':index===total-1?'Ver resultado':'Próxima','next',true):''}${learning?`<div class="bp-actions">${button(chapter==='basic-body'?'Fazer o teste da Fase 1':'Praticar detalhes','practice',true)}</div>`:''}<p class="bp-muted">${format==='visual'?'Os botões ajudam nas regiões pequenas. Ao usá-los no teste, o recorde conta como atividade em lista.':''}</p></div></div></div>`;
+      host.innerHTML=`<div class="bp-actions">${learning&&chapter==='body-details'?detailBack:button(review?'Continuar depois':'← Sair','exit')}${fingerShortcut}${button(sound?'Som ligado':'Som desligado','sound',false,`aria-pressed="${sound}"`)}</div><div class="bp-card"><span class="bp-kicker">${modeLabel}</span>${!learning&&!review?`<progress class="bp-progress" value="${index}" max="${total}" aria-label="Rodadas concluídas"></progress>`:''}<div class="bp-stage${format==='visual'&&learning?' bp-study-stage':''}${format==='visual'&&!learning?' bp-test-stage':''}">${format==='visual'?art():''}<div><h2 class="bp-word" tabindex="-1">${title}</h2>${learning&&selected||reviewTeaching?`<p>${word(target).pt}</p>`:''}${example}<p class="bp-muted">${learning?'Passe o mouse para destacar uma região e clique para ouvir a palavra. Você também pode escolher abaixo.':mode==='listen'&&!sound?'Exercício pausado. Ligue o som para continuar.':'Clique na parte no desenho ou escolha uma das quatro opções.'}</p>${target?button('Ouvir novamente','audio'):''}<div class="bp-options" aria-label="Partes do corpo">${options.map(w=>`<button type="button" data-word="${w.id}" class="${(reviewTeaching?round.target:selected)===w.id?'selected':''}" ${!learning&&(round.done||reviewTeaching||mode==='listen'&&(!sound||!audioReady))?'disabled':''}>${learning?w.en+' · ':''}${w.pt}</button>`).join('')}</div><div class="bp-status" role="status" aria-live="polite">${message}</div>${reviewTeaching?button('Tentar sem ajuda','try',true):!learning&&round.done?button(review?'Próxima palavra':index===total-1?'Ver resultado':'Próxima','next',true):''}${learning?`<div class="bp-actions">${button(chapter==='basic-body'?'Fazer o teste da Fase 1':'Praticar detalhes','practice',true)}</div>`:''}<p class="bp-muted">${format==='visual'?'Os botões oferecem uma alternativa rápida para regiões pequenas.':''}</p></div></div></div>`;
     }
     if(focus)host.querySelector('h2')?.setAttribute('tabindex','-1');
     if(focus)host.querySelector('h2')?.focus({preventScroll:true});

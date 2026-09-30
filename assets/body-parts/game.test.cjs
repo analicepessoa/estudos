@@ -12,7 +12,7 @@ const chooseDetail=id=>click({target:{closest:()=>({dataset:{detailArea:id}})}})
 context.BodyParts.open('student-A');action('open-basic');assert.match(host.innerHTML,/Corpo básico/);
 action('learn');choose('hair');assert.match(host.innerHTML,/Brush your hair every morning/);action('exit');action('open');
 action('practice');
-const total=context.BodyPartsCore.words.length*2;
+const total=context.BodyPartsCore.chapters['basic-body'].total;
 for(let i=0;i<total;i++){
   const targetLabel=host.innerHTML.match(/class="bp-word"[^>]*>([^<]+)/)[1];
   const target=context.BodyPartsCore.words.find(word=>word.en===targetLabel).id;
@@ -20,7 +20,7 @@ for(let i=0;i<total;i++){
   choose(target);choose(target);action('next');
 }
 assert.ok(spoken.length>=total,'Every completed answer should play its pronunciation.');
-assert.match(host.innerHTML,/390 \/ 400/);assert.equal(storage.size,1);
+assert.match(host.innerHTML,new RegExp(`${(total-1)*10} / ${total*10}`));assert.equal(storage.size,1);
 action('save');assert.equal(JSON.parse([...storage.values()][0]).length,1);
 action('review');assert.match(host.innerHTML,/Tentar sem ajuda/);action('try');
 const reviewLabel=host.innerHTML.match(/class="bp-word"[^>]*>([^<]+)/)[1];const reviewTarget=context.BodyPartsCore.words.find(word=>word.en===reviewLabel).id;choose(reviewTarget);action('next');assert.match(host.innerHTML,/Revisão concluída/);

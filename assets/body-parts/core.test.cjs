@@ -25,4 +25,6 @@ assert.equal(validRecord({id:'e',chapter:'body-details',mode:'practice',format:'
 assert.equal(validRecord({id:'e',chapter:'body-details',mode:'practice',format:'visual',version:5,points:270,first:26,total:26}),false);
 assert.equal(validRecord({id:'f',chapter:'body-details',mode:'practice',format:'visual',version:6,points:460,first:46,total:46}),true);
 assert.equal(validRecord({id:'f',chapter:'body-details',mode:'practice',format:'visual',version:6,points:470,first:46,total:46}),false);
+assert.equal(validRecord({id:'g',chapter:'basic-body',mode:'practice',format:'visual',version:7,points:90,first:9,total:12}),true);
+assert.equal(validRecord({id:'g',chapter:'basic-body',mode:'practice',format:'visual',version:7,points:130,first:12,total:12}),false);
 console.log('PASS: 2000 decks, scoring, assisted answers, duplicate answers and record validation.');
