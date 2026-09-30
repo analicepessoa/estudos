@@ -16,8 +16,8 @@
 .bp-stage{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(230px,1fr);gap:20px;align-items:start;margin-top:18px}
 .bp-art{background:#191719;border-radius:22px;overflow:hidden;position:relative}
 .bp-art svg{display:block;width:100%;height:auto}
-.bp-region{fill:transparent;stroke:transparent;stroke-width:1;cursor:pointer}
-.bp-region:hover,.bp-region:focus-visible{fill:#ffffff30;stroke:white;outline:none}
+.bp-region{fill:transparent;stroke:transparent;stroke-width:1;cursor:pointer;transition:fill .16s,stroke .16s}
+.bp-region:hover,.bp-region:focus-visible{fill:#2dd4bf66;stroke:#99f6e4;stroke-width:3;outline:none}
 .bp-region.selected{fill:#2dd4bf55;stroke:#5eead4;stroke-width:2}
 .bp-body-link{fill:#2dd4bf22;stroke:#5eead4;stroke-width:3;cursor:pointer}
 .bp-word{font-size:32px;font-weight:800;line-height:1.25;margin:8px 0}
