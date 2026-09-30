@@ -13,14 +13,14 @@
     {id:'elbow',en:'elbows',pt:'cotovelos',example:'Bend your elbows.',examplePt:'Dobre os cotovelos.',regions:[[338,548,27,27],[698,548,27,27]]},
     {id:'forearm',en:'forearms',pt:'antebraços',example:'Rest your forearms on the table.',examplePt:'Apoie os antebraços na mesa.',regions:[[282,655,30,75],[755,655,30,75]]},
     {id:'hand',en:'hands',pt:'mãos',example:'Wash your hands.',examplePt:'Lave as mãos.',regions:[[230,798,42,55],[800,798,42,55]]},
-    {id:'finger',en:'fingers',pt:'dedos da mão',example:'Move your fingers.',examplePt:'Mova os dedos.',regions:[[226,845,34,36],[800,845,34,36]]},
+    {id:'finger',en:'fingers',pt:'dedos da mão',example:'Move your fingers.',examplePt:'Mova os dedos.',regions:[[225,848,48,42],[800,848,48,42]]},
     {id:'chest',en:'chest',pt:'peitoral',example:'Take a deep breath with your chest open.',examplePt:'Respire fundo com o peito aberto.',regions:[[518,382,111,62]]},
     {id:'waist',en:'waist',pt:'cintura',example:'Put your hands on your waist.',examplePt:'Coloque as mãos na cintura.',regions:[[518,620,84,25]]},
     {id:'leg',en:'legs',pt:'pernas',example:'Stretch your legs.',examplePt:'Alongue as pernas.',regions:[[456,1120,58,220],[580,1120,58,220]]},
     {id:'thigh',en:'thighs',pt:'coxas',example:'Your thighs are above your knees.',examplePt:'As coxas ficam acima dos joelhos.',regions:[[456,875,57,105],[580,875,57,105]]},
     {id:'knee',en:'knees',pt:'joelhos',example:'Bend your knees.',examplePt:'Dobre os joelhos.',regions:[[456,1020,46,35],[580,1020,46,35]]},
     {id:'foot',en:'feet (singular: foot)',pt:'pés (pé)',example:'Keep your feet on the floor.',examplePt:'Mantenha os pés no chão.',regions:[[426,1395,70,48],[610,1395,70,48]]},
-    {id:'toe',en:'toes',pt:'dedos do pé',example:'Wiggle your toes.',examplePt:'Mexa os dedos do pé.',regions:[[407,1431,36,18],[629,1431,36,18]]}
+    {id:'toe',en:'toes',pt:'dedos do pé',example:'Wiggle your toes.',examplePt:'Mexa os dedos do pé.',regions:[[365,1462,50,28],[660,1462,50,28]]}
   ];
   const detailAreas={
     head:{id:'head',label:'Cabeça e rosto',hint:'Testa, sobrancelhas, maxilar e queixo.',viewBox:'390 15 260 230',regions:[[518,132,100,112]]},
