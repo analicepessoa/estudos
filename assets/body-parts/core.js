@@ -1,16 +1,16 @@
 (function(root){
   'use strict';
   const words = [
-    {id:'hair',en:'hair',pt:'cabelo',regions:[[480,47,58,28]]},
-    {id:'eyebrow',en:'eyebrow',pt:'sobrancelha',regions:[[481,94,24,7],[546,101,21,7]]},
-    {id:'eye',en:'eye',pt:'olho',regions:[[482,112,22,8],[545,120,21,8]]},
-    {id:'ear',en:'ear',pt:'orelha',regions:[[438,144,10,21],[573,161,9,20]]},
-    {id:'nose',en:'nose',pt:'nariz',regions:[[518,139,15,17]]},
-    {id:'mouth',en:'mouth',pt:'boca',regions:[[518,169,26,10]]},
-    {id:'forehead',en:'forehead',pt:'testa',regions:[[519,82,24,9]]},
-    {id:'jaw',en:'jaw',pt:'maxilar',regions:[[474,184,16,12],[562,186,16,12]]},
-    {id:'dimple',en:'dimple',pt:'covinha',regions:[[482,163,8,7],[555,168,8,7]]},
-    {id:'chin',en:'chin',pt:'queixo',regions:[[520,194,15,7]]}
+    {id:'hair',en:'hair',pt:'cabelo',example:'Brush your hair every morning.',examplePt:'Escove o cabelo toda manhã.',regions:[[480,47,58,28]]},
+    {id:'eyebrow',en:'eyebrow',pt:'sobrancelha',example:'Raise your eyebrows.',examplePt:'Levante as sobrancelhas.',regions:[[481,94,24,7],[546,101,21,7]]},
+    {id:'eye',en:'eye',pt:'olho',example:'Close one eye for a moment.',examplePt:'Feche um olho por um instante.',regions:[[482,112,22,8],[545,120,21,8]]},
+    {id:'ear',en:'ear',pt:'orelha',example:'Cover one ear from the noise.',examplePt:'Cubra uma orelha por causa do barulho.',regions:[[438,144,10,21],[573,161,9,20]]},
+    {id:'nose',en:'nose',pt:'nariz',example:'Breathe in through your nose.',examplePt:'Inspire pelo nariz.',regions:[[518,139,15,17]]},
+    {id:'mouth',en:'mouth',pt:'boca',example:'Open your mouth wide.',examplePt:'Abra bem a boca.',regions:[[518,169,26,10]]},
+    {id:'forehead',en:'forehead',pt:'testa',example:'Wipe the sweat from your forehead.',examplePt:'Limpe o suor da sua testa.',regions:[[519,82,24,9]]},
+    {id:'jaw',en:'jaw',pt:'maxilar',example:'Relax your jaw muscles.',examplePt:'Relaxe os músculos do maxilar.',regions:[[474,184,16,12],[562,186,16,12]]},
+    {id:'dimple',en:'dimple',pt:'covinha',example:'He has a dimple when he smiles.',examplePt:'Ele tem uma covinha quando sorri.',regions:[[482,163,8,7],[555,168,8,7]]},
+    {id:'chin',en:'chin',pt:'queixo',example:'Rest your chin on your hand.',examplePt:'Apoie o queixo na mão.',regions:[[520,194,15,7]]}
   ];
   function rounds(random=Math.random){
     const result=[];

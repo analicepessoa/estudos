@@ -25,11 +25,12 @@
 .bp-options button{padding:9px;border:1px solid #cbd5e1;background:white;border-radius:10px;color:#172337}
 .bp-options button.selected{background:#ccfbf1;border-color:#0f766e}
 .bp-status{min-height:56px;margin-top:14px;padding:12px;background:#f1f5f9;border-radius:12px;line-height:1.5}
+.bp-example{margin:12px 0;padding:11px 13px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;line-height:1.45}.bp-example span{display:block;color:#0f766e;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.bp-example strong{display:block;color:#115e59;font-size:14px}.bp-example small{display:block;color:#526176;font-size:12px}
 .bp-progress{width:100%;accent-color:#0f766e;height:9px;margin:12px 0}
 .bp-stats{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}.bp-stats strong{font-size:25px;display:block}.bp-stats>div{background:#f0fdfa;padding:16px;border-radius:14px;flex:1}
 .bp-map{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}.bp-map span{background:#f1f5f9;border-radius:20px;padding:8px 12px;font-size:12px}.bp-map .active{background:#ccfbf1;color:#115e59}
 .bp-good{animation:bp-celebrate .35s ease-out}@keyframes bp-celebrate{50%{filter:brightness(1.14)}}
 @media(prefers-reduced-motion:reduce){.bp-good{animation:none}}
 @media(max-width:600px){
-  #body-parts-root{padding-bottom:12px}.bp-hero,.bp-stage{grid-template-columns:1fr}.bp-portrait{height:230px}.bp-card{padding:14px;border-radius:18px}.bp-stage{gap:12px}.bp-art{width:calc(100% + 28px);margin:0 -14px;max-width:none;border-radius:14px}.bp-art svg{min-height:330px}.bp-word{font-size:30px;margin-top:14px}.bp-options{gap:9px;margin-top:14px}.bp-options button{min-height:50px;padding:10px 7px;font-size:14px}.bp-status{min-height:0;padding:11px}.bp-actions{gap:8px;margin-top:12px}.bp-btn{padding:9px 12px}
+  #body-parts-root{padding-bottom:12px}.bp-hero,.bp-stage{grid-template-columns:1fr}.bp-portrait{height:230px}.bp-card{padding:14px;border-radius:18px}.bp-stage{gap:12px}.bp-art{width:calc(100% + 28px);margin:0 -14px;max-width:none;border-radius:14px}.bp-art svg{height:320px;max-height:46vh;min-height:0}.bp-word{font-size:30px;margin-top:14px}.bp-options{gap:9px;margin-top:14px}.bp-options button{min-height:50px;padding:10px 7px;font-size:14px}.bp-status{min-height:0;padding:11px}.bp-actions{gap:8px;margin-top:12px}.bp-btn{padding:9px 12px}
 }

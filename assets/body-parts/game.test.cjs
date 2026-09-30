@@ -9,6 +9,7 @@ vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/game.js','
 const action=a=>click({target:{closest:()=>({dataset:{action:a}})}});
 const choose=id=>click({target:{closest:()=>({dataset:{word:id}})}});
 context.BodyParts.open('student-A');action('open');assert.match(host.innerHTML,/Cabeça e rosto/);
+action('learn');choose('hair');assert.match(host.innerHTML,/Brush your hair every morning/);action('exit');action('open');
 action('practice');
 const total=context.BodyPartsCore.words.length*2;
 for(let i=0;i<total;i++){
