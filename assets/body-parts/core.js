@@ -49,7 +49,7 @@
     {id:'belly',area:'torso',en:'belly',pt:'barriga',example:'My belly is full.',examplePt:'Minha barriga está cheia.',regions:[[518,560,62,42]]},
     {id:'navel',area:'torso',en:'navel',pt:'umbigo',example:'His navel is in the center of his belly.',examplePt:'O umbigo dele fica no centro da barriga.',regions:[[518,590,13,13]]},
     {id:'hip',area:'torso',en:'hips',pt:'quadris',example:'Put your hands on your hips.',examplePt:'Coloque as mãos nos quadris.',regions:[[430,615,42,28],[605,615,42,28]]},
-    {id:'nipple',area:'torso',en:'nipples',pt:'mamilos',example:'The chest has two nipples.',examplePt:'O peitoral tem dois mamilos.',regions:[[465,405,12,12],[570,405,12,12]]},
+    {id:'nipple',area:'torso',en:'nipples',pt:'mamilos',example:'The chest has two nipples.',examplePt:'O peitoral tem dois mamilos.',regions:[[427,430,14,14],[604,430,14,14]]},
     {id:'calf',area:'lower',en:'calves',pt:'panturrilhas',example:'My calves are tired after running.',examplePt:'Minhas panturrilhas estão cansadas depois de correr.',regions:[[456,1170,42,105],[580,1170,42,105]]},
     {id:'ankle',area:'lower',en:'ankles',pt:'tornozelos',example:'Move your ankles slowly.',examplePt:'Mova os tornozelos devagar.',regions:[[433,1325,30,28],[603,1325,30,28]]},
     {id:'heel',area:'lower',en:'heels',pt:'calcanhares',example:'My heels hurt in these shoes.',examplePt:'Meus calcanhares doem com estes sapatos.',regions:[[402,1400,31,28],[633,1400,31,28]]}
