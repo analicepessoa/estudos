@@ -4360,6 +4360,7 @@ Por que é boa: A letra conta uma história simples, usa frases curtas e repete 
 
 let DATABASE = {
   studentControls: {},
+  musicCatalogMigrations: {},
   aulasArquivadas: [],
   audioRevisao: {
     "iq15": [], "iq1904": [], "is08": [], "iq1907": [], "room_1781212946093": []
@@ -9544,7 +9545,22 @@ async function saveCloudDB(){
   // Save to Supabase cloud
   try {
     if(!sbClient) sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const cloudData = { turmas: DATABASE.turmas, semanas: DATABASE.semanas, aulasArquivadas: DATABASE.aulasArquivadas, trilhas: DATABASE.trilhas, musicas: DATABASE.musicas, audioRevisao: DATABASE.audioRevisao, studentControls: DATABASE.studentControls };
+    // A page opened before a catalog release can still have an older copy in memory.
+    // Preserve the two songs released in this catalog migration once, without
+    // bringing them back after an intentional deletion in a current page.
+    const {data:latestRow,error:latestError}=await sbClient.from('app_content').select('data').eq('id','main').maybeSingle();
+    const migration='songs_2026_09_29';
+    if(!latestError&&latestRow?.data?.musicCatalogMigrations?.[migration]&&!DATABASE.musicCatalogMigrations?.[migration]){
+      Object.entries(latestRow.data.musicas||{}).forEach(([room,songs])=>{
+        const local=DATABASE.musicas[room]||[];
+        (songs||[]).filter(song=>['Too Sweet','The Fate of Ophelia'].includes(song?.title)).forEach(song=>{
+          if(!local.some(item=>item?.title===song.title))local.push(song);
+        });
+        DATABASE.musicas[room]=local;
+      });
+      DATABASE.musicCatalogMigrations={...DATABASE.musicCatalogMigrations,[migration]:true};
+    }
+    const cloudData = { turmas: DATABASE.turmas, semanas: DATABASE.semanas, aulasArquivadas: DATABASE.aulasArquivadas, trilhas: DATABASE.trilhas, musicas: DATABASE.musicas, audioRevisao: DATABASE.audioRevisao, studentControls: DATABASE.studentControls, musicCatalogMigrations: DATABASE.musicCatalogMigrations };
     const { data, error } = await sbClient.from('app_content').upsert({ id: 'main', data: cloudData, updated_at: new Date().toISOString() });
     if (error) {
       console.error('❌ Erro Supabase ao salvar:', error);
@@ -9603,6 +9619,7 @@ async function loadCloudDB(){
       if(Array.isArray(cloud.aulasArquivadas)) DATABASE.aulasArquivadas = cloud.aulasArquivadas;
       if(cloud.audioRevisao) DATABASE.audioRevisao = {...DATABASE.audioRevisao,...cloud.audioRevisao};
       if(cloud.studentControls) DATABASE.studentControls = {...DATABASE.studentControls,...cloud.studentControls};
+      if(cloud.musicCatalogMigrations) DATABASE.musicCatalogMigrations = {...DATABASE.musicCatalogMigrations,...cloud.musicCatalogMigrations};
       if(cloud.semanas) {
         Object.keys(cloud.semanas).forEach(k => DATABASE.semanas[k] = cloud.semanas[k]);
       }
