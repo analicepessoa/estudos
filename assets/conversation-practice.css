@@ -47,6 +47,22 @@
   padding: 28px 22px;
 }
 
+/* The teacher preview adds a banner above the chat. Keep the composer inside
+   the available viewport instead of allowing it to fall below the page. */
+#view-conversation:not(.hidden) {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#view-conversation:not(.hidden) .conversation-shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .conversation-teacher-preview {
   width: min(650px,100%);
   display: flex;
@@ -331,9 +347,10 @@
 }
 
 .conversation-chat {
-  height: calc(100vh - 120px);
-  min-height: 520px;
+  height: auto;
+  min-height: 0;
   display: flex;
+  flex: 1;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid rgba(226,232,240,.9);
@@ -555,6 +572,7 @@
 }
 
 .conversation-composer {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: minmax(0,1fr) auto;
   gap: 10px;
@@ -629,7 +647,7 @@
   }
 
   .conversation-shell {
-    min-height: calc(100vh - 54px);
+    min-height: 0;
     padding: 10px;
   }
 
@@ -662,8 +680,8 @@
   }
 
   .conversation-chat {
-    height: calc(100dvh - 74px);
-    min-height: 440px;
+    height: auto;
+    min-height: 0;
     border-radius: 20px;
   }
 
