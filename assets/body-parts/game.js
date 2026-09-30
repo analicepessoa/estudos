@@ -11,14 +11,20 @@
   function key(){return owner?`ap_body_parts_v1_${encodeURIComponent(owner)}`:null;}
   function records(){try{const r=JSON.parse(localStorage.getItem(key())||'[]');return Array.isArray(r)?r.filter(C.validRecord).slice(-100):[];}catch{return [];}}
   function cancelAudio(){audioToken++;window.speechSynthesis?.cancel();audioReady=false;}
-  function speak(id){
+  function speak(id,{preserveFeedback=false}={}){
     cancelAudio();
     if(!sound){message='Som desligado. Ligue o som para ouvir.';render();return;}
     voice=window.speechSynthesis?.getVoices().find(v=>/^en[-_]/i.test(v.lang));
     if(!voice){message='A voz em inglês não está disponível. Use Aprender ou Praticar, ou tente ouvir novamente.';render();return;}
     const token=audioToken,utterance=new SpeechSynthesisUtterance(word(id).en);
     utterance.voice=voice;utterance.lang=voice.lang;utterance.rate=.8;
-    utterance.onstart=()=>{if(token===audioToken){audioReady=true;message='Ouça e escolha a região.';if(mode==='listen')render();}};
+    utterance.onstart=()=>{if(token===audioToken){
+      audioReady=true;
+      if(!preserveFeedback){
+        message='Ouça e escolha a região.';
+        if(mode==='listen')render();
+      }
+    }};
     utterance.onerror=()=>{if(token===audioToken){audioReady=false;message='Não foi possível reproduzir. Toque em Ouvir novamente ou volte aos jogos.';render();}};
     window.speechSynthesis.speak(utterance);
     setTimeout(()=>{if(token===audioToken&&!audioReady&&mode==='listen'&&screen==='play'){message='O áudio não começou. Toque em Ouvir novamente ou volte aos jogos para praticar com texto.';render();}},5000);
@@ -40,12 +46,13 @@
     if(fromList&&!review)scoreFormat='list';
     round=C.answer(round,id);
     if(round.done){
-      selected=id;message=`✓ Correct! ${word(id).en}${round.errors===2?' — resposta com ajuda.':' — muito bem!'}`;
+      selected=id;message=`✓ Correct! ${word(id).en}${round.errors===2?' — resposta com ajuda.':' — muito bem!'} Ouça a pronúncia.`;
       if(!review)results.push({...round});
-      cancelAudio();render();host.querySelector('.bp-art')?.classList.add('bp-good');
+      cancelAudio();render();if(sound)speak(id,{preserveFeedback:true});host.querySelector('.bp-art')?.classList.add('bp-good');
     }else{
-      message=round.errors===2?'Esta é a resposta. Selecione a região destacada para continuar.':'Try again! Tente outra parte do corpo.';
+      message=round.errors===2?'Esta é a resposta. Ouça a pronúncia e selecione a região destacada para continuar.':'Try again! Tente outra parte do corpo.';
       selected=round.errors===2?round.target:null;lock=true;render();
+      if(round.errors===2&&sound)speak(round.target,{preserveFeedback:true});
       setTimeout(()=>{lock=false;},450);
     }
   }
