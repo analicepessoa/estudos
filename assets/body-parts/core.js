@@ -22,20 +22,30 @@
     {id:'foot',en:'feet (singular: foot)',pt:'pés (pé)',example:'Keep your feet on the floor.',examplePt:'Mantenha os pés no chão.',regions:[[426,1395,70,48],[610,1395,70,48]]},
     {id:'toe',en:'toes',pt:'dedos do pé',example:'Wiggle your toes.',examplePt:'Mexa os dedos do pé.',regions:[[407,1431,36,18],[629,1431,36,18]]}
   ];
+  const detailAreas={
+    head:{id:'head',label:'Cabeça e rosto',hint:'Testa, sobrancelhas, maxilar e queixo.',viewBox:'390 15 260 230',regions:[[518,132,100,112]]},
+    hands:{id:'hands',label:'Braços e mãos',hint:'Pulsos, palmas e polegares.',viewBox:'120 500 800 410',regions:[[247,700,80,205],[779,700,80,205]]},
+    torso:{id:'torso',label:'Tronco',hint:'Abdômen e barriga.',viewBox:'330 285 375 390',regions:[[518,480,145,188]]},
+    lower:{id:'lower',label:'Parte inferior',hint:'Panturrilhas, tornozelos e calcanhares.',viewBox:'285 760 465 735',regions:[[456,1110,75,315],[580,1110,75,315]]}
+  };
   const detailWords = [
-    {id:'eyebrow',en:'eyebrows',pt:'sobrancelhas',example:'Raise your eyebrows.',examplePt:'Levante as sobrancelhas.',regions:[[481,94,24,7],[546,101,21,7]]},
-    {id:'forehead',en:'forehead',pt:'testa',example:'Wipe the sweat from your forehead.',examplePt:'Limpe o suor da sua testa.',regions:[[519,82,24,9]]},
-    {id:'jaw',en:'jaw',pt:'maxilar',example:'Relax your jaw muscles.',examplePt:'Relaxe os músculos do maxilar.',regions:[[474,184,16,12],[562,186,16,12]]},
-    {id:'dimple',en:'dimples',pt:'covinhas',example:'He has dimples when he smiles.',examplePt:'Ele tem covinhas quando sorri.',regions:[[482,163,8,7],[555,168,8,7]]},
-    {id:'chin',en:'chin',pt:'queixo',example:'Rest your chin on your hand.',examplePt:'Apoie o queixo na mão.',regions:[[520,194,15,7]]},
-    {id:'wrist',en:'wrists',pt:'pulsos',example:'Rotate your wrists.',examplePt:'Gire os pulsos.',regions:[[253,720,22,18],[777,720,22,18]]},
-    {id:'palm',en:'palms',pt:'palmas das mãos',example:'Open your palms.',examplePt:'Abra as palmas das mãos.',regions:[[228,796,29,34],[802,796,29,34]]},
-    {id:'abs',en:'abs',pt:'abdômen definido',example:'His abs are strong.',examplePt:'O abdômen dele é forte.',regions:[[518,500,48,70]]},
-    {id:'belly',en:'belly',pt:'barriga',example:'My belly is full.',examplePt:'Minha barriga está cheia.',regions:[[518,560,62,42]]}
+    {id:'eyebrow',area:'head',en:'eyebrows',pt:'sobrancelhas',example:'Raise your eyebrows.',examplePt:'Levante as sobrancelhas.',regions:[[481,94,24,7],[546,101,21,7]]},
+    {id:'forehead',area:'head',en:'forehead',pt:'testa',example:'Wipe the sweat from your forehead.',examplePt:'Limpe o suor da sua testa.',regions:[[519,82,24,9]]},
+    {id:'jaw',area:'head',en:'jaw',pt:'maxilar',example:'Relax your jaw muscles.',examplePt:'Relaxe os músculos do maxilar.',regions:[[474,184,16,12],[562,186,16,12]]},
+    {id:'dimple',area:'head',en:'dimples',pt:'covinhas',example:'He has dimples when he smiles.',examplePt:'Ele tem covinhas quando sorri.',regions:[[482,163,8,7],[555,168,8,7]]},
+    {id:'chin',area:'head',en:'chin',pt:'queixo',example:'Rest your chin on your hand.',examplePt:'Apoie o queixo na mão.',regions:[[520,194,15,7]]},
+    {id:'wrist',area:'hands',en:'wrists',pt:'pulsos',example:'Rotate your wrists.',examplePt:'Gire os pulsos.',regions:[[253,720,22,18],[777,720,22,18]]},
+    {id:'palm',area:'hands',en:'palms',pt:'palmas das mãos',example:'Open your palms.',examplePt:'Abra as palmas das mãos.',regions:[[228,796,29,34],[802,796,29,34]]},
+    {id:'thumb',area:'hands',en:'thumbs',pt:'polegares',example:'Raise your thumbs.',examplePt:'Levante os polegares.',regions:[[267,783,13,26],[763,783,13,26]]},
+    {id:'abs',area:'torso',en:'abs',pt:'abdômen definido',example:'His abs are strong.',examplePt:'O abdômen dele é forte.',regions:[[518,500,48,70]]},
+    {id:'belly',area:'torso',en:'belly',pt:'barriga',example:'My belly is full.',examplePt:'Minha barriga está cheia.',regions:[[518,560,62,42]]},
+    {id:'calf',area:'lower',en:'calves',pt:'panturrilhas',example:'My calves are tired after running.',examplePt:'Minhas panturrilhas estão cansadas depois de correr.',regions:[[456,1170,42,105],[580,1170,42,105]]},
+    {id:'ankle',area:'lower',en:'ankles',pt:'tornozelos',example:'Move your ankles slowly.',examplePt:'Mova os tornozelos devagar.',regions:[[433,1325,30,28],[603,1325,30,28]]},
+    {id:'heel',area:'lower',en:'heels',pt:'calcanhares',example:'My heels hurt in these shoes.',examplePt:'Meus calcanhares doem com estes sapatos.',regions:[[402,1400,31,28],[633,1400,31,28]]}
   ];
   const chapters={
     'basic-body':{id:'basic-body',phase:1,title:'Corpo básico',short:'corpo inteiro',description:'Explore o personagem inteiro e aprenda o vocabulário básico antes de fazer o teste.',words:basicBodyWords,total:40,passPoints:280},
-    'body-details':{id:'body-details',phase:2,title:'Detalhes por região',short:'detalhes',description:'Depois do corpo básico, explore detalhes do rosto, mãos e tronco.',words:detailWords,total:18}
+    'body-details':{id:'body-details',phase:2,title:'Detalhes por região',short:'detalhes',description:'Toque primeiro em uma grande região do corpo para ampliar e explorar seus detalhes.',words:detailWords,total:26}
   };
   const words=basicBodyWords;
   function rounds(list=words,random=Math.random){
@@ -60,9 +70,10 @@
     const isExpanded=r?.version===2&&r.total===20&&r.points<=200&&r.first<=20;
     const isChapterThree=r?.version===3&&((r.chapter==='head-face'&&r.total===20&&r.points<=200&&r.first<=20)||(r.chapter==='body-regions'&&r.total===16&&r.points<=160&&r.first<=16));
     const isChapterFour=r?.version===4&&((r.chapter==='basic-body'&&r.total===40&&r.points<=400&&r.first<=40)||(r.chapter==='body-details'&&r.total===18&&r.points<=180&&r.first<=18));
-    return r && typeof r.id==='string' && ['practice','listen'].includes(r.mode) && ['visual','list'].includes(r.format) && Number.isInteger(r.points) && r.points>=0 && Number.isInteger(r.first) && r.first>=0 && (isOriginal||isExpanded||isChapterThree||isChapterFour);
+    const isChapterFive=r?.version===5&&((r.chapter==='basic-body'&&r.total===40&&r.points<=400&&r.first<=40)||(r.chapter==='body-details'&&r.total===26&&r.points<=260&&r.first<=26));
+    return r && typeof r.id==='string' && ['practice','listen'].includes(r.mode) && ['visual','list'].includes(r.format) && Number.isInteger(r.points) && r.points>=0 && Number.isInteger(r.first) && r.first>=0 && (isOriginal||isExpanded||isChapterThree||isChapterFour||isChapterFive);
   }
-  const api={words,chapters,rounds,answer,validRecord};
+  const api={words,chapters,detailAreas,rounds,answer,validRecord};
   if(typeof module!=='undefined')module.exports=api;
   else root.BodyPartsCore=api;
 })(globalThis);
