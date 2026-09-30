@@ -11,9 +11,9 @@
     {id:'shoulder',en:'shoulders',pt:'ombros',example:'Relax your shoulders.',examplePt:'Relaxe os ombros.',regions:[[423,284,66,30],[612,284,66,30]]},
     {id:'arm',en:'arms',pt:'braços',example:'Raise your arms.',examplePt:'Levante os braços.',regions:[[363,410,42,112],[674,410,42,112]]},
     {id:'elbow',en:'elbows',pt:'cotovelos',example:'Bend your elbows.',examplePt:'Dobre os cotovelos.',regions:[[338,548,27,27],[698,548,27,27]]},
-    {id:'forearm',en:'forearms',pt:'antebraços',example:'Rest your forearms on the table.',examplePt:'Apoie os antebraços na mesa.',regions:[[327,625,34,74],[709,625,34,74]]},
-    {id:'hand',en:'hands',pt:'mãos',example:'Wash your hands.',examplePt:'Lave as mãos.',regions:[[315,715,38,48],[721,715,38,48]]},
-    {id:'finger',en:'fingers',pt:'dedos da mão',example:'Move your fingers.',examplePt:'Mova os dedos.',regions:[[303,744,29,30],[733,744,29,30]]},
+    {id:'forearm',en:'forearms',pt:'antebraços',example:'Rest your forearms on the table.',examplePt:'Apoie os antebraços na mesa.',regions:[[282,655,30,75],[755,655,30,75]]},
+    {id:'hand',en:'hands',pt:'mãos',example:'Wash your hands.',examplePt:'Lave as mãos.',regions:[[230,798,42,55],[800,798,42,55]]},
+    {id:'finger',en:'fingers',pt:'dedos da mão',example:'Move your fingers.',examplePt:'Mova os dedos.',regions:[[226,845,34,36],[800,845,34,36]]},
     {id:'chest',en:'chest',pt:'peitoral',example:'Take a deep breath with your chest open.',examplePt:'Respire fundo com o peito aberto.',regions:[[518,382,111,62]]},
     {id:'waist',en:'waist',pt:'cintura',example:'Put your hands on your waist.',examplePt:'Coloque as mãos na cintura.',regions:[[518,620,84,25]]},
     {id:'leg',en:'legs',pt:'pernas',example:'Stretch your legs.',examplePt:'Alongue as pernas.',regions:[[456,1120,58,220],[580,1120,58,220]]},
@@ -28,8 +28,8 @@
     {id:'jaw',en:'jaw',pt:'maxilar',example:'Relax your jaw muscles.',examplePt:'Relaxe os músculos do maxilar.',regions:[[474,184,16,12],[562,186,16,12]]},
     {id:'dimple',en:'dimples',pt:'covinhas',example:'He has dimples when he smiles.',examplePt:'Ele tem covinhas quando sorri.',regions:[[482,163,8,7],[555,168,8,7]]},
     {id:'chin',en:'chin',pt:'queixo',example:'Rest your chin on your hand.',examplePt:'Apoie o queixo na mão.',regions:[[520,194,15,7]]},
-    {id:'wrist',en:'wrists',pt:'pulsos',example:'Rotate your wrists.',examplePt:'Gire os pulsos.',regions:[[325,683,19,16],[711,683,19,16]]},
-    {id:'palm',en:'palms',pt:'palmas das mãos',example:'Open your palms.',examplePt:'Abra as palmas das mãos.',regions:[[315,719,24,28],[721,719,24,28]]},
+    {id:'wrist',en:'wrists',pt:'pulsos',example:'Rotate your wrists.',examplePt:'Gire os pulsos.',regions:[[253,720,22,18],[777,720,22,18]]},
+    {id:'palm',en:'palms',pt:'palmas das mãos',example:'Open your palms.',examplePt:'Abra as palmas das mãos.',regions:[[228,796,29,34],[802,796,29,34]]},
     {id:'abs',en:'abs',pt:'abdômen definido',example:'His abs are strong.',examplePt:'O abdômen dele é forte.',regions:[[518,500,48,70]]},
     {id:'belly',en:'belly',pt:'barriga',example:'My belly is full.',examplePt:'Minha barriga está cheia.',regions:[[518,560,62,42]]}
   ];
