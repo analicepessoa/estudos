@@ -1,7 +1,7 @@
 /* First playable chapter: head and face. Scores stay separate from class XP. */
 (()=>{
   'use strict';
-  const C=BodyPartsCore, image='./assets/body-parts/character.png', SET_VERSION=5;
+  const C=BodyPartsCore, image='./assets/body-parts/character.png', SET_VERSION=6;
   let host,owner=null,screen='home',mode='learn',format='visual',zoom=false,selected=null,chapter='basic-body',detailArea=null;
   let order=[],index=0,round=null,results=[],sessionId='',saved=false,saveError=false,scoreFormat='visual';
   let review=false,reviewQueue=[],reviewTeaching=false,lock=false,sound=true,audioReady=false,audioToken=0;
@@ -11,7 +11,7 @@
   const word=id=>chapterWords().find(w=>w.id===id);
   const sessionPoints=()=>results.reduce((s,r)=>s+r.points,0);
   const adminPreview=()=>typeof window.isTeacherPreview==='function'&&window.isTeacherPreview();
-  const phaseOnePassed=()=>records().some(r=>(r.version===4||r.version===SET_VERSION)&&r.chapter==='basic-body'&&r.mode==='practice'&&r.points>=C.chapters['basic-body'].passPoints);
+  const phaseOnePassed=()=>records().some(r=>(r.version===4||r.version===5||r.version===SET_VERSION)&&r.chapter==='basic-body'&&r.mode==='practice'&&r.points>=C.chapters['basic-body'].passPoints);
   const sessionPassed=()=>chapter==='basic-body'&&mode==='practice'&&sessionPoints()>=current().passPoints;
   const button=(label,action,primary=false,extra='')=>`<button type="button" class="bp-btn${primary?' primary':''}" data-action="${action}" ${extra}>${label}</button>`;
   function key(){return owner?`ap_body_parts_v1_${encodeURIComponent(owner)}`:null;}
@@ -22,7 +22,7 @@
     if(!sound){message='Som desligado. Ligue o som para ouvir.';render();return;}
     voice=window.speechSynthesis?.getVoices().find(v=>/^en[-_]/i.test(v.lang));
     if(!voice){message='A voz em inglês não está disponível. Use Aprender ou Praticar, ou tente ouvir novamente.';render();return;}
-    const token=audioToken,utterance=new SpeechSynthesisUtterance(word(id).en);
+    const token=audioToken,utterance=new SpeechSynthesisUtterance(word(id).say||word(id).en);
     utterance.voice=voice;utterance.lang=voice.lang;utterance.rate=.8;
     utterance.onstart=()=>{if(token===audioToken){
       audioReady=true;
@@ -83,7 +83,7 @@
     return `<div class="bp-art${area?' detail-zoom':''}"><svg viewBox="${viewBox}" role="img" aria-label="${area?`Detalhes de ${area.label}.`: 'Personagem de corpo inteiro. Passe o mouse ou toque em uma região para ouvir a palavra.'}"><image href="${image}" width="1024" height="1536"/>${regions}</svg></div>`;
   }
   function detailMapArt(){
-    const regions=Object.values(C.detailAreas).flatMap(area=>area.regions.map(([x,y,rx,ry])=>`<ellipse class="bp-region bp-detail-region" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" data-detail-area="${area.id}" role="button" tabindex="0" aria-label="${area.label}"><title>${area.label}</title></ellipse>`)).join('');
+    const regions=Object.values(C.detailAreas).filter(area=>area.primary!==false).flatMap(area=>area.regions.map(([x,y,rx,ry])=>`<ellipse class="bp-region bp-detail-region" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" data-detail-area="${area.id}" role="button" tabindex="0" aria-label="${area.label}"><title>${area.label}</title></ellipse>`)).join('');
     return `<div class="bp-art bp-detail-map"><svg viewBox="0 0 1024 1536" role="img" aria-label="Corpo inteiro. Escolha uma região para ver os detalhes."><image href="${image}" width="1024" height="1536"/>${regions}</svg></div>`;
   }
   function render(focus=false){
@@ -98,7 +98,7 @@
       const chapterInfo=current(),isPhaseOne=chapter==='basic-body';
       host.innerHTML=`${button('← Voltar aos jogos','home')}<div class="bp-card"><span class="bp-kicker">Fase ${chapterInfo.phase}</span><h2>${chapterInfo.title}</h2><p class="bp-muted">${chapterInfo.description}</p><div class="bp-actions">${button('Explorar livremente','learn',true)}${button(isPhaseOne?'Fazer o teste da Fase 1':'Praticar','practice')}${button('Ouvir','listen')}</div><div class="bp-actions">${button('No personagem','visual',false,`aria-pressed="${format==='visual'}"`)}${button('Atividade em lista','list',false,`aria-pressed="${format==='list'}"`)}</div><p class="bp-muted">${chapterInfo.words.length} palavras em ${chapterInfo.total} rodadas. ${isPhaseOne?`Conclua o teste com pelo menos ${chapterInfo.passPoints} de ${chapterInfo.total*10} pontos para liberar a Fase 2.`:'A lista associa inglês às alternativas em português. Seus recordes ficam separados por formato.'}</p><p class="bp-muted">Ouvir precisa de som. A pronúncia usa a voz em inglês disponível no navegador. Não é necessário microfone.</p></div>`;
     }else if(screen==='detail-map'){
-      const areas=Object.values(C.detailAreas);
+      const areas=Object.values(C.detailAreas).filter(area=>area.primary!==false);
       host.innerHTML=`${button('← Voltar aos jogos','home')}<div class="bp-card"><span class="bp-kicker">Fase 2 · Detalhes por região</span><h2>Escolha uma região</h2><p class="bp-muted">Toque em uma área verde no corpo ou escolha uma região abaixo. A imagem aproxima a região escolhida e mostra somente seus detalhes.</p><div class="bp-detail-options">${areas.map(area=>`<button type="button" data-detail-area="${area.id}" class="bp-detail-choice"><strong>${area.label}</strong><small>${area.hint}</small></button>`).join('')}</div><div class="bp-detail-map-wrap">${detailMapArt()}</div></div>`;
     }else if(screen==='result'){
       const errors=[...new Set(results.filter(r=>r.errors>0).map(r=>r.target))];
@@ -112,7 +112,9 @@
       const example=learning&&selected?`<div class="bp-example"><span>Use em uma frase</span><strong>${word(target).example}</strong><small>${word(target).examplePt}</small></div>`:'';
       const modeLabel=learning?'Exploração livre · sem pontuação':review?'Revisão · sem alterar seus pontos':`${mode==='listen'?'Ouvir':'Teste'} · Rodada ${index+1} de ${total} · ${sessionPoints()} pontos`;
       const options=learning&&chapter==='body-details'&&detailArea?chapterWords().filter(w=>w.area===detailArea):chapterWords();
-      host.innerHTML=`<div class="bp-actions">${learning&&chapter==='body-details'?button('← Regiões','detail-map'):button(review?'Continuar depois':'← Sair','exit')}${button(sound?'Som ligado':'Som desligado','sound',false,`aria-pressed="${sound}"`)}</div><div class="bp-card"><span class="bp-kicker">${modeLabel}</span>${!learning&&!review?`<progress class="bp-progress" value="${index}" max="${total}" aria-label="Rodadas concluídas"></progress>`:''}<div class="bp-stage">${format==='visual'?art():''}<div><h2 class="bp-word" tabindex="-1">${title}</h2>${learning&&selected||reviewTeaching?`<p>${word(target).pt}</p>`:''}${example}<p class="bp-muted">${learning?'Passe o mouse para destacar uma região e clique para ouvir a palavra. Você também pode escolher abaixo.':mode==='listen'&&!sound?'Exercício pausado. Ligue o som para continuar.':'Selecione no desenho ou nos botões abaixo.'}</p>${target?button('Ouvir novamente','audio'):''}<div class="bp-options" aria-label="Partes do corpo">${options.map(w=>`<button type="button" data-word="${w.id}" class="${(reviewTeaching?round.target:selected)===w.id?'selected':''}" ${!learning&&(round.done||reviewTeaching||mode==='listen'&&(!sound||!audioReady))?'disabled':''}>${learning?w.en+' · ':''}${w.pt}</button>`).join('')}</div><div class="bp-status" role="status" aria-live="polite">${message}</div>${reviewTeaching?button('Tentar sem ajuda','try',true):!learning&&round.done?button(review?'Próxima palavra':index===total-1?'Ver resultado':'Próxima','next',true):''}${learning?`<div class="bp-actions">${button(chapter==='basic-body'?'Fazer o teste da Fase 1':'Praticar detalhes','practice',true)}</div>`:''}<p class="bp-muted">${format==='visual'?'Os botões ajudam nas regiões pequenas. Ao usá-los no teste, o recorde conta como atividade em lista.':''}</p></div></div></div>`;
+      const detailBack=detailArea==='fingers'?button('← Braços e mãos','open-hands'):button('← Regiões','detail-map');
+      const fingerLink=learning&&detailArea==='hands'?`<div class="bp-actions">${button('Ver os dedos da mão','open-fingers')}</div>`:'';
+      host.innerHTML=`<div class="bp-actions">${learning&&chapter==='body-details'?detailBack:button(review?'Continuar depois':'← Sair','exit')}${button(sound?'Som ligado':'Som desligado','sound',false,`aria-pressed="${sound}"`)}</div><div class="bp-card"><span class="bp-kicker">${modeLabel}</span>${!learning&&!review?`<progress class="bp-progress" value="${index}" max="${total}" aria-label="Rodadas concluídas"></progress>`:''}<div class="bp-stage${format==='visual'?' bp-study-stage':''}">${format==='visual'?art():''}<div><h2 class="bp-word" tabindex="-1">${title}</h2>${learning&&selected||reviewTeaching?`<p>${word(target).pt}</p>`:''}${example}<p class="bp-muted">${learning?'Passe o mouse para destacar uma região e clique para ouvir a palavra. Você também pode escolher abaixo.':mode==='listen'&&!sound?'Exercício pausado. Ligue o som para continuar.':'Selecione no desenho ou nos botões abaixo.'}</p>${target?button('Ouvir novamente','audio'):''}${fingerLink}<div class="bp-options" aria-label="Partes do corpo">${options.map(w=>`<button type="button" data-word="${w.id}" class="${(reviewTeaching?round.target:selected)===w.id?'selected':''}" ${!learning&&(round.done||reviewTeaching||mode==='listen'&&(!sound||!audioReady))?'disabled':''}>${learning?w.en+' · ':''}${w.pt}</button>`).join('')}</div><div class="bp-status" role="status" aria-live="polite">${message}</div>${reviewTeaching?button('Tentar sem ajuda','try',true):!learning&&round.done?button(review?'Próxima palavra':index===total-1?'Ver resultado':'Próxima','next',true):''}${learning?`<div class="bp-actions">${button(chapter==='basic-body'?'Fazer o teste da Fase 1':'Praticar detalhes','practice',true)}</div>`:''}<p class="bp-muted">${format==='visual'?'Os botões ajudam nas regiões pequenas. Ao usá-los no teste, o recorde conta como atividade em lista.':''}</p></div></div></div>`;
     }
     if(focus)host.querySelector('h2')?.setAttribute('tabindex','-1');
     if(focus)host.querySelector('h2')?.focus({preventScroll:true});
@@ -135,6 +137,8 @@
     if(a==='home'){cancelAudio();screen='home';}
     if(a==='exit'){if(!leave())return;}
     if(a==='detail-map'){cancelAudio();detailArea=null;screen='detail-map';}
+    if(a==='open-fingers'){openDetailArea('fingers');return;}
+    if(a==='open-hands'){openDetailArea('hands');return;}
     if(a==='visual'||a==='list')format=a;
     if(a==='zoom')zoom=!zoom;
     if(a==='next'){next();return;}

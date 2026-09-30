@@ -14,6 +14,7 @@
 .bp-btn.primary{background:#0f766e;border-color:#0f766e;color:white}
 .bp-btn[aria-pressed=true]{background:#e0f2f1;border-color:#0f766e}
 .bp-stage{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(230px,1fr);gap:20px;align-items:start;margin-top:18px}
+.bp-study-stage{grid-template-columns:1fr}.bp-study-stage .bp-art{width:min(100%,620px)}.bp-study-stage .bp-art:not(.detail-zoom) svg{height:auto;aspect-ratio:2 / 3;max-height:720px}
 .bp-art{width:min(100%,440px);justify-self:center;background:#191719;border-radius:22px;overflow:hidden;position:relative}
 .bp-art svg{display:block;width:100%;height:min(560px,64vh)}
 .bp-art.detail-zoom svg{height:min(460px,58vh)}
