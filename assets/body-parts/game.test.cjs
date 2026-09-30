@@ -10,18 +10,19 @@ const action=a=>click({target:{closest:()=>({dataset:{action:a}})}});
 const choose=id=>click({target:{closest:()=>({dataset:{word:id}})}});
 context.BodyParts.open('student-A');action('open');assert.match(host.innerHTML,/Cabeça e rosto/);
 action('practice');
-for(let i=0;i<12;i++){
+const total=context.BodyPartsCore.words.length*2;
+for(let i=0;i<total;i++){
   const target=host.innerHTML.match(/class="bp-word"[^>]*>([^<]+)/)[1];
   if(i===0){choose(target==='eye'?'ear':'eye');choose(target==='eye'?'ear':'eye');assert.match(host.innerHTML,/Esta é a resposta/);}
   choose(target);choose(target);action('next');
 }
-assert.ok(spoken.length>=12,'Every completed answer should play its pronunciation.');
-assert.match(host.innerHTML,/110 \/ 120/);assert.equal(storage.size,1);
+assert.ok(spoken.length>=total,'Every completed answer should play its pronunciation.');
+assert.match(host.innerHTML,/190 \/ 200/);assert.equal(storage.size,1);
 action('save');assert.equal(JSON.parse([...storage.values()][0]).length,1);
 action('review');assert.match(host.innerHTML,/Tentar sem ajuda/);action('try');
 const reviewTarget=host.innerHTML.match(/class="bp-word"[^>]*>([^<]+)/)[1];choose(reviewTarget);action('next');assert.match(host.innerHTML,/Revisão concluída/);
 context.BodyParts.reset();context.BodyParts.open('student-B');assert.doesNotMatch(host.innerHTML,/Seus recordes/);
-context.BodyParts.open('student-A');assert.match(host.innerHTML,/110 de 120/);
+context.BodyParts.open('student-A');assert.match(host.innerHTML,/190 de 200/);
 storage.set('ap_body_parts_v1_student-A','broken');context.BodyParts.open('student-A');assert.doesNotMatch(host.innerHTML,/Seus recordes/);
 synth.voices=[];action('open');action('listen');assert.match(host.innerHTML,/voz em inglês não está disponível/);choose('eye');assert.doesNotMatch(host.innerHTML,/Correct!/);
 console.log('PASS: completed session, answer pronunciation, rapid duplicate, assisted answer, review, idempotent save, account isolation, corrupt storage and missing audio.');

@@ -1,6 +1,6 @@
 # Touch & Learn — primeira entrega
 
-Disponível: seção Jogos integrada, ilustração fornecida pela professora, corpo inteiro e ampliação do rosto, seis palavras (hair, eyebrow, eye, ear, nose, mouth), exploração, prática escrita/auditiva, 12 rodadas, revisão e resultados locais separados por conta, modo e formato. Pontos não alteram XP ou notas.
+Disponível: seção Jogos integrada, ilustração fornecida pela professora, corpo inteiro e ampliação do rosto, dez palavras (hair, forehead, eyebrow, eye, ear, nose, mouth, jaw, dimple e chin), exploração, prática escrita/auditiva, 20 rodadas, revisão e resultados locais separados por conta, modo e formato. Pontos não alteram XP ou notas.
 
 Ainda não incluído: demais regiões do corpo, ampliações próprias dos lábios/mãos/boca, órgãos internos, desbloqueio entre fases, sincronização com a professora e gravações naturais. A pronúncia usa síntese de voz em inglês quando disponível; sem voz a prática auditiva bloqueia respostas e informa a alternativa.
 

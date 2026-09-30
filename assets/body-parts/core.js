@@ -6,7 +6,11 @@
     {id:'eye',en:'eye',pt:'olho',regions:[[482,112,22,8],[545,120,21,8]]},
     {id:'ear',en:'ear',pt:'orelha',regions:[[438,144,10,21],[573,161,9,20]]},
     {id:'nose',en:'nose',pt:'nariz',regions:[[518,139,15,17]]},
-    {id:'mouth',en:'mouth',pt:'boca',regions:[[518,169,26,10]]}
+    {id:'mouth',en:'mouth',pt:'boca',regions:[[518,169,26,10]]},
+    {id:'forehead',en:'forehead',pt:'testa',regions:[[519,82,24,9]]},
+    {id:'jaw',en:'jaw',pt:'maxilar',regions:[[474,184,16,12],[562,186,16,12]]},
+    {id:'dimple',en:'dimple',pt:'covinha',regions:[[482,163,8,7],[555,168,8,7]]},
+    {id:'chin',en:'chin',pt:'queixo',regions:[[520,194,15,7]]}
   ];
   function rounds(random=Math.random){
     const result=[];
@@ -26,7 +30,9 @@
     return {...round,errors:Math.min(2,round.errors+1)};
   }
   function validRecord(r){
-    return r && typeof r.id==='string' && ['practice','listen'].includes(r.mode) && ['visual','list'].includes(r.format) && r.version===1 && Number.isInteger(r.points) && r.points>=0 && r.points<=120 && Number.isInteger(r.first) && r.first>=0 && r.first<=12 && r.total===12;
+    const isOriginal=r?.version===1&&r.total===12&&r.points<=120&&r.first<=12;
+    const isExpanded=r?.version===2&&r.total===20&&r.points<=200&&r.first<=20;
+    return r && typeof r.id==='string' && ['practice','listen'].includes(r.mode) && ['visual','list'].includes(r.format) && Number.isInteger(r.points) && r.points>=0 && Number.isInteger(r.first) && r.first>=0 && (isOriginal||isExpanded);
   }
   const api={words,rounds,answer,validRecord};
   if(typeof module!=='undefined')module.exports=api;
