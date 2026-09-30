@@ -6,6 +6,7 @@
 <title>Analice Pessoa · English</title>
 <meta name="description" content="Analice Pessoa · English — sua jornada no inglês com aulas, trilhas e prática guiada pela Prof. Analice Pessoa">
 <link rel="manifest" href="./manifest.json">
+<link rel="stylesheet" href="./assets/body-parts/game.css">
 <meta name="theme-color" content="#0B1A4A">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2587,6 +2588,9 @@ select.input { appearance: none; cursor: pointer; }
 
       <div class="home-explore-heading"><h2>O que você quer praticar?</h2><span>Escolha uma área</span></div>
       <div class="home-area-grid">
+        <button class="home-area-tile trail" type="button" onclick="switchStudentTab('jogos')">
+          <i class="fa-solid fa-gamepad home-area-icon" aria-hidden="true"></i><div class="home-area-copy"><small>Explore e pratique</small><h2>Jogos</h2><p>Descubra as partes do corpo.</p><span class="home-card-status todo">Touch &amp; Learn</span></div>
+        </button>
         <button class="home-area-tile lesson" type="button" onclick="switchStudentTab('semanas')">
           <i class="fa-solid fa-chalkboard-user home-area-icon" aria-hidden="true"></i><div class="home-area-copy"><small>Aulas e jogos</small><h2 id="home-lesson-title">Suas aulas</h2><p id="home-lesson-detail">Conteúdo semanal para praticar.</p><span class="home-card-status todo" id="home-lesson-status"><i class="fa-regular fa-circle"></i> Ainda não vista</span></div>
         </button>
@@ -2673,6 +2677,8 @@ select.input { appearance: none; cursor: pointer; }
       </div>
     </section>
 
+    <section id="stab-jogos" class="hidden" aria-label="Jogos de inglês"><div id="body-parts-root"></div></section>
+
     <!-- MÚSICAS LISTA -->
     <section id="stab-musica" class="hidden">
       <div class="section-header">
@@ -2698,6 +2704,9 @@ select.input { appearance: none; cursor: pointer; }
     </button>
     <button onclick="switchStudentTab('leitura')" id="snav-leitura" class="nav-btn">
       <i class="fa-solid fa-book-open"></i>Livros
+    </button>
+    <button onclick="switchStudentTab('jogos')" id="snav-jogos" class="nav-btn">
+      <i class="fa-solid fa-gamepad"></i>Jogos
     </button>
     <button onclick="switchStudentTab('musica')" id="snav-musica" class="nav-btn">
       <i class="fa-solid fa-music"></i>Músicas
@@ -5766,6 +5775,7 @@ window.onload = async () => {
 };
 
 function showView(v){
+  if(v!=='student')window.BodyParts?.reset();
   ['loading','auth','student','conversation','teacher'].forEach(x=>{
     const el=document.getElementById('view-'+x);
     if(el) el.classList.add('hidden');
@@ -6610,6 +6620,7 @@ function renderStudentContextualNav(activeTab){
     {tab:'audios',label:'Escuta',icon:'fa-headphones-simple'},
     {tab:'leitura',label:'Ler',icon:'fa-book-open'},
     {tab:'musica',label:'Música',icon:'fa-music'},
+    {tab:'jogos',label:'Jogos',icon:'fa-gamepad'},
     {tab:'conversation',label:'Falar',icon:'fa-comments'}
   ];
   nav.replaceChildren(...links.map(link=>{
@@ -6628,7 +6639,8 @@ function renderStudentContextualNav(activeTab){
 }
 
 function switchStudentTab(tab){
-  ['inicio','trilha','semanas','audios','leitura','musica'].forEach(t=>{
+  if(tab!=='jogos'&&!document.getElementById('stab-jogos')?.classList.contains('hidden')&&window.BodyParts&&!BodyParts.leave())return;
+  ['inicio','trilha','semanas','audios','leitura','musica','jogos'].forEach(t=>{
     const el=document.getElementById('stab-'+t);
     if(el)el.classList.toggle('hidden',t!==tab);
     const btn=document.getElementById('snav-'+t);
@@ -6641,6 +6653,7 @@ function switchStudentTab(tab){
   if(tab==='audios')renderStudentAudios();
   if(tab==='leitura')renderReadingLibrary();
   if(tab==='musica')renderStudentMusicas();
+  if(tab==='jogos')window.BodyParts?.open(currentUser?.id);
 }
 
 function publishDateValue(value){
@@ -10827,6 +10840,7 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
     }
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if(window.BodyParts?.active())return;
       // Do not replace the page while a student is in an active conversation.
       // The fresh version will be used on the next normal visit or refresh.
       if(typeof window.isConversationInProgress === 'function' && window.isConversationInProgress()){
@@ -10843,6 +10857,8 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
   }
 </script>
 <script src="./assets/conversation-live.js"></script>
+<script src="./assets/body-parts/core.js"></script>
+<script src="./assets/body-parts/game.js"></script>
 <script src="./assets/conversation-practice.js"></script>
 </body>
 </html>

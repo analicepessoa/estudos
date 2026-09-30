@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const {words,rounds,answer,validRecord}=require('./core.js');
+for(let n=0;n<2000;n++){
+  const deck=rounds();assert.equal(deck.length,12);
+  for(const w of words)assert.equal(deck.filter(x=>x===w.id).length,2);
+  assert.ok(deck.every((id,i)=>!i||id!==deck[i-1]));
+}
+for(const errors of [0,1,2]){
+  const result=answer({target:'eye',errors,done:false},'eye');
+  assert.equal(result.points,[10,5,0][errors]);
+  assert.deepEqual(answer(result,'ear'),result);
+}
+let r={target:'eye',errors:0,done:false};
+r=answer(r,'ear');r=answer(r,'ear');r=answer(r,'ear');assert.equal(r.errors,2);
+assert.equal(answer(r,'eye').points,0);
+assert.equal(validRecord({id:'a',mode:'practice',format:'visual',version:1,points:125,first:12,total:12}),false);
+assert.equal(validRecord({id:'a',mode:'practice',format:'visual',version:1,points:120,first:12,total:12}),true);
+console.log('PASS: 2000 decks, scoring, assisted answers, duplicate answers and record validation.');

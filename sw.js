@@ -1,12 +1,16 @@
 // Service Worker — Analice Pessoa · English
 // Troque a versão (v1, v2...) sempre que publicar uma atualização do app,
 // para forçar os celulares a baixarem a versão nova.
-const CACHE = 'ap-english-v70';
+const CACHE = 'ap-english-v71';
 
 // Arquivos do "esqueleto" do app que ficam guardados para abrir offline.
 const APP_SHELL = [
   './',
   './index.html',
+  './assets/body-parts/core.js',
+  './assets/body-parts/game.js',
+  './assets/body-parts/game.css',
+  './assets/body-parts/character.png',
   './assets/conversation-practice.css',
   './assets/conversation-live.js',
   './assets/conversation-pcm-worklet.js',
