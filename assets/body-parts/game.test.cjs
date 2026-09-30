@@ -3,7 +3,7 @@ let click;const storage=new Map(),spoken=[];
 const host={dataset:{},innerHTML:'',contains:()=>false,querySelector:()=>null,replaceChildren(){this.innerHTML='';},addEventListener(type,fn){if(type==='click')click=fn;}};
 const synth={voices:[{lang:'en-US'}],cancel(){},getVoices(){return this.voices},speak(utterance){spoken.push(utterance.text);utterance.onstart?.();}};
 function TestUtterance(text){this.text=text;}
-const context={BodyPartsCore:require('./core.js'),document:{getElementById:()=>host,activeElement:null},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},setTimeout:fn=>fn(),SpeechSynthesisUtterance:TestUtterance,speechSynthesis:synth,console,crypto:require('node:crypto')};
+const context={BodyPartsCore:require('./core.js'),document:{getElementById:()=>host,activeElement:null},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},setTimeout:(fn,delay)=>{if(delay<1000)fn();return 0;},SpeechSynthesisUtterance:TestUtterance,speechSynthesis:synth,console,crypto:require('node:crypto')};
 context.window=context;context.addEventListener=()=>{};context.confirm=()=>true;
 vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/game.js','utf8'),context);
 const action=a=>click({target:{closest:()=>({dataset:{action:a}})}});
@@ -24,7 +24,7 @@ assert.match(host.innerHTML,/390 \/ 400/);assert.equal(storage.size,1);
 action('save');assert.equal(JSON.parse([...storage.values()][0]).length,1);
 action('review');assert.match(host.innerHTML,/Tentar sem ajuda/);action('try');
 const reviewLabel=host.innerHTML.match(/class="bp-word"[^>]*>([^<]+)/)[1];const reviewTarget=context.BodyPartsCore.words.find(word=>word.en===reviewLabel).id;choose(reviewTarget);action('next');assert.match(host.innerHTML,/Revisão concluída/);
-action('home');assert.match(host.innerHTML,/Fase 2/);assert.match(host.innerHTML,/Disponível/);action('open-details');assert.match(host.innerHTML,/Escolha uma região/);chooseDetail('hands');assert.match(host.innerHTML,/Ver os dedos da mão/);action('open-fingers');choose('pinky');assert.match(host.innerHTML,/My pinky is small/);action('exit');
+action('home');assert.match(host.innerHTML,/Fase 2/);assert.match(host.innerHTML,/Disponível/);action('open-details');assert.match(host.innerHTML,/Escolha uma região/);chooseDetail('hands');assert.match(host.innerHTML,/Dedos da mão/);action('open-fingers');choose('pinky');assert.match(host.innerHTML,/My pinky is small/);action('exit');
 context.BodyParts.reset();context.BodyParts.open('student-B');assert.doesNotMatch(host.innerHTML,/Seus recordes/);
 context.BodyParts.open('student-A');assert.match(host.innerHTML,/Fase 2/);assert.match(host.innerHTML,/Disponível/);
 storage.set('ap_body_parts_v1_student-A','broken');context.BodyParts.open('student-A');assert.match(host.innerHTML,/Bloqueada/);

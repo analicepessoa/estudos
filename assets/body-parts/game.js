@@ -5,7 +5,7 @@
   let host,owner=null,screen='home',mode='learn',format='visual',zoom=false,selected=null,chapter='basic-body',detailArea=null;
   let order=[],index=0,round=null,results=[],sessionId='',saved=false,saveError=false,scoreFormat='visual';
   let review=false,reviewQueue=[],reviewTeaching=false,lock=false,sound=true,audioReady=false,audioToken=0;
-  let message='',voice=null;
+  let message='',voice=null,selectionTimer=0;
   const current=()=>C.chapters[chapter];
   const chapterWords=()=>current().words;
   const word=id=>chapterWords().find(w=>w.id===id);
@@ -16,6 +16,7 @@
   const button=(label,action,primary=false,extra='')=>`<button type="button" class="bp-btn${primary?' primary':''}" data-action="${action}" ${extra}>${label}</button>`;
   function key(){return owner?`ap_body_parts_v1_${encodeURIComponent(owner)}`:null;}
   function records(){try{const r=JSON.parse(localStorage.getItem(key())||'[]');return Array.isArray(r)?r.filter(C.validRecord).slice(-100):[];}catch{return [];}}
+  function clearSelectionTimer(){if(selectionTimer){clearTimeout(selectionTimer);selectionTimer=0;}}
   function cancelAudio(){audioToken++;window.speechSynthesis?.cancel();audioReady=false;}
   function speak(id,{preserveFeedback=false}={}){
     cancelAudio();
@@ -50,7 +51,11 @@
   }
   function choose(id,fromList=false){
     if(screen!=='play'||lock||!word(id))return;
-    if(mode==='learn'){selected=id;message=`${word(id).en} — ${word(id).pt}`;render();if(sound)speak(id);return;}
+    if(mode==='learn'){
+      clearSelectionTimer();selected=id;message=`${word(id).en} — ${word(id).pt}`;render();if(sound)speak(id);
+      selectionTimer=setTimeout(()=>{selectionTimer=0;if(screen==='play'&&mode==='learn'&&selected===id){selected=null;message='';render();}},2600);
+      return;
+    }
     if(reviewTeaching||round.done||(mode==='listen'&&(!sound||!audioReady)))return;
     if(fromList&&!review)scoreFormat='list';
     round=C.answer(round,id);
@@ -80,7 +85,8 @@
     const visibleWords=chapter==='body-details'&&detailArea?chapterWords().filter(w=>w.area===detailArea):chapterWords();
     const regions=visibleWords.flatMap(w=>w.regions.map(([x,y,rx,ry])=>{const hitRx=Math.max(rx,chapter==='basic-body'?30:22),hitRy=Math.max(ry,chapter==='basic-body'?22:18);return `<ellipse class="bp-region${highlight===w.id?' selected':''}" cx="${x}" cy="${y}" rx="${hitRx}" ry="${hitRy}" data-word="${w.id}" role="button" tabindex="0" aria-label="${w.en}: ${w.pt}"><title>${w.en} · ${w.pt}</title></ellipse>`;})).join('');
     const area=C.detailAreas?.[detailArea],viewBox=area?.viewBox||'0 0 1024 1536';
-    return `<div class="bp-art${area?' detail-zoom':''}"><svg viewBox="${viewBox}" role="img" aria-label="${area?`Detalhes de ${area.label}.`: 'Personagem de corpo inteiro. Passe o mouse ou toque em uma região para ouvir a palavra.'}"><image href="${image}" width="1024" height="1536"/>${regions}</svg></div>`;
+    const clickLabel=mode==='learn'&&selected?`<div class="bp-hit-label" role="status"><strong>${word(selected).en}</strong><span>${word(selected).pt}</span></div>`:'';
+    return `<div class="bp-art${area?' detail-zoom':''}"><svg viewBox="${viewBox}" role="img" aria-label="${area?`Detalhes de ${area.label}.`: 'Personagem de corpo inteiro. Passe o mouse ou toque em uma região para ouvir a palavra.'}"><image href="${image}" width="1024" height="1536"/>${regions}</svg>${clickLabel}</div>`;
   }
   function detailMapArt(){
     const regions=Object.values(C.detailAreas).filter(area=>area.primary!==false).flatMap(area=>area.regions.map(([x,y,rx,ry])=>`<ellipse class="bp-region bp-detail-region" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" data-detail-area="${area.id}" role="button" tabindex="0" aria-label="${area.label}"><title>${area.label}</title></ellipse>`)).join('');
@@ -113,8 +119,8 @@
       const modeLabel=learning?'Exploração livre · sem pontuação':review?'Revisão · sem alterar seus pontos':`${mode==='listen'?'Ouvir':'Teste'} · Rodada ${index+1} de ${total} · ${sessionPoints()} pontos`;
       const options=learning&&chapter==='body-details'&&detailArea?chapterWords().filter(w=>w.area===detailArea):chapterWords();
       const detailBack=detailArea==='fingers'?button('← Braços e mãos','open-hands'):button('← Regiões','detail-map');
-      const fingerLink=learning&&detailArea==='hands'?`<div class="bp-actions">${button('Ver os dedos da mão','open-fingers')}</div>`:'';
-      host.innerHTML=`<div class="bp-actions">${learning&&chapter==='body-details'?detailBack:button(review?'Continuar depois':'← Sair','exit')}${button(sound?'Som ligado':'Som desligado','sound',false,`aria-pressed="${sound}"`)}</div><div class="bp-card"><span class="bp-kicker">${modeLabel}</span>${!learning&&!review?`<progress class="bp-progress" value="${index}" max="${total}" aria-label="Rodadas concluídas"></progress>`:''}<div class="bp-stage${format==='visual'?' bp-study-stage':''}">${format==='visual'?art():''}<div><h2 class="bp-word" tabindex="-1">${title}</h2>${learning&&selected||reviewTeaching?`<p>${word(target).pt}</p>`:''}${example}<p class="bp-muted">${learning?'Passe o mouse para destacar uma região e clique para ouvir a palavra. Você também pode escolher abaixo.':mode==='listen'&&!sound?'Exercício pausado. Ligue o som para continuar.':'Selecione no desenho ou nos botões abaixo.'}</p>${target?button('Ouvir novamente','audio'):''}${fingerLink}<div class="bp-options" aria-label="Partes do corpo">${options.map(w=>`<button type="button" data-word="${w.id}" class="${(reviewTeaching?round.target:selected)===w.id?'selected':''}" ${!learning&&(round.done||reviewTeaching||mode==='listen'&&(!sound||!audioReady))?'disabled':''}>${learning?w.en+' · ':''}${w.pt}</button>`).join('')}</div><div class="bp-status" role="status" aria-live="polite">${message}</div>${reviewTeaching?button('Tentar sem ajuda','try',true):!learning&&round.done?button(review?'Próxima palavra':index===total-1?'Ver resultado':'Próxima','next',true):''}${learning?`<div class="bp-actions">${button(chapter==='basic-body'?'Fazer o teste da Fase 1':'Praticar detalhes','practice',true)}</div>`:''}<p class="bp-muted">${format==='visual'?'Os botões ajudam nas regiões pequenas. Ao usá-los no teste, o recorde conta como atividade em lista.':''}</p></div></div></div>`;
+      const fingerShortcut=learning&&detailArea==='hands'?button('Dedos da mão','open-fingers',true):'';
+      host.innerHTML=`<div class="bp-actions">${learning&&chapter==='body-details'?detailBack:button(review?'Continuar depois':'← Sair','exit')}${fingerShortcut}${button(sound?'Som ligado':'Som desligado','sound',false,`aria-pressed="${sound}"`)}</div><div class="bp-card"><span class="bp-kicker">${modeLabel}</span>${!learning&&!review?`<progress class="bp-progress" value="${index}" max="${total}" aria-label="Rodadas concluídas"></progress>`:''}<div class="bp-stage${format==='visual'?' bp-study-stage':''}">${format==='visual'?art():''}<div><h2 class="bp-word" tabindex="-1">${title}</h2>${learning&&selected||reviewTeaching?`<p>${word(target).pt}</p>`:''}${example}<p class="bp-muted">${learning?'Passe o mouse para destacar uma região e clique para ouvir a palavra. Você também pode escolher abaixo.':mode==='listen'&&!sound?'Exercício pausado. Ligue o som para continuar.':'Selecione no desenho ou nos botões abaixo.'}</p>${target?button('Ouvir novamente','audio'):''}<div class="bp-options" aria-label="Partes do corpo">${options.map(w=>`<button type="button" data-word="${w.id}" class="${(reviewTeaching?round.target:selected)===w.id?'selected':''}" ${!learning&&(round.done||reviewTeaching||mode==='listen'&&(!sound||!audioReady))?'disabled':''}>${learning?w.en+' · ':''}${w.pt}</button>`).join('')}</div><div class="bp-status" role="status" aria-live="polite">${message}</div>${reviewTeaching?button('Tentar sem ajuda','try',true):!learning&&round.done?button(review?'Próxima palavra':index===total-1?'Ver resultado':'Próxima','next',true):''}${learning?`<div class="bp-actions">${button(chapter==='basic-body'?'Fazer o teste da Fase 1':'Praticar detalhes','practice',true)}</div>`:''}<p class="bp-muted">${format==='visual'?'Os botões ajudam nas regiões pequenas. Ao usá-los no teste, o recorde conta como atividade em lista.':''}</p></div></div></div>`;
     }
     if(focus)host.querySelector('h2')?.setAttribute('tabindex','-1');
     if(focus)host.querySelector('h2')?.focus({preventScroll:true});

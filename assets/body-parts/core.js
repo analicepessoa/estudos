@@ -24,9 +24,9 @@
   ];
   const detailAreas={
     head:{id:'head',label:'Cabeça e rosto',hint:'Testa, sobrancelhas, maxilar e queixo.',viewBox:'390 15 260 230',regions:[[518,132,100,112]]},
-    hands:{id:'hands',label:'Braços e mãos',hint:'Bíceps, pulsos e palmas.',viewBox:'120 500 800 410',regions:[[247,700,80,205],[779,700,80,205]]},
+    hands:{id:'hands',label:'Braços e mãos',hint:'Pulsos, palmas e dedos.',viewBox:'120 500 800 410',regions:[[247,700,80,205],[779,700,80,205]]},
     fingers:{id:'fingers',label:'Dedos da mão',hint:'Thumb, index finger, middle finger, ring finger e pinky.',viewBox:'150 700 740 215',regions:[],primary:false},
-    torso:{id:'torso',label:'Tronco',hint:'Abs, umbigo, quadril e mamilos.',viewBox:'330 285 375 390',regions:[[518,480,145,188]]},
+    torso:{id:'torso',label:'Tronco',hint:'Bíceps, abs, umbigo, quadril e mamilos.',viewBox:'330 285 375 390',regions:[[518,480,145,188]]},
     lower:{id:'lower',label:'Parte inferior',hint:'Panturrilhas, tornozelos e calcanhares.',viewBox:'285 760 465 735',regions:[[456,1110,75,315],[580,1110,75,315]]}
   };
   const detailWords = [
@@ -37,7 +37,7 @@
     {id:'chin',area:'head',en:'chin',pt:'queixo',example:'Rest your chin on your hand.',examplePt:'Apoie o queixo na mão.',regions:[[520,194,15,7]]},
     {id:'lip',area:'head',en:'lips',pt:'lábios',example:'Her lips are dry today.',examplePt:'Os lábios dela estão secos hoje.',regions:[[518,169,27,10]]},
     {id:'eyelash',area:'head',en:'eyelashes',pt:'cílios',example:'She has long eyelashes.',examplePt:'Ela tem cílios longos.',regions:[[482,111,24,8],[545,119,23,8]]},
-    {id:'bicep',area:'hands',en:'biceps',pt:'bíceps',example:'He trains his biceps at the gym.',examplePt:'Ele treina os bíceps na academia.',regions:[[372,392,35,53],[666,392,35,53]]},
+    {id:'bicep',area:'torso',en:'biceps',pt:'bíceps',example:'He trains his biceps at the gym.',examplePt:'Ele treina os bíceps na academia.',regions:[[372,392,35,53],[666,392,35,53]]},
     {id:'wrist',area:'hands',en:'wrists',pt:'pulsos',example:'Rotate your wrists.',examplePt:'Gire os pulsos.',regions:[[253,720,22,18],[777,720,22,18]]},
     {id:'palm',area:'hands',en:'palms',pt:'palmas das mãos',example:'Open your palms.',examplePt:'Abra as palmas das mãos.',regions:[[228,796,29,34],[802,796,29,34]]},
     {id:'thumb',area:'fingers',en:'thumbs',pt:'polegares',example:'Raise your thumbs.',examplePt:'Levante os polegares.',regions:[[267,783,15,28],[763,783,15,28]]},
