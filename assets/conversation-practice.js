@@ -767,11 +767,7 @@
       });
       if(error)throw error;
       const corrections=Array.isArray(data?.corrections)
-        ? data.corrections.slice(0,5).map(correction=>({
-          original:String(correction?.original||'').trim(),
-          corrected:String(correction?.corrected||'').trim(),
-          explanation:String(correction?.explanation||'').trim()
-        })).filter(correction=>correction.original&&correction.corrected)
+        ? data.corrections.slice(0,5).map(correctionWorthShowing).filter(Boolean)
         : [];
       if(!data?.hasImportantCorrection||!corrections.length)return;
       item.corrections=corrections;
@@ -826,11 +822,7 @@
       ? items.slice(0,maximum).map(item=>String(item||'').trim()).filter(Boolean)
       : [];
     const corrections=Array.isArray(value.importantCorrections)
-      ? value.importantCorrections.slice(0,5).map(item=>({
-        original:String(item?.original||'').trim(),
-        corrected:String(item?.corrected||'').trim(),
-        explanation:String(item?.explanation||'').trim()
-      })).filter(item=>item.original&&item.corrected)
+      ? value.importantCorrections.slice(0,5).map(correctionWorthShowing).filter(Boolean)
       : [];
     const suggestedPractice=String(value.suggestedPractice||'').trim();
     return {grammar:textList(value.grammar),vocabulary:textList(value.vocabulary),communication:textList(value.communication),importantCorrections:corrections,newUsefulExpressions:textList(value.newUsefulExpressions),suggestedPractice};
@@ -937,6 +929,17 @@
       .trim();
   }
 
+  function correctionWorthShowing(item){
+    const original=String(item?.original||'').trim();
+    const corrected=String(item?.corrected||'').trim();
+    const explanation=String(item?.explanation||'').trim();
+    const comparable=value=>normalizedPreviewText(value).replace(/\s+/g,'');
+    if(!original||!corrected)return null;
+    if(comparable(original)===comparable(corrected))return null;
+    if(/\b(punctuation|comma|semicolon|period|capitalization|apostrophe|quotation marks)\b/i.test(explanation))return null;
+    return {original,corrected,explanation};
+  }
+
   function previewCorrection(original,corrected,explanation){
     return {original,corrected,explanation};
   }
@@ -1037,11 +1040,7 @@
     const reply=String(data?.reply||'').trim();
     if(!reply)throw new Error('O tutor respondeu sem texto. Tente novamente.');
     const corrections=Array.isArray(data?.corrections)
-      ? data.corrections.slice(0,5).map(item=>({
-        original:String(item?.original||'').trim(),
-        corrected:String(item?.corrected||'').trim(),
-        explanation:String(item?.explanation||'').trim()
-      })).filter(item=>item.original&&item.corrected)
+      ? data.corrections.slice(0,5).map(correctionWorthShowing).filter(Boolean)
       : [];
     const vocabulary=Array.isArray(data?.vocabulary)
       ? data.vocabulary.slice(0,5).map(item=>({
