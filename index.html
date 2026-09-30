@@ -9244,7 +9244,7 @@ function updateProgressSyncStatus(state='saved'){
   const settings={
     saved:{icon:'cloud-check',text:'Salvo'},
     saving:{icon:'rotate fa-spin',text:'Salvando...'},
-    pending:{icon:'cloud-arrow-up',text:'Aguardando internet'}
+    pending:{icon:'cloud-arrow-up',text:'Tentando salvar'}
   };
   const current=settings[state]||settings.saved;
   element.className=`progress-sync-status ${state==='pending'?'pending':state==='saved'?'saved':''}`;
@@ -9333,11 +9333,17 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
   const tableOk=tableResult.status==='fulfilled'&&!tableResult.value.error;
   const authOk=authResult.status==='fulfilled'&&!authResult.value.error;
 
-  if(tableOk&&authOk){
+  // A tabela student_progress é a fonte do painel da professora. A cópia nos
+  // metadados da conta ajuda na próxima abertura, mas não pode fazer um
+  // progresso já gravado aparecer como se estivesse sem internet.
+  if(tableOk){
     clearPendingProgress(studentId);
     progressRetryAttempts=0;
     if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
     updateProgressSyncStatus('saved');
+    if(!authOk){
+      console.warn('Progresso salvo no painel; a cópia no perfil será atualizada em uma próxima tentativa:',authResult.status==='fulfilled'?authResult.value.error:authResult.reason);
+    }
   }else{
     console.warn('Progresso aguardando nova tentativa:',{
       tabela:tableOk?'ok':tableResult.status==='fulfilled'?tableResult.value.error:tableResult.reason,
@@ -9347,16 +9353,19 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
     scheduleProgressRetry();
     if(!silent)alert('Seu progresso ficou salvo neste aparelho e será enviado quando a conexão melhorar.');
   }
-  return tableOk&&authOk;
+  return tableOk;
 }
 
-window.addEventListener('online',()=>{
+function retryPendingStudentProgress(){
   if(currentUser?.role==='student'&&readPendingProgress(currentUser.id)){
     if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
     progressRetryAttempts=0;
     saveStudentProgress({silent:true});
   }
-});
+}
+window.addEventListener('online',retryPendingStudentProgress);
+window.addEventListener('focus',retryPendingStudentProgress);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')retryPendingStudentProgress();});
 
 window.addEventListener('offline',()=>{
   if(currentUser?.role==='student')updateProgressSyncStatus('pending');
