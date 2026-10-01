@@ -45,3 +45,14 @@
 @media(max-width:600px){
   #body-parts-root{padding-bottom:12px}.bp-hero{grid-template-columns:1fr}.bp-portrait{height:230px}.bp-card{padding:14px;border-radius:18px}.bp-art{border-radius:14px}.bp-art svg{height:min(440px,58vh);min-height:0}.bp-art.detail-zoom svg{height:min(360px,50vh)}.bp-detail-options{grid-template-columns:1fr}.bp-detail-map{max-width:290px}.bp-detail-map svg{height:min(360px,46vh)}.bp-word{font-size:30px;margin-top:14px}.bp-options{gap:9px;margin-top:14px}.bp-options button{min-height:50px;padding:10px 7px;font-size:14px}.bp-status{min-height:0;padding:11px}.bp-actions{gap:8px;margin-top:12px}.bp-btn{padding:9px 12px}.bp-phase{min-height:0}
 }
+
+/* Anatomical feedback layer: hitboxes stay generous, while feedback follows the illustrated body. */
+.bp-zone .bp-region{fill:transparent;stroke:transparent;stroke-width:0;cursor:pointer;outline:none}
+.bp-zone .bp-body-outline{fill:transparent;stroke:transparent;stroke-width:7;vector-effect:non-scaling-stroke;pointer-events:none;transform-box:fill-box;transform-origin:center;transition:fill .16s ease,stroke .16s ease,filter .16s ease,opacity .16s ease}
+.bp-zone:hover .bp-body-outline,.bp-zone:has(.bp-region:focus-visible) .bp-body-outline{fill:#22d3ee2b;stroke:#67e8f9;filter:drop-shadow(0 0 7px #22d3ee) drop-shadow(0 0 12px #22d3ee66);animation:bp-outline-breathe 1.15s ease-in-out infinite}
+.bp-zone.selected .bp-body-outline{fill:#22c55e4d;stroke:#34d399;filter:drop-shadow(0 0 8px #22c55e) drop-shadow(0 0 15px #22c55e80);animation:bp-outline-correct .48s ease-out 2}
+.bp-zone.wrong .bp-body-outline{fill:#ef44444d;stroke:#fb7185;filter:drop-shadow(0 0 8px #ef4444) drop-shadow(0 0 15px #ef444480);animation:bp-outline-wrong .42s ease-in-out 1}
+@keyframes bp-outline-breathe{0%,100%{opacity:.72;transform:scale(1)}50%{opacity:1;transform:scale(1.018)}}
+@keyframes bp-outline-correct{0%,100%{opacity:.82;transform:scale(1)}50%{opacity:1;transform:scale(1.035)}}
+@keyframes bp-outline-wrong{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@media(prefers-reduced-motion:reduce){.bp-zone:hover .bp-body-outline,.bp-zone:has(.bp-region:focus-visible) .bp-body-outline,.bp-zone.selected .bp-body-outline,.bp-zone.wrong .bp-body-outline{animation:none}}
