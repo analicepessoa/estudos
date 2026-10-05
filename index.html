@@ -905,6 +905,27 @@ select.input { appearance: none; cursor: pointer; }
 .reading-progress-line span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#7C2D12,#C2410C); }
 .reading-book-meta { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px; color:#7C6A5F; font-size:11px; font-weight:750; }
 .reading-book-card .btn { margin-top:14px; align-self:flex-start; background:#4A2318; color:white; border-color:#4A2318; }
+.reading-deadline-card {
+  padding:18px; border:1px solid rgba(194,65,12,.2); border-radius:22px;
+  background:linear-gradient(135deg,#FFF7ED,#FFEDD5); box-shadow:var(--shadow-sm); color:#7C2D12;
+}
+.reading-deadline-top { display:flex; align-items:center; gap:12px; }
+.reading-deadline-icon { width:46px; height:46px; flex:0 0 46px; display:grid; place-items:center; border-radius:15px; background:#C2410C; color:white; font-size:20px; }
+.reading-deadline-copy { min-width:0; flex:1; }
+.reading-deadline-copy small { display:block; color:#9A3412; font-size:9px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+.reading-deadline-copy strong { display:block; margin-top:3px; color:#7C2D12; font:900 17px/1.2 'Nunito',sans-serif; }
+.reading-deadline-badge { padding:8px 11px; border-radius:999px; background:#7C2D12; color:white; font-size:10px; font-weight:900; white-space:nowrap; }
+.reading-deadline-dates { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:15px; }
+.reading-deadline-date { padding:9px; border-radius:12px; background:rgba(255,255,255,.7); text-align:center; }
+.reading-deadline-date span { display:block; color:#9A6A55; font-size:9px; font-weight:800; text-transform:uppercase; }
+.reading-deadline-date strong { display:block; margin-top:2px; color:#7C2D12; font-size:12px; }
+.reading-deadline-track { height:7px; margin-top:12px; overflow:hidden; border-radius:999px; background:rgba(124,45,18,.14); }
+.reading-deadline-track span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#EA580C,#9A3412); }
+.reading-deadline-note { margin-top:9px; color:#8B5E49; font-size:10px; line-height:1.45; }
+.reading-deadline-card.expired { border-color:rgba(100,116,139,.2); background:linear-gradient(135deg,#F8FAFC,#E2E8F0); color:#475569; }
+.reading-deadline-card.expired .reading-deadline-icon,.reading-deadline-card.expired .reading-deadline-badge { background:#475569; }
+.reading-deadline-card.expired .reading-deadline-copy small,.reading-deadline-card.expired .reading-deadline-copy strong,.reading-deadline-card.expired .reading-deadline-date strong { color:#475569; }
+.reading-hero-deadline { display:flex; align-items:center; gap:7px; width:max-content; max-width:100%; margin-top:13px; padding:8px 10px; border-radius:11px; background:rgba(255,248,239,.11); color:#FFE4C7; font-size:10px; font-weight:800; }
 .reading-weeks { display:grid; gap:10px; }
 .reading-week-row { width:100%; display:flex; align-items:center; gap:13px; padding:14px; border:1px solid var(--border); border-radius:17px; background:white; font:inherit; text-align:left; cursor:pointer; }
 .reading-week-number { width:42px; height:42px; flex:none; display:grid; place-items:center; border-radius:13px; background:#F4ECE2; color:#7C2D12; font-weight:900; }
@@ -998,6 +1019,9 @@ select.input { appearance: none; cursor: pointer; }
   .reading-audio-controls { flex-basis:100%; }
   .reading-audio-btn { padding:0 11px; }
   .reading-font-controls { width:100%; justify-content:center; }
+  .reading-deadline-top { align-items:flex-start; flex-wrap:wrap; }
+  .reading-deadline-copy { min-width:calc(100% - 62px); }
+  .reading-deadline-badge { margin-left:58px; }
 }
 
 @media(max-width:420px){
@@ -6335,6 +6359,69 @@ let readingAudioPaused=false;
 const READING_PART_XP=20;
 const READING_FINAL_CHECK_XP=50;
 const READING_CHAPTER_XP=200;
+const READING_ACCESS_START=new Date('2026-09-09T00:00:00-03:00').getTime();
+const READING_ACCESS_END=new Date('2026-10-21T23:59:59-03:00').getTime();
+let readingDeadlineTimer=null;
+
+function readingAccessState(now=Date.now()){
+  const nowMs=now instanceof Date?now.getTime():Number(now);
+  const remaining=Math.max(0,READING_ACCESS_END-nowMs);
+  const totalHours=Math.max(0,Math.ceil(remaining/3600000));
+  return {
+    now:nowMs,
+    notStarted:nowMs<READING_ACCESS_START,
+    expired:nowMs>READING_ACCESS_END,
+    remaining,
+    days:Math.floor(totalHours/24),
+    hours:totalHours%24,
+    elapsedPercent:Math.min(100,Math.max(0,Math.round((nowMs-READING_ACCESS_START)/(READING_ACCESS_END-READING_ACCESS_START)*100)))
+  };
+}
+
+function readingAccessDate(value,{year=false}={}){
+  return new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:year?'2-digit':'short',year:year?'numeric':undefined,timeZone:'America/Sao_Paulo'}).format(new Date(value)).replaceAll('.','');
+}
+
+function readingCountdownLabel(state=readingAccessState()){
+  if(state.expired)return 'Prazo encerrado';
+  if(state.notStarted){
+    const hours=Math.max(1,Math.ceil((READING_ACCESS_START-state.now)/3600000));
+    return `Começa em ${Math.ceil(hours/24)} dia${Math.ceil(hours/24)===1?'':'s'}`;
+  }
+  if(state.days)return `${state.days} dia${state.days===1?'':'s'}${state.hours?` e ${state.hours}h`:''} restantes`;
+  return `${Math.max(1,state.hours)}h restantes`;
+}
+
+function readingDeadlineCardHtml(state=readingAccessState()){
+  const teacherReview=state.expired&&isTeacherPreview();
+  return `<section class="reading-deadline-card ${state.expired?'expired':''}">
+    <div class="reading-deadline-top">
+      <div class="reading-deadline-icon"><i class="fa-solid fa-calendar-days"></i></div>
+      <div class="reading-deadline-copy"><small>${state.expired?'Período de leitura encerrado':'Prazo para concluir o livro'}</small><strong>${state.expired?'A Metamorfose saiu da biblioteca dos alunos':`Disponível até ${readingAccessDate(READING_ACCESS_END,{year:true})}`}</strong></div>
+      <div class="reading-deadline-badge" data-reading-countdown>${readingCountdownLabel(state)}</div>
+    </div>
+    <div class="reading-deadline-dates">
+      <div class="reading-deadline-date"><span>Início</span><strong>${readingAccessDate(READING_ACCESS_START)}</strong></div>
+      <div class="reading-deadline-date"><span>Hoje</span><strong data-reading-today>${readingAccessDate(state.now)}</strong></div>
+      <div class="reading-deadline-date"><span>Encerramento</span><strong>${readingAccessDate(READING_ACCESS_END)}</strong></div>
+    </div>
+    <div class="reading-deadline-track"><span data-reading-deadline-progress style="width:${state.elapsedPercent}%"></span></div>
+    <p class="reading-deadline-note">${teacherReview?'O prazo dos alunos terminou, mas a revisão da professora permanece liberada.':'Depois do prazo, o livro sai da biblioteca. O progresso já conquistado continua salvo.'}</p>
+  </section>`;
+}
+
+function updateReadingDeadlineDisplays(){
+  const state=readingAccessState();
+  document.querySelectorAll('[data-reading-countdown]').forEach(element=>element.textContent=readingCountdownLabel(state));
+  document.querySelectorAll('[data-reading-today]').forEach(element=>element.textContent=readingAccessDate(state.now));
+  document.querySelectorAll('[data-reading-deadline-progress]').forEach(element=>element.style.width=`${state.elapsedPercent}%`);
+}
+
+function scheduleReadingDeadlineUpdates(){
+  if(readingDeadlineTimer)clearInterval(readingDeadlineTimer);
+  updateReadingDeadlineDisplays();
+  readingDeadlineTimer=setInterval(updateReadingDeadlineDisplays,60000);
+}
 
 function readingAsset(path){return `${READING_BASE}${String(path||'').replace(/^\.\//,'')}`;}
 function readingPartMarker(index,week=activeReadingWeek){return `reading__metamorphosis_w${week}_part_${index+1}`;}
@@ -6438,6 +6525,12 @@ function readingWeekStatus(week){
 async function renderReadingLibrary(){
   const container=document.getElementById('reading-library');
   if(!container)return;
+  const access=readingAccessState();
+  if(access.expired&&!isTeacherPreview()){
+    container.innerHTML=`${readingDeadlineCardHtml(access)}<div class="reading-coming"><div class="reading-coming-icon"><i class="fa-solid fa-box-archive"></i></div><div class="reading-coming-badge">Leitura encerrada</div><h2>Este livro saiu da biblioteca</h2><p>O período de seis semanas terminou em ${readingAccessDate(READING_ACCESS_END,{year:true})}. Seu progresso e suas conclusões continuam salvos.</p></div>`;
+    scheduleReadingDeadlineUpdates();
+    return;
+  }
   try{
     const weeks=await Promise.all(AVAILABLE_READING_WEEKS.map(loadReadingWeekData));
     const dataByWeek=Object.fromEntries(AVAILABLE_READING_WEEKS.map((number,index)=>[number,weeks[index]]));
@@ -6447,7 +6540,7 @@ async function renderReadingLibrary(){
     const percent=Math.round(allProgress.reduce((sum,item)=>sum+item.done,0)/allProgress.reduce((sum,item)=>sum+item.total,0)*100);
     const nextPart=READING_WEEK_CONFIGS[nextWeek].parts.findIndex((_,index)=>!hasReadingMarker(readingPartMarker(index,nextWeek)));
     const nextStatus=readingWeekStatus(nextWeek);
-    container.innerHTML=`
+    container.innerHTML=`${readingDeadlineCardHtml(access)}
       <article class="reading-book-card">
         <img class="reading-book-cover" src="${readingAsset(week1.book.cover_asset)}" alt="Capa de ${htmlSafe(week1.book.title)}">
         <div class="reading-book-copy">
@@ -6462,6 +6555,7 @@ async function renderReadingLibrary(){
       <div class="reading-weeks">
         ${AVAILABLE_READING_WEEKS.map(number=>{const data=dataByWeek[number];const unlocked=readingWeekUnlocked(number);const complete=readingIsComplete(number);return `<button class="reading-week-row ${unlocked?'':'locked'}" type="button" ${unlocked?`onclick="openReadingBook(${number})"`:'disabled'}><div class="reading-week-number">0${number}</div><div class="reading-week-copy"><strong>${htmlSafe(data.week.title)}</strong><span>${unlocked?readingWeekStatus(number):`Conclua a Semana ${number-1} para desbloquear`} · ${htmlSafe(READING_WEEK_CONFIGS[number].focus)}</span></div><i class="fa-solid fa-${complete?'circle-check':unlocked?'chevron-right':'lock'} reading-week-lock" style="color:${complete?'#0F766E':unlocked?'#7C2D12':''}"></i></button>`;}).join('')}
       </div>`;
+    scheduleReadingDeadlineUpdates();
   }catch(error){
     container.innerHTML=`<div class="reading-coming"><div class="reading-coming-icon"><i class="fa-solid fa-book-open-reader"></i></div><h2>Não foi possível abrir o livro</h2><p>Verifique sua conexão e tente novamente.</p><button class="btn btn-primary" style="margin-top:16px" onclick="renderReadingLibrary()">Tentar novamente</button></div>`;
     console.warn('Falha ao carregar leitura:',error);
@@ -6469,6 +6563,7 @@ async function renderReadingLibrary(){
 }
 
 async function openReadingBook(week=1){
+  if(readingAccessState().expired&&!isTeacherPreview())return alert(`O período de leitura de A Metamorfose terminou em ${readingAccessDate(READING_ACCESS_END,{year:true})}. Seu progresso continua salvo.`);
   if(!readingWeekUnlocked(week))return alert(`Conclua a Semana ${week-1} para abrir a Semana ${week}.`);
   try{
     activeReadingWeek=week;
@@ -6513,11 +6608,12 @@ function renderReadingOverview(){
   content.innerHTML=`
     <section class="reading-hero">
       <img src="${readingAsset(readingData.book.cover_asset)}" alt="Capa de ${htmlSafe(readingData.book.title)}">
-      <div><div class="reading-hero-kicker">Week ${activeReadingWeek} of 6 · ${htmlSafe(readingData.book.cefr)}</div><h1>${htmlSafe(readingData.book.title)}</h1><h2>${htmlSafe(readingData.week.title)}</h2><p>${htmlSafe(readingData.book.adaptation_note_pt)}</p><button class="btn" type="button" onclick="${readingIsComplete()?'renderReadingStudy()':nextPart<READING_PARTS.length?`renderReadingPart(${nextPart})`:'renderReadingQuiz()'}"><i class="fa-solid fa-${nextPart?'bookmark':'book-open'}"></i> ${readingIsComplete()?'Revisar e escrever':nextPart?'Continuar de onde parei':'Começar capítulo'}</button></div>
+      <div><div class="reading-hero-kicker">Week ${activeReadingWeek} of 6 · ${htmlSafe(readingData.book.cefr)}</div><h1>${htmlSafe(readingData.book.title)}</h1><h2>${htmlSafe(readingData.week.title)}</h2><p>${htmlSafe(readingData.book.adaptation_note_pt)}</p><div class="reading-hero-deadline"><i class="fa-solid fa-hourglass-half"></i><span>Até ${readingAccessDate(READING_ACCESS_END)} · <strong data-reading-countdown>${readingCountdownLabel()}</strong></span></div><button class="btn" type="button" onclick="${readingIsComplete()?'renderReadingStudy()':nextPart<READING_PARTS.length?`renderReadingPart(${nextPart})`:'renderReadingQuiz()'}"><i class="fa-solid fa-${nextPart?'bookmark':'book-open'}"></i> ${readingIsComplete()?'Revisar e escrever':nextPart?'Continuar de onde parei':'Começar capítulo'}</button></div>
     </section>
     <section class="reading-overview-card"><h3>Seu progresso · ${percent}%</h3><p>Leia cada parte com calma. Para avançar, responda a uma pergunta sobre o trecho. Você também pode ouvir o texto e acompanhar a leitura.</p><div class="reading-progress-line"><span style="width:${percent}%"></span></div><div class="reading-part-map">${READING_PARTS.map((_,index)=>`<button class="reading-part-dot ${hasReadingMarker(readingPartMarker(index))?'done':''}" type="button" ${hasReadingMarker(readingPartMarker(index))?`onclick="renderReadingPart(${index})"`:'disabled'} aria-label="Parte ${index+1}">${hasReadingMarker(readingPartMarker(index))?'<i class="fa-solid fa-check"></i>':index+1}</button>`).join('')}</div></section>
     <section class="reading-overview-card"><h3>Before you read</h3><p>${readingData.week.before_you_read.map((question,index)=>`${index+1}. ${htmlSafe(question)}`).join('<br>')}</p></section>
     <section class="reading-overview-card"><h3>Como a conclusão é validada?</h3><p>O capítulo tem seis blocos curtos. Cada bloco termina com uma checagem de compreensão baseada no texto. Depois, há uma revisão final de verdadeiro ou falso. A conclusão e o XP ficam salvos no seu progresso.</p></section>`;
+  scheduleReadingDeadlineUpdates();
   readingScrollTop();
 }
 
@@ -6912,11 +7008,18 @@ function renderStudentHome(){
   const readingStarted=completedReadingWeeks.length>0||readingParts>0;
   const readingTitle=document.getElementById('home-reading-title');
   const readingDetail=document.getElementById('home-reading-detail');
-  if(readingTitle)readingTitle.textContent=allReadingWeeksDone?'Livro A Metamorfose concluído':readingParts?'Continue A Metamorfose':completedReadingWeeks.length?`Semana ${currentReadingWeek} disponível`:'Comece A Metamorfose';
-  if(readingDetail)readingDetail.textContent=allReadingWeeksDone
-    ? 'Revise o vocabulário e suas anotações das seis semanas.'
-    : readingParts?`Semana ${currentReadingWeek}: ${readingParts} de ${READING_WEEK_CONFIGS[currentReadingWeek].parts.length} partes lidas.`:`Semana ${currentReadingWeek} disponível · leitura guiada em nível A1.`;
-  setHomeStatus('home-reading-status',allReadingWeeksDone?'done':readingStarted?'started':'todo',allReadingWeeksDone?'Leitura concluída':readingStarted?'Em andamento':'Pronto para começar');
+  const readingAccess=readingAccessState();
+  if(readingAccess.expired&&!isTeacherPreview()){
+    if(readingTitle)readingTitle.textContent=allReadingWeeksDone?'Livro A Metamorfose concluído':'Próximo livro em breve';
+    if(readingDetail)readingDetail.textContent=`O período de A Metamorfose terminou em ${readingAccessDate(READING_ACCESS_END,{year:true})}. Seu progresso foi preservado.`;
+    setHomeStatus('home-reading-status',allReadingWeeksDone?'done':'todo',allReadingWeeksDone?'Leitura concluída':'Prazo encerrado');
+  }else{
+    if(readingTitle)readingTitle.textContent=allReadingWeeksDone?'Livro A Metamorfose concluído':readingParts?'Continue A Metamorfose':completedReadingWeeks.length?`Semana ${currentReadingWeek} disponível`:'Comece A Metamorfose';
+    if(readingDetail)readingDetail.textContent=allReadingWeeksDone
+      ? `Revise suas anotações até ${readingAccessDate(READING_ACCESS_END,{year:true})}.`
+      : readingParts?`Semana ${currentReadingWeek}: ${readingParts} de ${READING_WEEK_CONFIGS[currentReadingWeek].parts.length} partes lidas. Acesso até ${readingAccessDate(READING_ACCESS_END)}.`:`Semana ${currentReadingWeek} disponível · acesso até ${readingAccessDate(READING_ACCESS_END)}.`;
+    setHomeStatus('home-reading-status',allReadingWeeksDone?'done':readingStarted?'started':'todo',allReadingWeeksDone?'Leitura concluída':readingCountdownLabel(readingAccess));
+  }
 
   const songs=(DATABASE.musicas[roomKey]||[]).filter(isContentPublished);
   const latestSong=songs[songs.length-1];
