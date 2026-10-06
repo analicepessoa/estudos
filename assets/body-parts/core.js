@@ -54,9 +54,20 @@
     {id:'ankle',area:'lower',en:'ankles',pt:'tornozelos',example:'Move your ankles slowly.',examplePt:'Mova os tornozelos devagar.',regions:[[433,1325,30,28],[603,1325,30,28]]},
     {id:'heel',area:'lower',en:'heels',pt:'calcanhares',example:'My heels hurt in these shoes.',examplePt:'Meus calcanhares doem com estes sapatos.',regions:[[402,1400,31,28],[633,1400,31,28]]}
   ];
+  const organWords = [
+    {id:'brain',en:'brain',pt:'cérebro',example:'The brain controls thoughts and memory.',examplePt:'O cérebro controla pensamentos e memória.',regions:[[512,80,52,38]]},
+    {id:'heart',en:'heart',pt:'coração',example:'The heart pumps blood through the body.',examplePt:'O coração bombeia sangue pelo corpo.',regions:[[525,392,44,48]]},
+    {id:'lungs',en:'lungs',pt:'pulmões',example:'Your lungs take in oxygen when you breathe.',examplePt:'Seus pulmões recebem oxigênio quando você respira.',regions:[[458,385,40,52],[566,385,40,52]]},
+    {id:'liver',en:'liver',pt:'fígado',example:'The liver cleans the blood and stores energy.',examplePt:'O fígado limpa o sangue e armazena energia.',regions:[[470,474,46,38]]},
+    {id:'stomach',en:'stomach',pt:'estômago',example:'The stomach breaks down food during digestion.',examplePt:'O estômago decompõe os alimentos na digestão.',regions:[[548,488,42,44]]},
+    {id:'kidneys',en:'kidneys',pt:'rins',example:'The kidneys filter waste from the blood.',examplePt:'Os rins filtram os resíduos do sangue.',regions:[[440,538,28,30],[584,538,28,30]]},
+    {id:'intestines',en:'intestines',pt:'intestinos',example:'The intestines absorb nutrients and water.',examplePt:'Os intestinos absorvem nutrientes e água.',regions:[[512,555,64,52]]},
+    {id:'bladder',en:'bladder',pt:'bexiga',example:'The bladder stores urine before it leaves the body.',examplePt:'A bexiga armazena urina antes de ser eliminada.',regions:[[512,608,34,24]]}
+  ];
   const chapters={
     'basic-body':{id:'basic-body',phase:1,title:'Corpo básico',short:'corpo inteiro',description:'Explore o personagem inteiro e faça um teste curto com perguntas sorteadas.',words:basicBodyWords,total:12,passPoints:90},
-    'body-details':{id:'body-details',phase:2,title:'Detalhes por região',short:'detalhes',description:'Toque primeiro em uma grande região do corpo para ampliar e pratique com perguntas sorteadas.',words:detailWords,total:12,passPoints:90}
+    'body-details':{id:'body-details',phase:2,title:'Detalhes por região',short:'detalhes',description:'Toque primeiro em uma grande região do corpo para ampliar e pratique com perguntas sorteadas.',words:detailWords,total:12,passPoints:90},
+    'internal-organs':{id:'internal-organs',phase:3,title:'Internal Organs',short:'órgãos internos',description:'Explore os principais órgãos vitais sobre o corpo humano e ouça a pronúncia de cada um.',words:organWords,total:8,passPoints:60}
   };
   const words=basicBodyWords;
   function rounds(list=words,random=Math.random){
@@ -70,6 +81,61 @@
       }
     }
     return result;
+  }
+  function organChallengeRounds(random=Math.random){
+    const list=organWords.flatMap(w=>[
+      {target:w.id,type:'text'},
+      {target:w.id,type:'listen'}
+    ]);
+    for(let i=list.length-1;i>0;i--){
+      const j=Math.floor(random()*(i+1));
+      [list[i],list[j]]=[list[j],list[i]];
+    }
+    for(let i=1;i<list.length;i++){
+      if(list[i].target===list[i-1].target){
+        const swapIdx=(i+1)%list.length;
+        if(list[swapIdx].target!==list[i].target){
+          [list[i],list[swapIdx]]=[list[swapIdx],list[i]];
+        }
+      }
+    }
+    return list;
+  }
+  const organFunctionQuestions={
+    brain:'Which organ helps you think and controls your body?',
+    heart:'Which organ pumps blood around your body?',
+    lungs:'Which organs help you breathe?',
+    liver:'Which organ helps clean your blood?',
+    stomach:'Which organ helps digest food?',
+    kidneys:'Which organs filter waste from your blood?',
+    intestines:'Which organs absorb nutrients from food?',
+    bladder:'Which organ stores urine?'
+  };
+  function organFunctionRounds(random=Math.random){
+    const list=organWords.map(w=>({
+      target:w.id,
+      question:organFunctionQuestions[w.id]
+    }));
+    for(let i=list.length-1;i>0;i--){
+      const j=Math.floor(random()*(i+1));
+      [list[i],list[j]]=[list[j],list[i]];
+    }
+    return list;
+  }
+  function calculatePhase3Stars(firstTry){
+    const score = Number.isInteger(firstTry) ? Math.max(0, Math.min(24, firstTry)) : 0;
+    if(score >= 22) return 3;
+    if(score >= 18) return 2;
+    if(score >= 12) return 1;
+    return 0;
+  }
+  function phase3PerformanceMessage(stars){
+    switch(stars){
+      case 3: return 'Amazing! You really know the human body!';
+      case 2: return "Great job! You're getting really good at this!";
+      case 1: return 'Good job! Keep practicing!';
+      default: return "Keep practicing! You'll get better!";
+    }
   }
   function answer(round,id){
     if(round.done)return round;
@@ -86,7 +152,7 @@
     const isChapterSeven=r?.version===7&&((r.chapter==='basic-body'||r.chapter==='body-details')&&r.total===12&&r.points<=120&&r.first<=12);
     return r && typeof r.id==='string' && ['practice','listen'].includes(r.mode) && ['visual','list'].includes(r.format) && Number.isInteger(r.points) && r.points>=0 && Number.isInteger(r.first) && r.first>=0 && (isOriginal||isExpanded||isChapterThree||isChapterFour||isChapterFive||isChapterSix||isChapterSeven);
   }
-  const api={words,chapters,detailAreas,rounds,answer,validRecord};
+  const api={words,chapters,detailAreas,organWords,rounds,organChallengeRounds,organFunctionQuestions,organFunctionRounds,calculatePhase3Stars,phase3PerformanceMessage,answer,validRecord};
   if(typeof module!=='undefined')module.exports=api;
   else root.BodyPartsCore=api;
 })(globalThis);

@@ -27,4 +27,35 @@ assert.equal(validRecord({id:'f',chapter:'body-details',mode:'practice',format:'
 assert.equal(validRecord({id:'f',chapter:'body-details',mode:'practice',format:'visual',version:6,points:470,first:46,total:46}),false);
 assert.equal(validRecord({id:'g',chapter:'basic-body',mode:'practice',format:'visual',version:7,points:90,first:9,total:12}),true);
 assert.equal(validRecord({id:'g',chapter:'basic-body',mode:'practice',format:'visual',version:7,points:130,first:12,total:12}),false);
-console.log('PASS: 2000 decks, scoring, assisted answers, duplicate answers and record validation.');
+const {organChallengeRounds,organFunctionQuestions,organFunctionRounds,organWords}=require('./core.js');
+const organDeck=organChallengeRounds();
+assert.equal(organDeck.length,16);
+assert.equal(organDeck.filter(r=>r.type==='text').length,8);
+assert.equal(organDeck.filter(r=>r.type==='listen').length,8);
+for(const w of organWords){
+  assert.equal(organDeck.filter(r=>r.target===w.id&&r.type==='text').length,1);
+  assert.equal(organDeck.filter(r=>r.target===w.id&&r.type==='listen').length,1);
+}
+const funcDeck=organFunctionRounds();
+assert.equal(funcDeck.length,8);
+for(const w of organWords){
+  assert.equal(funcDeck.filter(r=>r.target===w.id).length,1);
+  assert.equal(organFunctionQuestions[w.id],funcDeck.find(r=>r.target===w.id).question);
+}
+const {calculatePhase3Stars,phase3PerformanceMessage}=require('./core.js');
+assert.equal(calculatePhase3Stars(24), 3);
+assert.equal(calculatePhase3Stars(22), 3);
+assert.equal(calculatePhase3Stars(21), 2);
+assert.equal(calculatePhase3Stars(18), 2);
+assert.equal(calculatePhase3Stars(17), 1);
+assert.equal(calculatePhase3Stars(12), 1);
+assert.equal(calculatePhase3Stars(11), 0);
+assert.equal(calculatePhase3Stars(0), 0);
+assert.equal(calculatePhase3Stars(-5), 0);
+assert.equal(calculatePhase3Stars(30), 3);
+assert.equal(phase3PerformanceMessage(3), 'Amazing! You really know the human body!');
+assert.equal(phase3PerformanceMessage(2), "Great job! You're getting really good at this!");
+assert.equal(phase3PerformanceMessage(1), 'Good job! Keep practicing!');
+assert.equal(phase3PerformanceMessage(0), "Keep practicing! You'll get better!");
+
+console.log('PASS: 2000 decks, scoring, assisted answers, duplicate answers, record validation, organ challenge/function rounds, phase 3 stars and messages.');
