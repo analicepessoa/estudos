@@ -2008,6 +2008,9 @@ select.input { appearance: none; cursor: pointer; }
 .music-title { font-weight: 800; font-size: 16px; color: var(--ink); }
 .music-artist { font-size: 13px; color: var(--slate); margin-top: 4px; }
 
+
+.music-library-hero{padding:22px;border-radius:22px;color:#fff;background:linear-gradient(135deg,#0F766E,#0891B2 60%,#4338CA);box-shadow:0 14px 30px rgba(15,118,110,.22);position:relative;overflow:hidden}.music-library-hero:after{content:'♫';position:absolute;right:18px;top:-25px;font-size:142px;opacity:.12;font-family:serif}.music-library-hero>*{position:relative;z-index:1}.music-library-eyebrow{display:inline-flex;padding:5px 9px;border-radius:99px;background:rgba(255,255,255,.14);color:#D1FAE5;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.music-library-hero h2{margin:12px 0 7px;color:#fff;font-size:24px;line-height:1.15}.music-library-hero p{margin:0;color:rgba(255,255,255,.88);font-size:14px;line-height:1.5}.music-library-stats{display:flex;gap:8px;margin-top:16px}.music-library-stat{padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.14);min-width:96px}.music-library-stat strong{display:block;font-size:15px}.music-library-stat span{font-size:10px;color:rgba(255,255,255,.8);font-weight:700}.music-card{display:grid;grid-template-columns:58px minmax(0,1fr);gap:12px;padding:14px;border-radius:20px;position:relative;overflow:hidden}.music-card:after{content:'';position:absolute;inset:0 0 auto;height:4px;background:#0F766E}.music-card-cover{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,#0F766E,#14B8A6);color:white;display:flex;align-items:center;justify-content:center;font-size:25px}.music-card-top{display:flex;gap:8px}.music-info{min-width:0}.music-title{font-weight:900;font-size:17px;line-height:1.15}.music-artist{font-size:12px;font-weight:650}.music-level{margin-left:auto;padding:4px 7px;border-radius:8px;color:#0F766E;background:#ECFDF5;font-size:10px;font-weight:900;white-space:nowrap}.music-theme{margin-top:8px;font-size:12px;font-weight:850;color:var(--ink)}.music-summary{margin:4px 0 0;color:var(--slate);font-size:12px;line-height:1.42}.music-card-footer{grid-column:1/-1;display:flex;align-items:center;gap:7px;flex-wrap:wrap}.music-skill{padding:5px 7px;border-radius:8px;background:var(--surface);color:var(--slate);font-size:10px;font-weight:800}.music-card-cta{margin-left:auto;color:#0F766E;font-size:11px;font-weight:900}.music-card-status{margin-left:0}@media(max-width:520px){.music-card{grid-template-columns:52px minmax(0,1fr)}.music-card-cover{width:52px;height:52px}.music-library-hero{padding:19px}.music-library-hero h2{font-size:21px}.music-card-cta{width:100%;margin-left:0}}
+
 /* Music Player Overlay */
 #view-music-player {
   position: fixed; inset: 0; z-index: 100;
@@ -2721,8 +2724,8 @@ select.input { appearance: none; cursor: pointer; }
     <!-- MÚSICAS LISTA -->
     <section id="stab-musica" class="hidden">
       <div class="section-header">
-        <h2>Learn with Music 🎧</h2>
-        <p>Pratique connected speech e vocabulário cantando</p>
+        <h2>Aprenda inglês com música 🎧</h2>
+        <p>Escolha pelo que você quer aprender e siga a rota de estudo.</p>
       </div>
       <div id="musicas-container" class="music-list"></div>
     </section>
@@ -11182,39 +11185,8 @@ function renderAdminMusicas() {
 }
 
 // -- STUDENT MUSICAS --
-function renderStudentMusicas() {
-  const cont = document.getElementById('musicas-container');
-  if(!cont) return;
-  cont.innerHTML = '';
-  let list = [];
-  
-  if (isTeacherAdmin()) {
-    Object.keys(DATABASE.musicas).forEach(k => {
-      (DATABASE.musicas[k] || []).forEach(m => list.push({...m, rKey: k, turmaName: DATABASE.turmas[k]?.name || k}));
-    });
-  } else {
-    const tKey = currentUser?.turma;
-    (DATABASE.musicas[tKey] || []).filter(isContentPublished).forEach(m => list.push({...m, rKey: tKey}));
-  }
-  
-  if(list.length === 0) {
-    cont.innerHTML = '<div style="text-align:center;color:var(--slate);padding:40px 20px">Nenhuma música disponível no momento.</div>';
-    return;
-  }
-  
-  cont.innerHTML = list.map(m => {
-    const listened=musicListened(m,m.rKey);
-    return `
-      <div class="music-card" onclick="openMusicPlayer('${m.rKey}', '${m.id}')">
-        <div class="music-icon"><i class="fa-solid fa-${listened?'check':'play'}"></i></div>
-        <div class="music-info">
-          <div class="music-title">${m.title}</div>
-          <div class="music-artist">${m.artist||'Desconhecido'} ${isTeacherAdmin()?`<span class="badge badge-violet" style="font-size:10px;margin-left:8px">${m.turmaName}</span>${!isContentPublished(m)?`<span class="badge" style="font-size:10px;margin-left:6px;background:#F5F3FF;color:#7C3AED">📅 ${formatPublishAt(m.publishAt)}</span>`:''}`:''}</div>
-        </div>
-        <span class="content-status ${listened?'done':'todo'} music-card-status"><i class="fa-solid fa-${listened?'circle-check':'circle'}"></i> ${listened?'Ouvida':'Não ouvida'}</span>
-      </div>`;
-  }).join('');
-}
+function musicCardProfile(m){const title=String(m.title||'').toLowerCase();let theme='Escuta, vocabulário e pronúncia',level='A2–B1',icon='🎧',summary='Treine listening, pronúncia, vocabulário e expressões naturais com esta música.';if(title.includes('shallow')){theme='Coragem e metáforas';icon='🌊';summary='Pratique perguntas, metáforas e um refrão marcante.'}else if(title.includes('somewhere')){theme='Memórias, lugares e nostalgia';icon='🌿';summary='Aprenda a falar de lembranças, sugestões e mudanças.'}else if(title.includes('bills')){theme='Dinheiro e responsabilidades';level='B1';icon='💳';summary='Treine vocabulário do dia a dia, gírias e frases úteis.'}else if(title.includes('thousand')){theme='Amor e espera';icon='🕰️';summary='Pratique frases de amor, tempo e pronúncia clara.'}else if(title.includes('training')){theme='Limites e relacionamentos';level='B1';icon='🎯';summary='Aprenda perguntas naturais, contrações e expectativas.'}return{theme,level,icon,summary};}
+function renderStudentMusicas(){const c=document.getElementById('musicas-container');if(!c)return;let list=[];if(isTeacherAdmin())Object.keys(DATABASE.musicas).forEach(k=>(DATABASE.musicas[k]||[]).forEach(m=>list.push({...m,rKey:k})));else{const k=currentUser?.turma;(DATABASE.musicas[k]||[]).filter(isContentPublished).forEach(m=>list.push({...m,rKey:k}));}if(!list.length){c.innerHTML='<div style="text-align:center;color:var(--slate);padding:40px 20px">Nenhuma música disponível no momento.</div>';return;}const done=list.filter(m=>musicListened(m,m.rKey)).length;const cards=list.map(m=>{const p=musicCardProfile(m),heard=musicListened(m,m.rKey);return '<div class="music-card" role="button" tabindex="0" onclick="openMusicPlayer(&quot;'+esc(m.rKey)+'&quot;,&quot;'+esc(m.id)+'&quot;)"><div class="music-card-cover">'+p.icon+'</div><div><div class="music-card-top"><div class="music-info"><div class="music-title">'+htmlSafe(m.title)+'</div><div class="music-artist">'+htmlSafe(m.artist||'Desconhecido')+'</div></div><span class="music-level">'+p.level+'</span></div><div class="music-theme">'+p.theme+'</div><p class="music-summary">'+p.summary+'</p></div><div class="music-card-footer"><span class="music-skill">🎧 Escuta</span><span class="music-skill">🗣️ Pronúncia</span><span class="music-skill">📚 Vocabulário</span><span class="content-status '+(heard?'done':'todo')+' music-card-status">'+(heard?'✓ Ouvida':'○ Começar')+'</span><span class="music-card-cta">Estudar <i class="fa-solid fa-arrow-right"></i></span></div></div>';}).join('');c.innerHTML='<div class="music-library-hero"><span class="music-library-eyebrow">✨ English with Music</span><h2>Escolha uma música pelo que ela pode te ensinar.</h2><p>Cada música une escuta, significado, vocabulário e pronúncia para você aprender junto.</p><div class="music-library-stats"><div class="music-library-stat"><strong>'+list.length+'</strong><span>músicas disponíveis</span></div><div class="music-library-stat"><strong>'+done+'/'+list.length+'</strong><span>já ouvidas</span></div></div></div>'+cards;}
 
 // -- MUSIC PLAYER LOGIC --
 let activeMusicInterval = null;
