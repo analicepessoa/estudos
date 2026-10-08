@@ -4,7 +4,7 @@
   const C=BodyPartsCore, image='./assets/body-parts/character.png', SET_VERSION=7;
   const organImg=id=>'./assets/body-parts/organs/'+id+'.png';
   let host,owner=null,screen='home',mode='learn',format='visual',zoom=false,selected=null,chapter='basic-body',detailArea=null;
-  let order=[],index=0,round=null,results=[],sessionId='',saved=false,saveError=false,scoreFormat='visual';
+  let order=[],index=0,round=null,results=[],sessionId='',saved=false,cloudSaved=false,saveError=false,scoreFormat='visual';
   let review=false,reviewQueue=[],reviewTeaching=false,lock=false,sound=true,audioReady=false,audioToken=0;
   let message='',voice=null,selectionTimer=0,wrongSelected=null;
   let phase3Session={findOrganFirst:null,functionsFirst:null};
@@ -63,9 +63,11 @@
     if(nextMode==='learn'&&chapter==='body-details'){
       cancelAudio();mode='learn';screen='detail-map';selected=null;detailArea=null;message='';render(true);return;
     }
-    cancelAudio();mode=nextMode;screen='play';review=false;selected=null;index=0;results=[];saved=false;saveError=false;
+    cancelAudio();mode=nextMode;screen='play';review=false;selected=null;index=0;results=[];saved=false;cloudSaved=false;saveError=false;
     order=C.rounds(chapterWords()).slice(0,current().total);scoreFormat=format;sessionId=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random()}`;
-    zoom=false;message='';newRound();
+    zoom=false;message='';
+    if(nextMode!=='learn')window.recordStudentUsageEvent?.('activity',`Body Parts · ${current().title} · ${nextMode==='listen'?'Ouvir':'Prática'}`,'started');
+    newRound();
   }
   function newRound(){
     lock=false;selected=null;wrongSelected=null;round={target:review?reviewQueue[0]:order[index],errors:0,done:false,points:0};
@@ -76,6 +78,7 @@
     cancelAudio();chapter='internal-organs';mode='find-organ';screen='play';index=0;results=[];
     selected=null;wrongSelected=null;lock=false;
     order=C.organChallengeRounds();
+    window.recordStudentUsageEvent?.('activity','Body Parts · Internal Organs · Find the Organ','started');
     newOrganRound();
   }
   function newOrganRound(){
@@ -91,6 +94,7 @@
     cancelAudio();chapter='internal-organs';mode='functions-challenge';screen='play';index=0;results=[];
     selected=null;wrongSelected=null;lock=false;
     order=C.organFunctionRounds();
+    window.recordStudentUsageEvent?.('activity','Body Parts · Internal Organs · Functions Challenge','started');
     newFunctionRound();
   }
   function newFunctionRound(){
@@ -210,6 +214,8 @@
       bestFunctionsFirst:isNewBest?functionsFirst:(p3Data.bestFunctionsFirst??functionsFirst),
       lastCompletedDate:new Date().toISOString()
     });
+    window.recordStudentUsageEvent?.('activity','Body Parts · Internal Organs','completed',`${totalFirst}/24 na primeira tentativa`,false);
+    Promise.resolve(window.saveStudentProgress?.({silent:true})).then(ok=>{cloudSaved=Boolean(ok);if(screen==='phase3-result')render();});
 
     screen='phase3-result';
     cancelAudio();
@@ -231,7 +237,13 @@
   function save(){
     if(saved||results.length!==order.length||!key())return;
     const record={id:sessionId,version:SET_VERSION,game:'body-parts',chapter,mode,format:scoreFormat,date:new Date().toISOString(),total:order.length,points:sessionPoints(),first:results.filter(r=>r.errors===0).length,assisted:results.filter(r=>r.errors===2).length,words:chapterWords().map(w=>({id:w.id,appearances:2,errors:results.filter(r=>r.target===w.id).reduce((s,r)=>s+r.errors,0),independent:results.filter(r=>r.target===w.id&&r.errors<2).length}))};
-    try{const rows=records().filter(r=>r.id!==sessionId);localStorage.setItem(key(),JSON.stringify([...rows,record].slice(-100)));saved=true;saveError=false;}catch{saveError=true;}
+    try{
+      const rows=records().filter(r=>r.id!==sessionId);
+      localStorage.setItem(key(),JSON.stringify([...rows,record].slice(-100)));
+      saved=true;saveError=false;
+      window.recordStudentUsageEvent?.('activity',`Body Parts · ${current().title} · ${mode==='listen'?'Ouvir':'Prática'}`,'completed',`${sessionPoints()}/${order.length*10} pontos`,false);
+      Promise.resolve(window.saveStudentProgress?.({silent:true})).then(ok=>{cloudSaved=Boolean(ok);if(screen==='result')render();});
+    }catch{saveError=true;}
   }
   const basicOutlines={
     head:['M445 79 Q462 30 518 24 Q574 31 592 82 L590 150 Q579 205 519 226 Q458 207 446 151 Z'],
@@ -415,7 +427,7 @@
     }else if(screen==='result'){
       const errors=[...new Set(results.filter(r=>r.errors>0).map(r=>r.target))];
       const total=order.length||current().total,passed=sessionPassed();
-      host.innerHTML=`<div class="bp-card"><span class="bp-kicker">${current().title} · Resultado</span><h2>${passed?'Fase 2 liberada!':'Etapa praticada!'}</h2><div class="bp-stats"><div><strong>${sessionPoints()} / ${total*10}</strong>pontos</div><div><strong>${results.filter(r=>!r.errors).length} / ${total}</strong>de primeira</div><div><strong>${results.filter(r=>r.errors<2).length} / ${total}</strong>sem revelar a resposta</div></div><p>${passed?`Você alcançou os ${current().passPoints} pontos necessários. Agora pode explorar os detalhes por região.`:errors.length?'Vamos revisar: '+errors.map(id=>word(id).en).join(', '):'Você acertou todas na primeira tentativa!'}</p><p role="status">${message}</p><div class="bp-actions">${passed?button('Ir para a Fase 2','open-details',true):button(errors.length?'Revisar palavras':'Explorar as palavras',errors.length?'review':'learn',true)}${button('Jogar novamente',mode)}${button('Voltar aos jogos','home')}</div><p class="bp-muted">${saveError?'Não foi possível salvar. Seu resultado continua aqui.':saved?'Resultado salvo para sua conta neste dispositivo. Não sincronizado com a professora.':'Resultado disponível nesta tela.'}</p>${saveError?button('Tentar salvar novamente','save'):''}</div>`;
+      host.innerHTML=`<div class="bp-card"><span class="bp-kicker">${current().title} · Resultado</span><h2>${passed?'Fase 2 liberada!':'Etapa praticada!'}</h2><div class="bp-stats"><div><strong>${sessionPoints()} / ${total*10}</strong>pontos</div><div><strong>${results.filter(r=>!r.errors).length} / ${total}</strong>de primeira</div><div><strong>${results.filter(r=>r.errors<2).length} / ${total}</strong>sem revelar a resposta</div></div><p>${passed?`Você alcançou os ${current().passPoints} pontos necessários. Agora pode explorar os detalhes por região.`:errors.length?'Vamos revisar: '+errors.map(id=>word(id).en).join(', '):'Você acertou todas na primeira tentativa!'}</p><p role="status">${message}</p><div class="bp-actions">${passed?button('Ir para a Fase 2','open-details',true):button(errors.length?'Revisar palavras':'Explorar as palavras',errors.length?'review':'learn',true)}${button('Jogar novamente',mode)}${button('Voltar aos jogos','home')}</div><p class="bp-muted">${saveError?'Não foi possível salvar. Seu resultado continua aqui.':cloudSaved?'✓ Resultado sincronizado com a professora.':saved?'Resultado salvo neste aparelho · sincronizando com a professora...':'Resultado disponível nesta tela.'}</p>${saveError?button('Tentar salvar novamente','save'):''}</div>`;
     }else if(screen==='find-organ-result'){
       const totalRounds=order.length||16;
       const firstTryCount=results.filter(r=>r.firstTry).length;

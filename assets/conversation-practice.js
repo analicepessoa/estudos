@@ -1115,6 +1115,7 @@
   }
 
   async function openConversationPractice(){
+    window.recordStudentUsageArea?.('conversation');
     const realStudent=currentUser?.role==='student'&&Boolean(currentUser?.id);
     if(!realStudent&&!teacherPreviewActive()){
       alert('A conversa com IA está disponível para alunos conectados. Entre com uma conta de aluno para testar.');

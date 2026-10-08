@@ -1855,6 +1855,21 @@ select.input { appearance: none; cursor: pointer; }
 }
 .admin-item-name { font-weight: 700; font-size: 14px; }
 .admin-item-sub { font-size: 11px; color: var(--slate); }
+.usage-metrics { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+.usage-metric { display:inline-flex; align-items:center; gap:4px; padding:4px 7px; border-radius:999px; background:#F1F5F9; color:#475569; font-size:9px; font-weight:800; }
+.usage-metric i { color:#6366F1; }
+.student-usage-modal { width:min(620px,calc(100vw - 28px)); max-height:min(780px,calc(100vh - 28px)); overflow:auto; }
+.student-usage-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+.student-usage-stat { padding:12px 9px; border:1px solid var(--border); border-radius:14px; background:#F8FAFC; text-align:center; }
+.student-usage-stat strong { display:block; color:var(--ink); font:900 20px/1.1 'Nunito',sans-serif; }
+.student-usage-stat span { display:block; margin-top:4px; color:var(--slate); font-size:9px; font-weight:750; line-height:1.3; }
+.student-usage-context { padding:13px; border-radius:14px; background:#EEF2FF; color:#3730A3; font-size:12px; line-height:1.55; }
+.student-usage-events { display:grid; gap:8px; }
+.student-usage-event { display:grid; grid-template-columns:34px minmax(0,1fr); gap:10px; align-items:center; padding:10px; border:1px solid var(--border); border-radius:13px; background:white; }
+.student-usage-event-icon { width:34px; height:34px; display:grid; place-items:center; border-radius:11px; background:#F1F5F9; color:#4F46E5; }
+.student-usage-event strong { display:block; font-size:12px; line-height:1.3; }
+.student-usage-event span { display:block; margin-top:3px; color:var(--slate); font-size:10px; }
+@media(max-width:520px){.student-usage-summary{grid-template-columns:repeat(2,minmax(0,1fr));}}
 .admin-delete {
   background: none; border: none; color: var(--slate-light); cursor: pointer;
   padding: 8px; border-radius: 10px; transition: all .2s var(--ease-out);
@@ -3194,6 +3209,17 @@ select.input { appearance: none; cursor: pointer; }
   </div>
 </div>
 
+<!-- ══ DETALHES DE USO DO ALUNO ══ -->
+<div id="student-usage-overlay" class="student-admin-overlay hidden" onclick="if(event.target===this)closeStudentUsageDetails()">
+  <div class="student-admin-modal student-usage-modal" role="dialog" aria-modal="true" aria-labelledby="student-usage-title">
+    <div class="student-admin-modal-head">
+      <div><div id="student-usage-title" class="admin-section-title">Uso do aplicativo</div><div id="student-usage-subtitle" class="admin-section-sub">Indicadores pedagógicos do aluno</div></div>
+      <button type="button" class="btn-icon" onclick="closeStudentUsageDetails()" aria-label="Fechar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="student-usage-body" class="student-admin-modal-body"></div>
+  </div>
+</div>
+
 <script src="book-audio-data.js"></script>
 <script src="book-audio-data-2.js"></script>
 <script src="./livros/a%20metamorfose/reading-data.js"></script>
@@ -3219,11 +3245,178 @@ let dailyWordCurrent = null;
 let dailyWordCache = {key:'',word:null};
 const dailyWordListened = new Set();
 let dashboardStudentCache = {};
+let studentUsageTimer = null;
+let studentUsageSaveTimer = null;
+let studentUsageLastTick = 0;
+let studentUsageLastInteraction = 0;
+let studentUsageUnsavedSeconds = 0;
+let studentUsageSessionApplied = false;
+let studentUsageListenersBound = false;
+let activeBookAudioUsageId = '';
+const STUDENT_USAGE_IDLE_MS = 2*60*1000;
+const STUDENT_USAGE_TICK_MS = 15*1000;
+const STUDENT_USAGE_SAVE_SECONDS = 60;
 const SPEECH_VOICE_STORAGE_KEY='ap_english_voice';
 let selectedSpeechVoiceId=localStorage.getItem(SPEECH_VOICE_STORAGE_KEY)||'';
 let speechPickerVoices=[];
 
 const withTimeout = (p, ms=5000) => Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
+
+function usageIso(value){
+  const time=new Date(value||0).getTime();
+  return Number.isFinite(time)&&time>0?new Date(time).toISOString():'';
+}
+
+function usageDayKey(value=Date.now()){
+  const parts=new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',day:'2-digit',timeZone:'America/Sao_Paulo'}).formatToParts(new Date(value));
+  const map=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+  return `${map.year}-${map.month}-${map.day}`;
+}
+
+function normalizeStudentUsage(source){
+  const data=source&&typeof source==='object'&&!Array.isArray(source)?source:{};
+  const recent=Array.isArray(data.recentEvents)?data.recentEvents.filter(event=>event&&typeof event==='object'&&event.at).map(event=>({
+    id:String(event.id||`${event.at}:${event.type||''}:${event.label||''}:${event.status||''}`),
+    type:String(event.type||'activity').slice(0,30),
+    label:String(event.label||'Atividade').slice(0,160),
+    status:String(event.status||'opened').slice(0,30),
+    at:usageIso(event.at),
+    detail:String(event.detail||'').slice(0,120)
+  })).filter(event=>event.at).slice(-24):[];
+  const days=Array.isArray(data.activeDays)?data.activeDays.filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(String(day))).map(String):[];
+  const lastActivity=data.lastActivity&&typeof data.lastActivity==='object'?{
+    type:String(data.lastActivity.type||'activity').slice(0,30),
+    label:String(data.lastActivity.label||'Atividade').slice(0,160),
+    status:String(data.lastActivity.status||'opened').slice(0,30),
+    at:usageIso(data.lastActivity.at)
+  }:null;
+  return {
+    version:1,
+    firstSeenAt:usageIso(data.firstSeenAt),
+    lastSeenAt:usageIso(data.lastSeenAt),
+    lastActiveAt:usageIso(data.lastActiveAt),
+    sessionCount:Math.max(0,Math.floor(Number(data.sessionCount)||0)),
+    activeSeconds:Math.max(0,Math.floor(Number(data.activeSeconds)||0)),
+    activeDays:[...new Set(days)].sort().slice(-90),
+    lastArea:String(data.lastArea||'').slice(0,40),
+    lastActivity:lastActivity?.at?lastActivity:null,
+    activitiesStarted:Math.max(0,Math.floor(Number(data.activitiesStarted)||0)),
+    activitiesCompleted:Math.max(0,Math.floor(Number(data.activitiesCompleted)||0)),
+    audioStarted:Math.max(0,Math.floor(Number(data.audioStarted)||0)),
+    audioCompleted:Math.max(0,Math.floor(Number(data.audioCompleted)||0)),
+    readingPartsCompleted:Math.max(0,Math.floor(Number(data.readingPartsCompleted)||0)),
+    recentEvents:recent
+  };
+}
+
+function mergeStudentUsage(...sources){
+  const items=sources.filter(Boolean).map(source=>normalizeStudentUsage(source?.usage||source));
+  const result=normalizeStudentUsage({});
+  if(!items.length)return result;
+  const firstTimes=items.map(item=>new Date(item.firstSeenAt||0).getTime()).filter(time=>time>0);
+  result.firstSeenAt=firstTimes.length?new Date(Math.min(...firstTimes)).toISOString():'';
+  ['sessionCount','activeSeconds','activitiesStarted','activitiesCompleted','audioStarted','audioCompleted','readingPartsCompleted'].forEach(field=>{
+    result[field]=Math.max(...items.map(item=>Number(item[field])||0));
+  });
+  result.activeDays=[...new Set(items.flatMap(item=>item.activeDays||[]))].sort().slice(-90);
+  const latestSeen=items.slice().sort((a,b)=>new Date(b.lastSeenAt||0)-new Date(a.lastSeenAt||0))[0];
+  const latestActive=items.slice().sort((a,b)=>new Date(b.lastActiveAt||0)-new Date(a.lastActiveAt||0))[0];
+  const latestActivity=items.map(item=>item.lastActivity).filter(Boolean).sort((a,b)=>new Date(b.at||0)-new Date(a.at||0))[0];
+  result.lastSeenAt=latestSeen?.lastSeenAt||'';
+  result.lastActiveAt=latestActive?.lastActiveAt||'';
+  result.lastArea=latestActive?.lastArea||latestSeen?.lastArea||'';
+  result.lastActivity=latestActivity||null;
+  const events=new Map();
+  items.flatMap(item=>item.recentEvents||[]).forEach(event=>events.set(event.id,event));
+  result.recentEvents=[...events.values()].sort((a,b)=>new Date(a.at)-new Date(b.at)).slice(-24);
+  return result;
+}
+
+function appendStudentUsageEvent(usage,{type='activity',label='Atividade',status='opened',detail='',at=Date.now()}={}){
+  const normalized=normalizeStudentUsage(usage);
+  const iso=usageIso(at)||new Date().toISOString();
+  const event={id:`${iso}:${type}:${status}:${String(label).slice(0,80)}`,type,label:String(label).slice(0,160),status,detail:String(detail||'').slice(0,120),at:iso};
+  normalized.recentEvents=[...normalized.recentEvents,event].slice(-24);
+  normalized.lastSeenAt=iso;
+  normalized.lastActiveAt=iso;
+  normalized.activeDays=[...new Set([...normalized.activeDays,usageDayKey(at)])].sort().slice(-90);
+  if(type!=='area'&&type!=='session')normalized.lastActivity={type:event.type,label:event.label,status:event.status,at:event.at};
+  return normalized;
+}
+
+function scheduleStudentUsageSave(delay=2500){
+  if(!currentUser?.id||currentUser.role==='teacher')return;
+  if(studentUsageSaveTimer)clearTimeout(studentUsageSaveTimer);
+  studentUsageSaveTimer=setTimeout(()=>{
+    studentUsageSaveTimer=null;
+    saveStudentProgress({silent:true});
+  },delay);
+}
+
+function recordStudentUsageEvent(type,label,status='opened',detail='',save=true){
+  if(!currentUser?.id||currentUser.role==='teacher')return;
+  let usage=appendStudentUsageEvent(currentUser.usage,{type,label,status,detail});
+  if(type==='activity'&&status==='started')usage.activitiesStarted++;
+  if(type==='activity'&&status==='completed')usage.activitiesCompleted++;
+  if(type==='audio'&&status==='started')usage.audioStarted++;
+  if(type==='audio'&&status==='completed')usage.audioCompleted++;
+  if(type==='reading'&&status==='completed')usage.readingPartsCompleted++;
+  currentUser.usage=usage;
+  studentUsageLastInteraction=Date.now();
+  if(save)scheduleStudentUsageSave();
+}
+
+function recordStudentUsageArea(area){
+  if(!currentUser?.id||currentUser.role==='teacher')return;
+  const usage=normalizeStudentUsage(currentUser.usage);
+  const now=new Date().toISOString();
+  usage.lastArea=String(area||'').slice(0,40);
+  usage.lastSeenAt=now;
+  usage.lastActiveAt=now;
+  usage.activeDays=[...new Set([...usage.activeDays,usageDayKey()])].sort().slice(-90);
+  currentUser.usage=usage;
+  studentUsageLastInteraction=Date.now();
+  scheduleStudentUsageSave(5000);
+}
+
+function markStudentInteraction(){
+  if(currentUser?.id&&currentUser.role!=='teacher')studentUsageLastInteraction=Date.now();
+}
+
+function stopStudentUsageTracking(){
+  if(studentUsageTimer){clearInterval(studentUsageTimer);studentUsageTimer=null;}
+  if(studentUsageSaveTimer){clearTimeout(studentUsageSaveTimer);studentUsageSaveTimer=null;}
+  studentUsageLastTick=0;
+  studentUsageUnsavedSeconds=0;
+}
+
+function startStudentUsageTracking(){
+  stopStudentUsageTracking();
+  if(!currentUser?.id||currentUser.role==='teacher')return;
+  studentUsageLastTick=Date.now();
+  studentUsageLastInteraction=Date.now();
+  if(!studentUsageListenersBound){
+    ['pointerdown','keydown','touchstart','scroll'].forEach(eventName=>document.addEventListener(eventName,markStudentInteraction,{passive:true}));
+    studentUsageListenersBound=true;
+  }
+  studentUsageTimer=setInterval(()=>{
+    const now=Date.now();
+    const elapsed=Math.max(0,Math.min(30,Math.round((now-studentUsageLastTick)/1000)));
+    studentUsageLastTick=now;
+    if(document.visibilityState!=='visible'||now-studentUsageLastInteraction>STUDENT_USAGE_IDLE_MS||!currentUser?.id||currentUser.role==='teacher')return;
+    const usage=normalizeStudentUsage(currentUser.usage);
+    usage.activeSeconds+=elapsed;
+    usage.lastSeenAt=new Date(now).toISOString();
+    usage.lastActiveAt=usage.lastSeenAt;
+    usage.activeDays=[...new Set([...usage.activeDays,usageDayKey(now)])].sort().slice(-90);
+    currentUser.usage=usage;
+    studentUsageUnsavedSeconds+=elapsed;
+    if(studentUsageUnsavedSeconds>=STUDENT_USAGE_SAVE_SECONDS){
+      studentUsageUnsavedSeconds=0;
+      saveStudentProgress({silent:true});
+    }
+  },STUDENT_USAGE_TICK_MS);
+}
 
 /* ══ DATABASE ══ */
 const TRAITOR_MUSIC = {
@@ -6102,7 +6295,11 @@ async function doRegister(){
   }catch(e){alert("Erro no cadastro.");showView('auth');}
 }
 
-function doLogout(){
+async function doLogout(){
+  if(currentUser?.id&&currentUser.role!=='teacher'){
+    try{await withTimeout(saveStudentProgress({silent:true}),2500);}catch(error){console.warn('Último registro de uso ficará para a próxima conexão:',error);}
+  }
+  stopStudentUsageTracking();
   if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
   progressRetryAttempts=0;
   if(scheduledContentRefreshTimer){clearInterval(scheduledContentRefreshTimer);scheduledContentRefreshTimer=null;}
@@ -6119,6 +6316,7 @@ function doLogout(){
 }
 
 async function setupUserSession(user){
+  stopStudentUsageTracking();
   if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
   progressRetryAttempts=0;
   progressSaveChain=Promise.resolve();
@@ -6147,7 +6345,10 @@ async function setupUserSession(user){
     else if(!document.getElementById('stab-musica')?.classList.contains('hidden'))renderStudentMusicas();
   },30000);
   currentUser={id:user.id,email:user.email,role:'student',name:control.name||m.name||"Aluno",
-    turma:control.turma||m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{},xpAwards:m.xpAwards||{}};
+    turma:control.turma||m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{},xpAwards:m.xpAwards||{},usage:normalizeStudentUsage(m.usage)};
+  studentUsageSessionApplied=false;
+  startStudentUsageTracking();
+  recordStudentUsageArea('inicio');
   studentAccessCheckTimer=setInterval(refreshCurrentStudentControl,60000);
   await saveStudentProgress({silent:true});
   document.getElementById('student-xp').textContent=currentUser.xp;
@@ -6679,10 +6880,12 @@ async function listenReadingPart(){
   updateReadingAudioControls('loading');
   const utterance=await playTTS(readingData.week.story.slice(part.start,part.end).join(' '),.82,'en-US');
   if(!utterance)return updateReadingAudioControls('idle');
+  const usageLabel=`A Metamorfose · Semana ${activeReadingWeek} · Parte ${readingState.part+1}`;
+  recordStudentUsageEvent('audio',usageLabel,'started','Leitura acompanhada por voz');
   readingAudioPaused=false;
   updateReadingAudioControls('playing');
   const finish=()=>{readingAudioPaused=false;updateReadingAudioControls('idle');};
-  utterance.onend=finish;
+  utterance.onend=()=>{finish();recordStudentUsageEvent('audio',usageLabel,'completed','Leitura acompanhada por voz');};
   utterance.onerror=finish;
 }
 
@@ -6711,6 +6914,7 @@ async function completeReadingPart(index){
   currentUser.unlockedFases=currentUser.unlockedFases||[];
   currentUser.unlockedFases.push(marker);
   const reward=claimXpReward(marker,READING_PART_XP);
+  recordStudentUsageEvent('reading',`A Metamorfose · Semana ${activeReadingWeek} · Parte ${index+1}`,'completed','Checagem de leitura respondida',false);
   await saveStudentProgress({xpGain:reward.amount,silent:true});
   renderStudentHome();
 }
@@ -6775,6 +6979,7 @@ async function completeReadingWeek(){
   currentUser.unlockedFases.push(marker);
   const finalCheckReward=claimXpReward(`${marker}:final-check`,READING_FINAL_CHECK_XP);
   const chapterReward=claimXpReward(marker,READING_CHAPTER_XP);
+  recordStudentUsageEvent('activity',`A Metamorfose · Semana ${activeReadingWeek}`,'completed','Revisão final concluída',false);
   await saveStudentProgress({xpGain:finalCheckReward.amount+chapterReward.amount,silent:true});
   renderStudentHome();
   renderReadingLibrary();
@@ -6883,6 +7088,7 @@ function switchStudentTab(tab){
   if(tab==='leitura')renderReadingLibrary();
   if(tab==='musica')renderStudentMusicas();
   if(tab==='jogos')window.BodyParts?.open(currentUser?.id);
+  recordStudentUsageArea(tab);
 }
 
 function publishDateValue(value){
@@ -7560,6 +7766,7 @@ function closeBookAudioLibrary(){
   const player=document.getElementById('book-audio-el');
   if(player)player.pause();
   activeBookAudioId='';
+  activeBookAudioUsageId='';
   document.getElementById('book-audio-overlay')?.classList.add('hidden');
   document.body.style.overflow='';
 }
@@ -7626,7 +7833,7 @@ function openBookAudioDetail(id){
     <div class="book-audio-study-head"><h2>${htmlSafe(item.title)}</h2><p>${htmlSafe(BOOK_AUDIO_LEVELS[item.level]?.book||'')} · ${htmlSafe(BOOK_AUDIO_LEVELS[item.level]?.label||item.level)} · ${htmlSafe(bookAudioLessonLabel(item))}${item.page?` · Página ${htmlSafe(item.page)}`:''}</p></div>
     <div class="book-audio-player">
       <div style="font-weight:850"><i class="fa-solid fa-headphones"></i> Ouça com atenção</div>
-      <audio id="book-audio-el" controls preload="metadata" src="${htmlSafe(encodeURI(item.file))}" onended="completeBookAudioListen()"></audio>
+      <audio id="book-audio-el" controls preload="metadata" src="${htmlSafe(encodeURI(item.file))}" onplay="trackBookAudioStarted()" onended="completeBookAudioListen()"></audio>
       <div class="book-audio-speed"><span style="font-size:12px;margin-right:2px">Velocidade:</span><button type="button" onclick="setBookAudioSpeed(.75,this)">0,75×</button><button type="button" class="active" onclick="setBookAudioSpeed(1,this)">Normal</button><button type="button" onclick="setBookAudioSpeed(1.25,this)">1,25×</button></div>
       <div class="book-audio-unlock">${listened?'<i class="fa-solid fa-circle-check"></i> Áudio concluído · conteúdo de estudo liberado':'<i class="fa-solid fa-lock-open"></i> O conteúdo será liberado quando o áudio terminar.'}</div>
     </div>${study}`;
@@ -7640,11 +7847,21 @@ function setBookAudioSpeed(rate,button){
   button?.parentElement?.querySelectorAll('button').forEach(el=>el.classList.toggle('active',el===button));
 }
 
+function trackBookAudioStarted(){
+  const id=activeBookAudioId;
+  if(!id||activeBookAudioUsageId===id)return;
+  activeBookAudioUsageId=id;
+  const item=bookAudioItem(id);
+  recordStudentUsageEvent('audio',`Áudio do livro: ${item?.title||id}`,'started',bookAudioLessonLabel(item));
+}
+
 async function completeBookAudioListen(){
   const id=activeBookAudioId;
   if(!id||isTeacherAdmin()||isBookAudioListened(id))return;
   currentUser.unlockedFases=currentUser.unlockedFases||[];
   currentUser.unlockedFases.push(bookAudioMarker(id));
+  const item=bookAudioItem(id);
+  recordStudentUsageEvent('audio',`Áudio do livro: ${item?.title||id}`,'completed',bookAudioLessonLabel(item),false);
   openBookAudioDetail(id);
   if(isTeacherPreview())return;
   await saveStudentProgress({silent:true});
@@ -8160,6 +8377,7 @@ function beginResumableGame(freshGame,sessionId,title){
   activeGame=resume
     ? {...freshGame,...saved,sessionId,gameTitle:title,resumed:true}
     : {...freshGame,sessionId,gameTitle:title,resumed:false};
+  recordStudentUsageEvent('activity',title,'started',resume?'Atividade retomada':'Atividade iniciada');
   openGame(title);
   dispatchGameStep();
   persistActiveGameSession();
@@ -9236,6 +9454,7 @@ async function endGame(){
   const fullXp=calculateGameXp(activeGame);
   const xpReward=claimXpReward(activeGame.sessionId||`${activeGame.type}:${activeGame.context}`,fullXp);
   const xpGain=xpReward.amount;
+  recordStudentUsageEvent('activity',activeGame.gameTitle||activeGame.titleName||'Atividade','completed',`${activeGame.score}/${activeGame.total} acertos`,false);
 
   if(activeGame.type==='trilha_pratica'){
     if(currentUser.role!=='teacher'){
@@ -9414,12 +9633,13 @@ function normalizeProgressSnapshot(source){
     xp:Number.isFinite(xp)?Math.max(0,xp):0,
     notas:{...notas},
     xpAwards:{...xpAwards},
+    usage:normalizeStudentUsage(data.usage),
     unlockedFases:[...new Set(unlocked.filter(value=>typeof value==='string'&&value))]
   };
 }
 
 function mergeProgressSnapshots(...sources){
-  const merged={xp:0,notas:{},xpAwards:{},unlockedFases:[]};
+  const merged={xp:0,notas:{},xpAwards:{},usage:mergeStudentUsage(...sources),unlockedFases:[]};
   const unlocked=new Set();
   sources.filter(Boolean).forEach(source=>{
     const item=normalizeProgressSnapshot(source);
@@ -9464,6 +9684,7 @@ function applyProgressSnapshot(snapshot,userId=currentUser?.id){
   currentUser.xp=normalized.xp;
   currentUser.notas=normalized.notas;
   currentUser.xpAwards=normalized.xpAwards;
+  currentUser.usage=normalized.usage;
   currentUser.unlockedFases=normalized.unlockedFases;
   const headerXp=document.getElementById('student-xp');
   const profileXp=document.getElementById('xp-num');
@@ -9525,7 +9746,7 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
   let remoteReadOk=false;
   try{
     const {data,error}=await withTimeout(
-      sbClient.from('student_progress').select('xp,notas,unlocked').eq('id',studentId).maybeSingle(),
+      sbClient.from('student_progress').select('xp,notas,unlocked,usage').eq('id',studentId).maybeSingle(),
       5000
     );
     if(error)throw error;
@@ -9537,6 +9758,14 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
 
   const merged=mergeProgressSnapshots(provisional,remote);
   merged.xp=Math.max(localBefore.xp,Number(remote?.xp||0))+safeXpGain;
+  if(!studentUsageSessionApplied){
+    const now=new Date().toISOString();
+    merged.usage=appendStudentUsageEvent(merged.usage,{type:'session',label:'Entrada no aplicativo',status:'started',at:now});
+    merged.usage.sessionCount++;
+    merged.usage.firstSeenAt=merged.usage.firstSeenAt||now;
+    merged.usage.lastSeenAt=now;
+    studentUsageSessionApplied=true;
+  }
   applyProgressSnapshot(merged,studentId);
   storePendingProgress(merged,studentId);
 
@@ -9551,6 +9780,7 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
     xp:merged.xp,
     notas:merged.notas,
     unlocked:merged.unlockedFases,
+    usage:merged.usage,
     updated_at:new Date().toISOString()
   };
 
@@ -9562,7 +9792,8 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
       xp:merged.xp,
       notas:merged.notas,
       xpAwards:merged.xpAwards,
-      unlockedFases:merged.unlockedFases
+      unlockedFases:merged.unlockedFases,
+      usage:merged.usage
     }}),7000)
   ]);
   const tableOk=tableResult.status==='fulfilled'&&!tableResult.value.error;
@@ -9608,6 +9839,7 @@ window.addEventListener('offline',()=>{
 
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&currentUser?.role==='student'&&readPendingProgress(currentUser.id))saveStudentProgress({silent:true});
+  if(document.visibilityState==='hidden'&&currentUser?.role==='student'&&studentUsageUnsavedSeconds>0){studentUsageUnsavedSeconds=0;saveStudentProgress({silent:true});}
 });
 
 function effectiveStudentProfile(student){
@@ -9631,6 +9863,56 @@ function openAdminStudentEditor(studentId){
 function closeAdminStudentEditor(){
   document.getElementById('student-admin-overlay')?.classList.add('hidden');
   document.body.style.overflow='';
+}
+
+function usageDuration(seconds){
+  const minutes=Math.max(0,Math.round((Number(seconds)||0)/60));
+  if(minutes<60)return `${minutes} min`;
+  const hours=Math.floor(minutes/60),rest=minutes%60;
+  return rest?`${hours}h ${rest}min`:`${hours}h`;
+}
+
+function usageDateTime(value){
+  const time=new Date(value||0);
+  if(!value||Number.isNaN(time.getTime()))return 'ainda sem registro';
+  return new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}).format(time).replaceAll('.','');
+}
+
+function usageAreaLabel(area){
+  return ({inicio:'Início',trilha:'Trilha',semanas:'Aulas',audios:'Áudios do livro',leitura:'Leitura',musica:'Músicas',jogos:'Jogos',conversation:'Conversação'})[area]||area||'Não identificado';
+}
+
+function closeStudentUsageDetails(){
+  document.getElementById('student-usage-overlay')?.classList.add('hidden');
+  document.body.style.overflow='';
+}
+
+function openStudentUsageDetails(studentId){
+  const student=dashboardStudentCache[studentId];
+  if(!student)return;
+  const usage=normalizeStudentUsage(student.usage);
+  const title=document.getElementById('student-usage-title');
+  const subtitle=document.getElementById('student-usage-subtitle');
+  const body=document.getElementById('student-usage-body');
+  if(title)title.textContent=student.name||'Aluno';
+  if(subtitle)subtitle.textContent=`Uso do aplicativo · ${DATABASE.turmas?.[student.turma]?.name||student.turma||'Sem turma'}`;
+  const statusLabel={started:'iniciou',completed:'concluiu',opened:'abriu'};
+  const icon={session:'right-to-bracket',activity:'puzzle-piece',audio:'headphones',reading:'book-open'};
+  const events=usage.recentEvents.slice().reverse();
+  body.innerHTML=`
+    <div class="student-usage-summary">
+      <div class="student-usage-stat"><strong>${usage.sessionCount}</strong><span>sessões registradas</span></div>
+      <div class="student-usage-stat"><strong>${usageDuration(usage.activeSeconds)}</strong><span>tempo ativo estimado</span></div>
+      <div class="student-usage-stat"><strong>${usage.activeDays.length}</strong><span>dias com utilização</span></div>
+      <div class="student-usage-stat"><strong>${usage.activitiesStarted}</strong><span>atividades iniciadas</span></div>
+      <div class="student-usage-stat"><strong>${usage.activitiesCompleted}</strong><span>atividades concluídas</span></div>
+      <div class="student-usage-stat"><strong>${usage.audioCompleted}</strong><span>áudios concluídos</span></div>
+    </div>
+    <div class="student-usage-context"><strong>Último uso:</strong> ${htmlSafe(usageDateTime(usage.lastActiveAt||student.updated_at))}<br><strong>Última área:</strong> ${htmlSafe(usageAreaLabel(usage.lastArea))}${usage.lastActivity?`<br><strong>Última participação:</strong> ${htmlSafe(usage.lastActivity.label)}`:''}</div>
+    <div><div class="label" style="margin-bottom:8px">Atividades recentes</div><div class="student-usage-events">${events.length?events.map(event=>`<div class="student-usage-event"><div class="student-usage-event-icon"><i class="fa-solid fa-${icon[event.type]||'circle-dot'}"></i></div><div><strong>${htmlSafe(event.label)}</strong><span>${htmlSafe(statusLabel[event.status]||event.status)} · ${htmlSafe(usageDateTime(event.at))}${event.detail?` · ${htmlSafe(event.detail)}`:''}</span></div></div>`).join(''):'<div class="text-muted" style="padding:12px;text-align:center">O detalhamento começará quando este aluno entrar na versão nova do aplicativo.</div>'}</div></div>
+    <div class="text-xs text-muted" style="line-height:1.5"><i class="fa-solid fa-shield-halved"></i> O tempo conta somente enquanto o aplicativo está visível e houve interação recente. Não registramos localização, aparelho ou conteúdo digitado.</div>`;
+  document.getElementById('student-usage-overlay')?.classList.remove('hidden');
+  document.body.style.overflow='hidden';
 }
 
 async function saveStudentControlsCloud(){
@@ -9722,19 +10004,29 @@ async function renderDashboard(){
     const disabledData=managed.filter(student=>student._disabled&&(!selectedRoom||student.turma===selectedRoom));
     const now=Date.now();
     const diasDesde=(d)=>d?Math.max(0,Math.floor((now-new Date(d).getTime())/86400000)):null;
-    const ativos=data.filter(a=>{const dd=diasDesde(a.updated_at);return dd!==null&&dd<=7;}).length;
+    const usageOf=a=>normalizeStudentUsage(a.usage);
+    const lastUsageOf=a=>usageOf(a).lastActiveAt||a.updated_at;
+    const ativos=data.filter(a=>{const dd=diasDesde(lastUsageOf(a));return dd!==null&&dd<=7;}).length;
+    const ativosHoje=data.filter(a=>{const last=lastUsageOf(a);return Boolean(last)&&usageDayKey(last)===usageDayKey(now);}).length;
+    const minutosAtivos=Math.round(data.reduce((sum,a)=>sum+usageOf(a).activeSeconds,0)/60);
+    const audiosConcluidos=data.reduce((sum,a)=>sum+usageOf(a).audioCompleted,0);
+    const atividadesConcluidas=data.reduce((sum,a)=>sum+usageOf(a).activitiesCompleted,0);
     const leitores=data.filter(a=>{const unlocked=Array.isArray(a.unlocked)?a.unlocked:[];return AVAILABLE_READING_WEEKS.some(number=>unlocked.includes(readingCompleteMarker(number)));}).length;
     const respostasLeitura=data.filter(a=>{const unlocked=Array.isArray(a.unlocked)?a.unlocked:[];return AVAILABLE_READING_WEEKS.some(number=>unlocked.includes(readingAnswersMarker(number)));}).length;
 
     summary.innerHTML=`
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--orange)">${data.length}</div><div style="font-size:12px;color:var(--slate)">alunos no ranking</div></div>
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#2563EB">${ativosHoje}</div><div style="font-size:12px;color:var(--slate)">usaram hoje</div></div>
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--teal)">${ativos}</div><div style="font-size:12px;color:var(--slate)">ativos (7 dias)</div></div>
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#7C3AED">${minutosAtivos}</div><div style="font-size:12px;color:var(--slate)">minutos ativos</div></div>
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#4F46E5">${atividadesConcluidas}</div><div style="font-size:12px;color:var(--slate)">atividades concluídas</div></div>
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#0EA5E9">${audiosConcluidos}</div><div style="font-size:12px;color:var(--slate)">áudios concluídos</div></div>
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#7C2D12">${leitores}</div><div style="font-size:12px;color:var(--slate)">concluíram a leitura</div></div>
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#4F46E5">${respostasLeitura}</div><div style="font-size:12px;color:var(--slate)">enviaram respostas</div></div>
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--slate)">${disabledData.length}</div><div style="font-size:12px;color:var(--slate)">acessos desativados</div></div>`;
 
     const studentCard=(a,disabled=false)=>{
-      const notas=a.notas&&typeof a.notas==='object'?Object.values(a.notas):[];
+      const notas=a.notas&&typeof a.notas==='object'?Object.values(a.notas).map(Number).filter(Number.isFinite):[];
       const numNotas=notas.length;
       const unlocked=Array.isArray(a.unlocked)?a.unlocked:[];
       const atividades=unlocked.filter(value=>String(value).includes('__atividade_')).length;
@@ -9746,14 +10038,16 @@ async function renderDashboard(){
       const readingLabel=allWeeksComplete?'🏆 livro concluído · semanas 1–6':readingAnswersSent?`📨 semana ${currentWeek}: respostas enviadas`:readingParts?`📖 semana ${currentWeek}: ${Math.min(readingParts,6)}/6`:completedWeeks.length?`📘 semana ${currentWeek} disponível`:'📕 leitura não iniciada';
       const media=numNotas?(notas.reduce((sum,n)=>sum+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
       const nivel=Math.floor((a.xp||0)/200)+1;
-      const dd=diasDesde(a.updated_at);
+      const usage=usageOf(a);
+      const dd=diasDesde(lastUsageOf(a));
       const quando=dd===null?'nunca':dd===0?'hoje':dd===1?'ontem':`há ${dd} dias`;
       const ativo=dd!==null&&dd<=7;
       const mediaColor=media==='—'?'var(--slate)':parseFloat(media)>=8?'var(--teal)':parseFloat(media)>=5?'var(--orange)':'#DC2626';
       return `<div class="admin-item" style="margin-bottom:8px${disabled?';opacity:.68':''}">
-        <div style="flex:1;min-width:0"><div class="admin-item-name">${disabled?'🚫':ativo?'🟢':'⚪'} ${htmlSafe(a.name||'Aluno')}</div><div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · ${readingLabel} · visto ${quando}</div></div>
+        <div style="flex:1;min-width:0"><div class="admin-item-name">${disabled?'🚫':ativo?'🟢':'⚪'} ${htmlSafe(a.name||'Aluno')}</div><div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · ${readingLabel} · visto ${quando}</div><div class="usage-metrics"><span class="usage-metric"><i class="fa-solid fa-clock"></i>${usageDuration(usage.activeSeconds)} ativos</span><span class="usage-metric"><i class="fa-solid fa-calendar-check"></i>${usage.activeDays.length} dia(s)</span><span class="usage-metric"><i class="fa-solid fa-headphones"></i>${usage.audioCompleted} áudio(s)</span><span class="usage-metric"><i class="fa-solid fa-location-arrow"></i>${htmlSafe(usageAreaLabel(usage.lastArea))}</span></div></div>
         <div style="text-align:center;min-width:48px"><div style="font-size:20px;font-weight:900;color:${mediaColor}">${media}</div><div style="font-size:10px;color:var(--slate)">média</div></div>
         <div style="display:flex;gap:2px">
+          <button class="admin-edit" title="Ver uso do aplicativo" onclick="openStudentUsageDetails('${esc(a.id)}')"><i class="fa-solid fa-chart-line"></i></button>
           <button class="admin-edit" title="Editar nome ou turma" onclick="openAdminStudentEditor('${esc(a.id)}')"><i class="fa-solid fa-pen"></i></button>
           <button class="${disabled?'admin-edit':'admin-delete'}" title="${disabled?'Reativar acesso':'Desativar acesso'}" onclick="adminSetStudentAccess('${esc(a.id)}',${disabled?'true':'false'})"><i class="fa-solid fa-${disabled?'user-check':'user-slash'}"></i></button>
         </div>
@@ -10731,6 +11025,7 @@ function trackMusicListening(audio){
   const target=duration>0?Math.min(60,duration*.5):60;
   if(!activeMusicState.listenAwarded&&activeMusicState.listenSeconds>=target){
     activeMusicState.listenAwarded=true;
+    recordStudentUsageEvent('audio',`Música: ${activeMusicObj?.title||'atividade musical'}`,'completed','Escuta validada',false);
     awardMusicXp('listen',15,'Escuta da música');
   }
 }
@@ -10740,7 +11035,7 @@ function openMusicPlayer(rKey, id) {
   if(!m) return;
   if(!isTeacherAdmin()&&!isContentPublished(m))return alert('Esta música será liberada pela professora em breve.');
   activeMusicObj = {...m,rKey};
-  activeMusicState={listenSeconds:0,lastAudioTime:0,listenAwarded:false,studySeconds:0,studyAwarded:false,currentTab:'letra',tabsSeen:['letra']};
+  activeMusicState={listenSeconds:0,lastAudioTime:0,listenAwarded:false,usageStarted:false,studySeconds:0,studyAwarded:false,currentTab:'letra',tabsSeen:['letra']};
   if(activeMusicStudyInterval)clearInterval(activeMusicStudyInterval);
   activeMusicStudyInterval=setInterval(trackMusicStudy,1000);
   updateMusicXpStatus('Ouça metade da música e explore duas áreas de estudo para ganhar XP');
@@ -10765,6 +11060,12 @@ function openMusicPlayer(rKey, id) {
   // Set up listeners
   audio.ontimeupdate = updateAudioProgress;
   audio.onloadedmetadata = updateAudioProgress;
+  audio.onplay = ()=>{
+    if(activeMusicState&&!activeMusicState.usageStarted){
+      activeMusicState.usageStarted=true;
+      recordStudentUsageEvent('audio',`Música: ${activeMusicObj?.title||'atividade musical'}`,'started','Reprodução iniciada');
+    }
+  };
   
   // Reset tabs
   switchMusicTab('letra');
