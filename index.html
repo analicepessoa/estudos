@@ -10437,6 +10437,16 @@ async function loadCloudDB(){
         // A nuvem é a fonte oficial do catálogo. Isso mantém exclusões persistentes.
         Object.keys(cloud.musicas).forEach(k => DATABASE.musicas[k] = cloud.musicas[k]);
       }
+      // Faixas instrumentais aprovadas são vinculadas somente às músicas que
+      // já existem no catálogo de cada turma; nenhuma música removida volta.
+      const karaokeOverrides = {
+        'I Want It That Way': I_WANT_IT_THAT_WAY_MUSIC.karaokeAudioUrl,
+        'Shallow': SHALLOW_MUSIC.karaokeAudioUrl
+      };
+      Object.values(DATABASE.musicas).forEach(songs => (songs||[]).forEach(song => {
+        const karaokeAudioUrl = karaokeOverrides[song?.title];
+        if(karaokeAudioUrl) song.karaokeAudioUrl = karaokeAudioUrl;
+      }));
       // Update local cache with cloud data
       saveLocalDB();
       console.log('☁️ Dados carregados da nuvem!');
