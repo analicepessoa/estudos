@@ -3358,6 +3358,7 @@ function scheduleStudentUsageSave(delay=2500){
   if(studentUsageSaveTimer)clearTimeout(studentUsageSaveTimer);
   studentUsageSaveTimer=setTimeout(()=>{
     studentUsageSaveTimer=null;
+    if(progressSyncState==='saving')return scheduleStudentUsageSave(5000);
     saveStudentProgress({silent:true});
   },delay);
 }
@@ -3375,7 +3376,7 @@ function recordStudentUsageEvent(type,label,status='opened',detail='',save=true)
   if(save)scheduleStudentUsageSave();
 }
 
-function recordStudentUsageArea(area){
+function recordStudentUsageArea(area,save=true){
   if(!currentUser?.id||currentUser.role==='teacher')return;
   const usage=normalizeStudentUsage(currentUser.usage);
   const now=new Date().toISOString();
@@ -3385,7 +3386,7 @@ function recordStudentUsageArea(area){
   usage.activeDays=[...new Set([...usage.activeDays,usageDayKey()])].sort().slice(-90);
   currentUser.usage=usage;
   studentUsageLastInteraction=Date.now();
-  scheduleStudentUsageSave(5000);
+  if(save)scheduleStudentUsageSave(5000);
 }
 
 function markStudentInteraction(){
@@ -6606,9 +6607,9 @@ async function setupUserSession(user){
     turma:control.turma||m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{},xpAwards:m.xpAwards||{},usage:normalizeStudentUsage(m.usage)};
   studentUsageSessionApplied=false;
   startStudentUsageTracking();
-  recordStudentUsageArea('inicio');
+  recordStudentUsageArea('inicio',false);
   studentAccessCheckTimer=setInterval(refreshCurrentStudentControl,60000);
-  await saveStudentProgress({silent:true});
+  saveStudentProgress({silent:true}).catch(error=>console.warn('A sincronização inicial continuará em segundo plano:',error));
   document.getElementById('student-xp').textContent=currentUser.xp;
   document.getElementById('xp-num').textContent=currentUser.xp;
   updateXpLevel();
@@ -9976,6 +9977,66 @@ function scheduleProgressRetry(){
   },delay);
 }
 
+function progressErrorText(error){
+  return String(error?.message||error?.details||error?.hint||error||'').toLocaleLowerCase();
+}
+
+function progressUsageColumnUnavailable(error){
+  const text=progressErrorText(error);
+  return (text.includes('usage')&&(text.includes('column')||text.includes('schema cache')))||error?.code==='42703'||error?.code==='PGRST204';
+}
+
+async function refreshProgressSession(){
+  try{
+    const {data,error}=await withTimeout(sbClient.auth.refreshSession(),8000);
+    if(error)throw error;
+    return Boolean(data?.session);
+  }catch(error){
+    console.warn('Sessão do aluno não pôde ser renovada agora:',error);
+    return false;
+  }
+}
+
+async function readRemoteStudentProgress(studentId){
+  const read=async fields=>{
+    try{
+      const response=await withTimeout(sbClient.from('student_progress').select(fields).eq('id',studentId).maybeSingle(),10000);
+      return response.error?{ok:false,data:null,error:response.error}:{ok:true,data:response.data,error:null};
+    }catch(error){return {ok:false,data:null,error};}
+  };
+  let result=await read('xp,notas,unlocked,usage');
+  if(result.ok)return result;
+  if(progressUsageColumnUnavailable(result.error)){
+    const basic=await read('xp,notas,unlocked');
+    if(basic.ok)return basic;
+  }
+  await refreshProgressSession();
+  result=await read('xp,notas,unlocked,usage');
+  if(result.ok)return result;
+  if(progressUsageColumnUnavailable(result.error))return read('xp,notas,unlocked');
+  return result;
+}
+
+async function writeRemoteStudentProgress(payload){
+  const write=async value=>{
+    try{return await withTimeout(sbClient.from('student_progress').upsert(value),12000);}
+    catch(error){return {data:null,error};}
+  };
+  let result=await write(payload);
+  if(!result.error)return result;
+  if(progressUsageColumnUnavailable(result.error)){
+    const basic={...payload};delete basic.usage;
+    return write(basic);
+  }
+  await refreshProgressSession();
+  result=await write(payload);
+  if(result.error&&progressUsageColumnUnavailable(result.error)){
+    const basic={...payload};delete basic.usage;
+    return write(basic);
+  }
+  return result;
+}
+
 function saveStudentProgress(options={}){
   if(currentUser?.id&&currentUser.role!=='teacher'){
     storePendingProgress(mergeProgressSnapshots(currentUser,readPendingProgress(currentUser.id)),currentUser.id);
@@ -10000,19 +10061,10 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
   applyProgressSnapshot(provisional,studentId);
   storePendingProgress(provisional,studentId);
 
-  let remote=null;
-  let remoteReadOk=false;
-  try{
-    const {data,error}=await withTimeout(
-      sbClient.from('student_progress').select('xp,notas,unlocked,usage').eq('id',studentId).maybeSingle(),
-      5000
-    );
-    if(error)throw error;
-    remote=data;
-    remoteReadOk=true;
-  }catch(error){
-    console.warn('Não foi possível consultar o progresso mais recente:',error);
-  }
+  const remoteResult=await readRemoteStudentProgress(studentId);
+  const remote=remoteResult.data;
+  const remoteReadOk=remoteResult.ok;
+  if(!remoteReadOk)console.warn('Não foi possível consultar o progresso mais recente:',remoteResult.error);
 
   const merged=mergeProgressSnapshots(provisional,remote);
   merged.xp=Math.max(localBefore.xp,Number(remote?.xp||0))+safeXpGain;
@@ -10044,7 +10096,7 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
 
   const [tableResult,authResult]=await Promise.allSettled([
     remoteReadOk
-      ? withTimeout(sbClient.from('student_progress').upsert(payload),7000)
+      ? writeRemoteStudentProgress(payload)
       : Promise.reject(new Error('Gravação adiada até confirmar o progresso existente na nuvem.')),
     withTimeout(sbClient.auth.updateUser({data:{
       xp:merged.xp,
@@ -10081,7 +10133,7 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
 }
 
 function retryPendingStudentProgress(){
-  if(currentUser?.role==='student'&&readPendingProgress(currentUser.id)){
+  if(currentUser?.role==='student'&&readPendingProgress(currentUser.id)&&progressSyncState!=='saving'){
     if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
     progressRetryAttempts=0;
     saveStudentProgress({silent:true});
