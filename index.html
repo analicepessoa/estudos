@@ -10333,7 +10333,7 @@ async function renderDashboard(){
     const now=Date.now();
     const diasDesde=(d)=>d?Math.max(0,Math.floor((now-new Date(d).getTime())/86400000)):null;
     const usageOf=a=>normalizeStudentUsage(a.usage);
-    const lastUsageOf=a=>usageOf(a).lastActiveAt||a.updated_at;
+    const lastUsageOf=a=>usageOf(a).lastActiveAt;
     const ativos=data.filter(a=>{const dd=diasDesde(lastUsageOf(a));return dd!==null&&dd<=7;}).length;
     const ativosHoje=data.filter(a=>{const last=lastUsageOf(a);return Boolean(last)&&usageDayKey(last)===usageDayKey(now);}).length;
     const minutosAtivos=Math.round(data.reduce((sum,a)=>sum+usageOf(a).activeSeconds,0)/60);
@@ -10369,10 +10369,13 @@ async function renderDashboard(){
       const usage=usageOf(a);
       const dd=diasDesde(lastUsageOf(a));
       const quando=dd===null?'nunca':dd===0?'hoje':dd===1?'ontem':`há ${dd} dias`;
+      const progressDays=diasDesde(a.updated_at);
+      const progressWhen=progressDays===null?'':progressDays===0?'hoje':progressDays===1?'ontem':`há ${progressDays} dias`;
+      const accessLabel=dd===null?`acesso ainda não sincronizado${progressWhen?` · progresso salvo ${progressWhen}`:''}`:`visto ${quando}`;
       const ativo=dd!==null&&dd<=7;
       const mediaColor=media==='—'?'var(--slate)':parseFloat(media)>=8?'var(--teal)':parseFloat(media)>=5?'var(--orange)':'#DC2626';
       return `<div class="admin-item" style="margin-bottom:8px${disabled?';opacity:.68':''}">
-        <div style="flex:1;min-width:0"><div class="admin-item-name">${disabled?'🚫':ativo?'🟢':'⚪'} ${htmlSafe(a.name||'Aluno')}</div><div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · ${readingLabel} · visto ${quando}</div><div class="usage-metrics"><span class="usage-metric"><i class="fa-solid fa-clock"></i>${usageDuration(usage.activeSeconds)} ativos</span><span class="usage-metric"><i class="fa-solid fa-calendar-check"></i>${usage.activeDays.length} dia(s)</span><span class="usage-metric"><i class="fa-solid fa-headphones"></i>${usage.audioCompleted} áudio(s)</span><span class="usage-metric"><i class="fa-solid fa-location-arrow"></i>${htmlSafe(usageAreaLabel(usage.lastArea))}</span></div></div>
+        <div style="flex:1;min-width:0"><div class="admin-item-name">${disabled?'🚫':ativo?'🟢':'⚪'} ${htmlSafe(a.name||'Aluno')}</div><div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · ${readingLabel} · ${accessLabel}</div><div class="usage-metrics"><span class="usage-metric"><i class="fa-solid fa-clock"></i>${usageDuration(usage.activeSeconds)} ativos</span><span class="usage-metric"><i class="fa-solid fa-calendar-check"></i>${usage.activeDays.length} dia(s)</span><span class="usage-metric"><i class="fa-solid fa-headphones"></i>${usage.audioCompleted} áudio(s)</span><span class="usage-metric"><i class="fa-solid fa-location-arrow"></i>${htmlSafe(usageAreaLabel(usage.lastArea))}</span></div></div>
         <div style="text-align:center;min-width:48px"><div style="font-size:20px;font-weight:900;color:${mediaColor}">${media}</div><div style="font-size:10px;color:var(--slate)">média</div></div>
         <div style="display:flex;gap:2px">
           <button class="admin-edit" title="Ver uso do aplicativo" onclick="openStudentUsageDetails('${esc(a.id)}')"><i class="fa-solid fa-chart-line"></i></button>
