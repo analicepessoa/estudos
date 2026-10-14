@@ -1003,9 +1003,11 @@ select.input { appearance: none; cursor: pointer; }
 .reading-vocab strong { display:block; color:#7C2D12; font-size:13px; }
 .reading-vocab span { display:block; margin-top:3px; color:#806E62; font-size:11px; }
 .reading-notebook { width:100%; min-height:105px; margin-top:12px; padding:13px; border:1px solid rgba(87,52,36,.2); border-radius:14px; background:white; color:#382922; font:600 14px/1.55 'Inter',sans-serif; resize:vertical; }
-.progress-sync-status { display:flex; align-items:center; gap:5px; color:var(--slate); font-size:10px; font-weight:750; white-space:nowrap; }
+.progress-sync-status { display:flex; align-items:center; gap:5px; padding:0; border:0; background:transparent; color:var(--slate); font:750 10px 'Inter',sans-serif; white-space:nowrap; }
 .progress-sync-status.saved { color:var(--teal-dark); }
-.progress-sync-status.pending { color:var(--orange-dark); }
+.progress-sync-status.pending { color:var(--orange-dark); cursor:pointer; }
+.progress-sync-status.pending:hover { text-decoration:underline; }
+.progress-sync-status:disabled { opacity:1; cursor:default; }
 
 @media(max-width:600px){
   .reading-book-card { grid-template-columns:110px minmax(0,1fr); gap:16px; padding:15px; }
@@ -2585,7 +2587,7 @@ select.input { appearance: none; cursor: pointer; }
     <div class="app-logo"><span style="color:var(--orange)">All</span><span style="color:var(--ink)">Net</span> <span style="font-size:13px;font-weight:600;color:var(--slate)">Inglês</span></div>
     <div style="display:flex;align-items:center;gap:10px">
       <button id="btn-back-admin" onclick="exitStudentPreview()" class="btn btn-ghost btn-sm hidden"><i class="fa-solid fa-arrow-left"></i> Admin</button>
-      <span id="progress-sync-status" class="progress-sync-status saved" title="Situação do progresso"><i class="fa-solid fa-cloud-check"></i><span>Salvo</span></span>
+      <button id="progress-sync-status" type="button" class="progress-sync-status saved" title="Progresso salvo" onclick="manualRetryStudentProgress()" disabled><i class="fa-solid fa-cloud-check"></i><span>Salvo</span></button>
       <div class="badge" style="background:linear-gradient(135deg,var(--orange),var(--orange-light));color:white;border:none;box-shadow:0 2px 8px rgba(245,124,0,.2);padding:5px 14px"><i class="fa-solid fa-bolt"></i> <span id="student-xp">0</span> XP</div>
       <button onclick="doLogout()" class="btn-icon" style="background:none;border:none;cursor:pointer;color:var(--slate);font-size:16px;transition:color .2s" onmouseover="this.style.color='var(--rose)'" onmouseout="this.style.color='var(--slate)'"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
@@ -9957,13 +9959,16 @@ function updateProgressSyncStatus(state='saved'){
   const element=document.getElementById('progress-sync-status');
   if(!element)return;
   const settings={
-    saved:{icon:'cloud-check',text:'Salvo'},
-    saving:{icon:'rotate fa-spin',text:'Salvando...'},
-    pending:{icon:'cloud-arrow-up',text:'Tentando salvar'}
+    saved:{icon:'cloud-check',text:'Salvo',title:'Progresso salvo na nuvem'},
+    saving:{icon:'rotate fa-spin',text:'Salvando...',title:'Enviando o progresso'},
+    pending:{icon:'cloud-arrow-up',text:'Salvo no aparelho · enviar',title:'O progresso está seguro neste aparelho. Toque para tentar enviar agora.'}
   };
   const current=settings[state]||settings.saved;
   element.className=`progress-sync-status ${state==='pending'?'pending':state==='saved'?'saved':''}`;
   element.innerHTML=`<i class="fa-solid fa-${current.icon}"></i><span>${current.text}</span>`;
+  element.title=current.title;
+  element.disabled=state!=='pending';
+  element.setAttribute('aria-label',current.title);
 }
 
 function scheduleProgressRetry(){
@@ -10138,6 +10143,19 @@ function retryPendingStudentProgress(){
     progressRetryAttempts=0;
     saveStudentProgress({silent:true});
   }
+}
+
+function manualRetryStudentProgress(){
+  if(currentUser?.role!=='student'||progressSyncState!=='pending')return;
+  if(!navigator.onLine){
+    alert('Seu progresso está seguro neste aparelho. Conecte-se à internet e toque novamente para enviar.');
+    return;
+  }
+  if(!readPendingProgress(currentUser.id)){
+    updateProgressSyncStatus('saved');
+    return;
+  }
+  retryPendingStudentProgress();
 }
 window.addEventListener('online',retryPendingStudentProgress);
 window.addEventListener('focus',retryPendingStudentProgress);
