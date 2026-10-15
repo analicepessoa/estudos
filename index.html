@@ -10836,6 +10836,20 @@ async function loadCloudDB(){
         // A nuvem é a fonte oficial do catálogo. Isso mantém exclusões persistentes.
         Object.keys(cloud.musicas).forEach(k => DATABASE.musicas[k] = cloud.musicas[k]);
       }
+      // Lançamentos novos podem ser liberados por um registro pequeno e separado,
+      // sem sobrescrever o catálogo completo de nenhuma turma.
+      const {data:freeReleaseRow,error:freeReleaseError}=await withTimeout(
+        sbClient.from('app_content').select('data').eq('id','music_release_free_20261015').maybeSingle(),8000
+      );
+      const freeRelease=freeReleaseRow?.data;
+      if(!freeReleaseError&&freeRelease?.enabled){
+        (freeRelease.rooms||[]).forEach(room=>{
+          const songs=DATABASE.musicas[room];
+          if(Array.isArray(songs)&&!songs.some(song=>song?.title==='Free')){
+            songs.push({id:`music_free_${room}`,...FREE_MUSIC});
+          }
+        });
+      }
       // Faixas instrumentais aprovadas são vinculadas somente às músicas que
       // já existem no catálogo de cada turma; nenhuma música removida volta.
       const karaokeOverrides = {
