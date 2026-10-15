@@ -3,7 +3,8 @@ let click;const storage=new Map(),spoken=[];
 const host={dataset:{},innerHTML:'',contains:()=>false,querySelector:()=>null,replaceChildren(){this.innerHTML='';},addEventListener(type,fn){if(type==='click')click=fn;}};
 const synth={voices:[{lang:'en-US'}],cancel(){},getVoices(){return this.voices},speak(utterance){spoken.push(utterance.text);utterance.onstart?.();}};
 function TestUtterance(text){this.text=text;}
-const context={BodyPartsCore:require('./core.js'),document:{getElementById:()=>host,activeElement:null},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},setTimeout:(fn,delay)=>{if(delay<2000)fn();return 0;},SpeechSynthesisUtterance:TestUtterance,speechSynthesis:synth,console,crypto:require('node:crypto')};
+const deterministicMath=Object.create(Math);deterministicMath.random=()=>0;
+const context={Math:deterministicMath,BodyPartsCore:require('./core.js'),document:{getElementById:()=>host,activeElement:null},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},setTimeout:(fn,delay)=>{if(delay<2000)fn();return 0;},SpeechSynthesisUtterance:TestUtterance,speechSynthesis:synth,console,crypto:require('node:crypto')};
 context.window=context;context.addEventListener=()=>{};context.confirm=()=>true;
 vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/game.js','utf8'),context);
 const action=a=>click({target:{closest:()=>({dataset:{action:a}})}});
@@ -12,6 +13,11 @@ const chooseDetail=id=>click({target:{closest:()=>({dataset:{detailArea:id}})}})
 context.BodyParts.open('student-A');action('open-basic');assert.match(host.innerHTML,/Corpo básico/);
 action('learn');choose('hair');assert.match(host.innerHTML,/Brush your hair every morning/);action('exit');action('open');
 action('practice');
+const firstTargetLabel=host.innerHTML.match(/class="bp-word"[^>]*>([^<]+)/)[1];
+const firstTarget=context.BodyPartsCore.words.find(word=>word.en===firstTargetLabel).id;
+const firstOptionIds=[...host.innerHTML.matchAll(/<button type="button" data-word="([^"]+)"/g)].map(match=>match[1]);
+assert.equal(firstOptionIds.length,4,'Visual quiz should show four answer choices.');
+assert.equal(firstOptionIds.indexOf(firstTarget),3,'Visual quiz should shuffle the correct answer away from the first position.');
 const total=context.BodyPartsCore.chapters['basic-body'].total;
 for(let i=0;i<total;i++){
   const targetLabel=host.innerHTML.match(/class="bp-word"[^>]*>([^<]+)/)[1];

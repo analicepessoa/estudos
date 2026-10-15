@@ -405,7 +405,12 @@
     const items=chapterWords(),targetIndex=items.findIndex(item=>item.id===targetId);
     if(targetIndex<0)return items;
     const indexes=[targetIndex,(targetIndex+3)%items.length,(targetIndex+7)%items.length,(targetIndex+11)%items.length];
-    return [...new Map(indexes.map(index=>[items[index].id,items[index]])).values()];
+    const choices=[...new Map(indexes.map(index=>[items[index].id,items[index]])).values()];
+    for(let i=choices.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [choices[i],choices[j]]=[choices[j],choices[i]];
+    }
+    return choices;
   }
   function render(focus=false){
     if(!host)return;
