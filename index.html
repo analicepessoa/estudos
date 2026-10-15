@@ -2877,6 +2877,7 @@ select.input { appearance: none; cursor: pointer; }
       <button class="tnav-btn" onclick="showTeacherTab('musicas-admin')" id="tnav-musicas-admin">🎧 Músicas</button>
       <button class="tnav-btn" onclick="showTeacherTab('semanas-lista')" id="tnav-semanas-lista">Conteúdo</button>
       <button class="tnav-btn" onclick="showTeacherTab('dashboard')" id="tnav-dashboard">📊 Alunos</button>
+      <button class="tnav-btn" onclick="showTeacherTab('homework')" id="tnav-homework">📝 Homework</button>
     </div>
   </div>
 
@@ -3046,6 +3047,29 @@ select.input { appearance: none; cursor: pointer; }
       </div>
       <div id="dashboard-summary" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px"></div>
       <div id="dashboard-content"></div>
+    </div>
+
+    <!-- REGISTRO ADMINISTRATIVO DE HOMEWORK -->
+    <div id="ttab-homework" class="hidden">
+      <div class="section-header">
+        <h2>📝 Controle de Homework</h2>
+        <p>Registre o homework da turma, marque a situação de cada aluno e acompanhe as notas.</p>
+      </div>
+      <div class="card admin-section"><div class="card-body">
+        <div class="admin-section-title">Novo homework</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+          <div><label class="label">Livro</label><select id="hw-book" class="input" onchange="updateHomeworkModuleOptions()"><option value="one_world_1">One World 1</option><option value="one_world_2">One World 2</option></select></div>
+          <div><label class="label">Módulo e fase</label><select id="hw-module" class="input" onchange="updateHomeworkPageOptions()"></select></div>
+          <div><label class="label">Página do homework</label><select id="hw-page" class="input"></select></div>
+          <div><label class="label">Data do homework</label><input id="hw-date" type="date" class="input"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" type="button" onclick="configureHomeworkPages()"><i class="fa-solid fa-list-check"></i> Configurar páginas dos módulos</button>
+        <button class="btn btn-primary" type="button" onclick="createHomeworkRecord()"><i class="fa-solid fa-plus"></i> Criar registro para a turma</button>
+        <div class="text-xs text-muted">Os registros e as notas ficam salvos neste aparelho, na área administrativa.</div>
+      </div></div>
+      <div id="homework-summary" style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0"></div>
+      <div id="homework-list"></div>
+      <div id="homework-detail"></div>
     </div>
     
     <!-- MÚSICAS ADMIN -->
@@ -9826,7 +9850,7 @@ async function dispatchReport(act,result,{keepalive=false}={}){
 function initTeacherPanel(){showView('teacher');renderAdminRooms();updateAdminSelects();renderAdminSemanas();renderAdminTrilhas();renderAdminMusicas();renderAdminBookAudioPicker();loadAdminBookReviewSelection();initTrilhaFormExtras();showTeacherTab('salas');}
 
 function showTeacherTab(tab){
-  ['salas','trilha-admin','aulas-admin','semanas-lista','musicas-admin','dashboard'].forEach(t=>{
+  ['salas','trilha-admin','aulas-admin','semanas-lista','musicas-admin','dashboard','homework'].forEach(t=>{
     const el=document.getElementById('ttab-'+t);
     if(el)el.classList.toggle('hidden',t!==tab);
     const btn=document.getElementById('tnav-'+t);
@@ -9839,6 +9863,7 @@ function showTeacherTab(tab){
   if(tab==='semanas-lista')renderAdminSemanas();
   if(tab==='musicas-admin')renderAdminMusicas();
   if(tab==='dashboard')renderDashboard();
+  if(tab==='homework')renderHomeworkTracker();
 }
 
 function scrollToAdminList(id){
@@ -9876,6 +9901,7 @@ function changeAdminRoom(roomKey){
   renderAdminMusicas();
   loadAdminBookReviewSelection();
   if(!document.getElementById('ttab-dashboard')?.classList.contains('hidden'))renderDashboard();
+  if(!document.getElementById('ttab-homework')?.classList.contains('hidden'))renderHomeworkTracker();
 }
 
 // Mantém uma cópia local e combina os dados com a nuvem antes de salvar.
@@ -10404,6 +10430,185 @@ async function renderDashboard(){
   }catch(e){
     cont.innerHTML='<div class="card card-body" style="text-align:center;color:var(--slate)">Servidor lento. Toque em Atualizar para tentar de novo.</div>';
   }
+}
+
+const HOMEWORK_STORAGE_KEY='ap_teacher_homework_records_v1';
+const HOMEWORK_PAGE_CATALOG_KEY='ap_teacher_homework_pages_v1';
+let selectedHomeworkId='';
+const HOMEWORK_MODULES={
+  one_world_1:[
+    {id:'basic01_mid',label:'BASIC 01 · MID TERM'},
+    {id:'basic01_end',label:'BASIC 01 · END TERM'},
+    {id:'basic02_mid',label:'BASIC 02 · MID TERM'},
+    {id:'basic02_end',label:'BASIC 02 · END TERM'}
+  ],
+  one_world_2:[
+    {id:'intermediate01_mid',label:'INTERMEDIATE 01 · MID TERM'},
+    {id:'intermediate01_end',label:'INTERMEDIATE 01 · END TERM'},
+    {id:'intermediate02_mid',label:'INTERMEDIATE 02 · MID TERM'},
+    {id:'intermediate02_end',label:'INTERMEDIATE 02 · END TERM'}
+  ]
+};
+const HOMEWORK_DEFAULT_PAGES={
+  basic01_mid:[
+    'Página 15 · Unit 1, Lesson 2',
+    'Página 19 · Unit 1, Lesson 3',
+    'Página 27 · Unit 1, Lesson 4',
+    'Página 31 · Unit 2, Lesson 5',
+    'Página 38 · Unit 2, Lesson 6',
+    'Página 43 · Unit 2, Lesson 7',
+    'Página 48 · Unit 2, Lesson 8'
+  ],
+  basic01_end:[
+    'Página 58 · Unit 3, Lesson 9',
+    'Página 62 · Unit 3, Lesson 10',
+    'Página 66 · Unit 3, Lesson 11',
+    'Página 70 · Unit 3, Lesson 12',
+    'Página 74 · Unit 4, Lesson 13',
+    'Página 79 · Unit 4, Lesson 14',
+    'Página 83 · Unit 4, Lesson 15',
+    'Página 87 · Unit 4, Lesson 16'
+  ],
+  basic02_mid:[
+    'Página 102 · Unit 1, Lesson 2',
+    'Página 106 · Unit 1, Lesson 3',
+    'Página 110 · Unit 1, Lesson 4',
+    'Página 115 · Unit 2, Lesson 5',
+    'Página 119 · Unit 2, Lesson 6',
+    'Página 124 · Unit 2, Lesson 7',
+    'Página 129 · Unit 2, Lesson 8'
+  ],
+  basic02_end:['Página 145 · Unit 3, Lesson 10','Página 166 · Unit 4, Lesson 14']
+};
+
+function homeworkPageCatalog(){
+  try{return JSON.parse(localStorage.getItem(HOMEWORK_PAGE_CATALOG_KEY)||'{}')||{};}catch(error){return {};}
+}
+
+function updateHomeworkModuleOptions(){
+  const book=document.getElementById('hw-book')?.value||'one_world_1';
+  const moduleSelect=document.getElementById('hw-module');if(!moduleSelect)return;
+  const modules=HOMEWORK_MODULES[book]||[];
+  moduleSelect.innerHTML=modules.map(item=>`<option value="${item.id}">${item.label}</option>`).join('');
+  updateHomeworkPageOptions();
+}
+
+function updateHomeworkPageOptions(){
+  const moduleId=document.getElementById('hw-module')?.value||'';
+  const pageSelect=document.getElementById('hw-page');if(!pageSelect)return;
+  const custom=homeworkPageCatalog()[moduleId];
+  const pages=Array.isArray(custom)?custom:(HOMEWORK_DEFAULT_PAGES[moduleId]||[]);
+  pageSelect.innerHTML=pages.length?pages.map((page,index)=>`<option value="${htmlSafe(page)}" ${index===0?'selected':''}>${htmlSafe(page)}</option>`).join(''):'<option value="">Cadastre as páginas deste módulo</option>';
+}
+
+function configureHomeworkPages(){
+  if(!isTeacherAdmin())return alert('Entre na área administrativa para configurar as páginas.');
+  const moduleId=document.getElementById('hw-module')?.value||'';
+  const moduleLabel=HOMEWORK_MODULES.one_world_1.concat(HOMEWORK_MODULES.one_world_2).find(item=>item.id===moduleId)?.label||'módulo';
+  const catalog=homeworkPageCatalog();
+  const existing=Array.isArray(catalog[moduleId])?catalog[moduleId]:(HOMEWORK_DEFAULT_PAGES[moduleId]||[]);
+  const entered=prompt(`Páginas de homework de ${moduleLabel}. Digite uma página por linha.`,existing.join('\n'));
+  if(entered===null)return;
+  catalog[moduleId]=[...new Set(entered.split(/[\n;,]+/).map(value=>value.trim()).filter(Boolean))];
+  try{localStorage.setItem(HOMEWORK_PAGE_CATALOG_KEY,JSON.stringify(catalog));updateHomeworkPageOptions();}
+  catch(error){alert('Não consegui salvar as páginas neste aparelho.');}
+}
+
+function readHomeworkRecords(){
+  try{
+    const records=JSON.parse(localStorage.getItem(HOMEWORK_STORAGE_KEY)||'[]');
+    return Array.isArray(records)?records.filter(item=>item&&typeof item==='object'&&Array.isArray(item.students)):[];
+  }catch(error){return [];}
+}
+
+function saveHomeworkRecords(records){
+  try{localStorage.setItem(HOMEWORK_STORAGE_KEY,JSON.stringify(records));return true;}
+  catch(error){alert('Não foi possível salvar neste aparelho. Verifique o espaço disponível no navegador.');return false;}
+}
+
+function homeworkRoomRecords(){return readHomeworkRecords().filter(item=>item.room===adminSelectedRoom).sort((a,b)=>String(b.date).localeCompare(String(a.date))||Number(b.createdAt||0)-Number(a.createdAt||0));}
+
+function renderHomeworkTracker(){
+  const list=document.getElementById('homework-list');
+  const detail=document.getElementById('homework-detail');
+  const summary=document.getElementById('homework-summary');
+  if(!list||!detail||!summary)return;
+  const records=homeworkRoomRecords();
+  if(!document.getElementById('hw-module')?.options.length)updateHomeworkModuleOptions();
+  const dateInput=document.getElementById('hw-date');
+  if(dateInput&&!dateInput.value){const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());dateInput.value=now.toISOString().slice(0,10);}
+  if(!records.some(item=>item.id===selectedHomeworkId))selectedHomeworkId=records[0]?.id||'';
+  const allStudents=records.flatMap(item=>item.students.map(student=>({...student,grade:student.grade}))).filter(student=>student.grade!==''&&student.grade!=null&&Number.isFinite(Number(student.grade)));
+  const average=allStudents.length?(allStudents.reduce((sum,student)=>sum+Number(student.grade),0)/allStudents.length).toFixed(1):'—';
+  summary.innerHTML=`<div class="card card-body" style="flex:1;min-width:120px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--orange)">${records.length}</div><div class="text-xs text-muted">homework registrados</div></div><div class="card card-body" style="flex:1;min-width:120px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--teal)">${average}</div><div class="text-xs text-muted">média das notas lançadas</div></div>`;
+  if(!records.length){list.innerHTML='<div class="card card-body" style="text-align:center;color:var(--slate)">Ainda não há homework registrado para esta turma.</div>';detail.innerHTML='';return;}
+  list.innerHTML=`<div class="label" style="margin:14px 0 8px">Registros da turma</div><div style="display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px">${records.map(item=>`<button type="button" class="btn ${item.id===selectedHomeworkId?'btn-primary':'btn-ghost'}" style="flex:none;text-align:left" onclick="selectHomeworkRecord('${esc(item.id)}')">${htmlSafe(item.moduleLabel||item.subject||'Homework')} · ${htmlSafe(item.page||'página não informada')}<br><span style="font-size:11px;font-weight:500">${htmlSafe(item.book||'Livro não informado')} · ${htmlSafe(item.date||'')}</span></button>`).join('')}</div>`;
+  const studentStats=new Map();
+  records.forEach(item=>item.students.forEach(student=>{
+    const stat=studentStats.get(student.id)||{name:student.name,grades:[]};
+    if(student.grade!==''&&student.grade!=null&&Number.isFinite(Number(student.grade)))stat.grades.push(Number(student.grade));
+    studentStats.set(student.id,stat);
+  }));
+  list.innerHTML+=`<details class="card" style="margin-bottom:12px"><summary style="cursor:pointer;padding:14px;font-weight:800">Médias de homework por aluno</summary><div style="padding:0 14px 14px;display:flex;flex-direction:column;gap:6px">${[...studentStats.values()].sort((a,b)=>a.name.localeCompare(b.name)).map(stat=>`<div class="admin-item"><span class="admin-item-name" style="flex:1">${htmlSafe(stat.name)}</span><strong>${stat.grades.length?(stat.grades.reduce((sum,value)=>sum+value,0)/stat.grades.length).toFixed(1):'—'}</strong><span class="admin-item-sub">${stat.grades.length} nota(s)</span></div>`).join('')}</div></details>`;
+  renderHomeworkDetail(records.find(item=>item.id===selectedHomeworkId));
+}
+
+function selectHomeworkRecord(id){selectedHomeworkId=id;renderHomeworkTracker();}
+
+async function createHomeworkRecord(){
+  if(!isTeacherAdmin())return alert('Entre na área administrativa para registrar homework.');
+  const bookId=document.getElementById('hw-book').value;
+  const bookLabel=bookId==='one_world_2'?'One World 2':'One World 1';
+  const moduleId=document.getElementById('hw-module').value;
+  const moduleLabel=HOMEWORK_MODULES[bookId]?.find(item=>item.id===moduleId)?.label||'';
+  const page=document.getElementById('hw-page').value;
+  const date=document.getElementById('hw-date').value||new Date().toISOString().slice(0,10);
+  if(!adminSelectedRoom||!DATABASE.turmas[adminSelectedRoom])return alert('Selecione uma turma.');
+  if(!moduleLabel||!page)return alert('Selecione o módulo e cadastre ou selecione uma página de homework.');
+  const button=document.querySelector('#ttab-homework button[onclick="createHomeworkRecord()"]');
+  if(button){button.disabled=true;button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Buscando alunos...';}
+  try{
+    if(!sbClient)sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    const {data,error}=await withTimeout(sbClient.from('student_progress').select('id,name,turma'),8000);
+    if(error)throw error;
+    const students=(data||[]).map(effectiveStudentProfile).filter(student=>student.id&&student.turma===adminSelectedRoom&&!student._disabled).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+    if(!students.length)return alert('Não encontrei alunos ativos nesta turma.');
+    const record={id:`hw_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,room:adminSelectedRoom,book:bookLabel,moduleId,moduleLabel,page,date,createdAt:Date.now(),students:students.map(student=>({id:student.id,name:student.name||'Aluno',status:'pending',grade:''}))};
+    const records=readHomeworkRecords();records.push(record);
+    if(saveHomeworkRecords(records)){
+      selectedHomeworkId=record.id;
+      renderHomeworkTracker();
+    }
+  }catch(error){alert(`Não consegui buscar os alunos desta turma. ${error?.message||'Tente novamente.'}`);}
+  finally{if(button){button.disabled=false;button.innerHTML='<i class="fa-solid fa-plus"></i> Criar registro para a turma';}}
+}
+
+function renderHomeworkDetail(record){
+  const target=document.getElementById('homework-detail');if(!target)return;
+  if(!record){target.innerHTML='';return;}
+  const graded=record.students.filter(student=>student.grade!==''&&Number.isFinite(Number(student.grade)));
+  const average=graded.length?(graded.reduce((sum,student)=>sum+Number(student.grade),0)/graded.length).toFixed(1):'—';
+  const statuses={pending:'Ainda não verificado','done':'Fez na hora','missing':'Não fez','late':'Entregou depois'};
+  target.innerHTML=`<div class="card admin-section"><div class="card-body">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap"><div><div class="admin-section-title">${htmlSafe(record.moduleLabel||record.subject||'Homework')} · ${htmlSafe(record.book)}</div><div class="admin-section-sub">${htmlSafe(record.page)} · ${htmlSafe(record.date)} · ${record.students.length} aluno(s) · média lançada: ${average}</div></div><button class="btn btn-ghost btn-sm" type="button" onclick="deleteHomeworkRecord('${esc(record.id)}')"><i class="fa-solid fa-trash"></i> Excluir</button></div>
+    <div style="display:flex;flex-direction:column;gap:8px">${record.students.map(student=>`<div class="admin-item" style="gap:10px;flex-wrap:wrap"><div class="admin-item-name" style="flex:1;min-width:130px">${htmlSafe(student.name)}</div><select class="input" aria-label="Situação de ${htmlSafe(student.name)}" style="width:min(210px,100%);margin:0" onchange="updateHomeworkStudent('${esc(record.id)}','${esc(student.id)}','status',this.value)">${Object.entries(statuses).map(([value,label])=>`<option value="${value}" ${student.status===value?'selected':''}>${label}</option>`).join('')}</select><label class="text-xs text-muted" style="display:flex;align-items:center;gap:6px">Nota <input class="input" aria-label="Nota de ${htmlSafe(student.name)}" type="number" min="0" max="10" step="0.1" placeholder="—" value="${htmlSafe(student.grade??'')}" style="width:84px;margin:0" onchange="updateHomeworkStudent('${esc(record.id)}','${esc(student.id)}','grade',this.value)"></label></div>`).join('')}</div>
+    <div class="text-xs text-muted">Para concluir depois, altere “Ainda não verificado” para “Entregou depois”. A nota é opcional; média calculada somente com notas preenchidas.</div>
+  </div></div>`;
+}
+
+function updateHomeworkStudent(recordId,studentId,field,value){
+  const records=readHomeworkRecords();const record=records.find(item=>item.id===recordId);const student=record?.students.find(item=>item.id===studentId);
+  if(!record||!student||!['status','grade'].includes(field))return;
+  if(field==='status'&&!['pending','done','missing','late'].includes(value))return;
+  if(field==='grade'&&value!==''&&(Number(value)<0||Number(value)>10||!Number.isFinite(Number(value)))){alert('Use uma nota entre 0 e 10.');renderHomeworkTracker();return;}
+  student[field]=field==='grade'&&value!==''?Number(value):value;
+  if(saveHomeworkRecords(records))renderHomeworkTracker();
+}
+
+function deleteHomeworkRecord(id){
+  const records=readHomeworkRecords();const record=records.find(item=>item.id===id);if(!record)return;
+  if(!confirm(`Excluir o registro ${record.moduleLabel||record.subject||''}, ${record.book}, ${record.page}, e as marcações desta turma?`))return;
+  saveHomeworkRecords(records.filter(item=>item.id!==id));selectedHomeworkId='';renderHomeworkTracker();
 }
 
 function saveLocalDB(){localStorage.setItem('english_hub_db',JSON.stringify(DATABASE));}
