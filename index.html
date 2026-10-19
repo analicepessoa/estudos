@@ -891,6 +891,14 @@ select.input { appearance: none; cursor: pointer; }
 
 /* Biblioteca de leitura guiada */
 .reading-library { display:grid; gap:18px; }
+.reading-next-book { display:grid; grid-template-columns:140px minmax(0,1fr); gap:22px; align-items:center; padding:24px; border-radius:22px; background:#1c2020; color:#e9e4d9; border:1px solid #454745; }
+.reading-next-book img { width:100%; height:auto; border-radius:8px; box-shadow:0 8px 22px #0006; }
+.reading-next-book small { color:#e0a092; font-size:11px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+.reading-next-book h3 { margin:8px 0; color:#fff; font:700 25px/1.2 Georgia,serif; }
+.reading-next-book p { color:#d0d1ca; font-size:13px; line-height:1.6; margin:9px 0; }
+.reading-next-book strong { color:#f0c3b7; }
+.reading-next-book .reading-final-days { grid-column:1/-1; padding:10px 13px; border-left:3px solid #c77362; background:#ffffff08; margin:0; }
+@media(max-width:520px) { .reading-next-book { grid-template-columns:100px minmax(0,1fr); gap:15px; padding:18px; align-items:start; } .reading-next-book h3 { font-size:20px; } }
 .reading-book-card {
   display:grid; grid-template-columns:150px minmax(0,1fr); gap:24px; padding:20px;
   border:1px solid rgba(87,52,36,.18); border-radius:26px; background:linear-gradient(145deg,#FFFCF7,#F4ECE2);
@@ -7128,12 +7136,23 @@ function readingWeekStatus(week){
   return readingIsComplete(week)?'Capítulo concluído':done?`${done} de ${parts.length} partes lidas`:'Pronto para começar';
 }
 
+function readingNextBookNoticeHtml(state=readingAccessState()){
+  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(state.now));
+  const days=Math.max(0,Math.round((Date.parse('2026-10-21T00:00:00Z')-Date.parse(today+'T00:00:00Z'))/86400000));
+  const finalLabel=state.expired?'O período de leitura de A Metamorfose foi encerrado.':days===0?'Último dia para concluir A Metamorfose!':days===1?'A Metamorfose: o prazo termina amanhã!':days===2?'2 dias finais de A Metamorfose!':`A Metamorfose: ${days} dias até o encerramento.`;
+  return `<aside class="reading-next-book" aria-label="Próximo livro: 1984">
+    <img src="assets/reading/cover-1984.png" alt="Capa de Nineteen Eighty-Four, 1984, de George Orwell" width="140" height="210">
+    <div><small>Em breve · próxima leitura</small><h3>Nineteen Eighty-Four · 1984</h3><p>Em Oceania, até um pensamento pode ser perigoso. Conheça Winston Smith na nossa próxima leitura em inglês.</p><p><strong>Estreia em 21/10 · 6 semanas de leitura · nível A2</strong></p></div>
+    <p class="reading-final-days"><strong>${finalLabel}</strong>${state.expired?'':' Aproveite para terminar sua leitura até 21/10. Seu progresso continua salvo.'}</p>
+  </aside>`;
+}
+
 async function renderReadingLibrary(){
   const container=document.getElementById('reading-library');
   if(!container)return;
   const access=readingAccessState();
   if(access.expired&&!isTeacherPreview()){
-    container.innerHTML=`${readingDeadlineCardHtml(access)}<div class="reading-coming"><div class="reading-coming-icon"><i class="fa-solid fa-box-archive"></i></div><div class="reading-coming-badge">Leitura encerrada</div><h2>Este livro saiu da biblioteca</h2><p>O período de seis semanas terminou em ${readingAccessDate(READING_ACCESS_END,{year:true})}. Seu progresso e suas conclusões continuam salvos.</p></div>`;
+    container.innerHTML=`${readingNextBookNoticeHtml(access)}${readingDeadlineCardHtml(access)}<div class="reading-coming"><div class="reading-coming-icon"><i class="fa-solid fa-box-archive"></i></div><div class="reading-coming-badge">Leitura encerrada</div><h2>Este livro saiu da biblioteca</h2><p>O período de seis semanas terminou em ${readingAccessDate(READING_ACCESS_END,{year:true})}. Seu progresso e suas conclusões continuam salvos.</p></div>`;
     scheduleReadingDeadlineUpdates();
     return;
   }
@@ -7146,7 +7165,7 @@ async function renderReadingLibrary(){
     const percent=Math.round(allProgress.reduce((sum,item)=>sum+item.done,0)/allProgress.reduce((sum,item)=>sum+item.total,0)*100);
     const nextPart=READING_WEEK_CONFIGS[nextWeek].parts.findIndex((_,index)=>!hasReadingMarker(readingPartMarker(index,nextWeek)));
     const nextStatus=readingWeekStatus(nextWeek);
-    container.innerHTML=`${readingDeadlineCardHtml(access)}
+    container.innerHTML=`${readingNextBookNoticeHtml(access)}${readingDeadlineCardHtml(access)}
       <article class="reading-book-card">
         <img class="reading-book-cover" src="${readingAsset(week1.book.cover_asset)}" alt="Capa de ${htmlSafe(week1.book.title)}">
         <div class="reading-book-copy">
