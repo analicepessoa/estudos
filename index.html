@@ -1014,7 +1014,9 @@ select.input { appearance: none; cursor: pointer; }
 .progress-sync-status { display:flex; align-items:center; gap:5px; padding:0; border:0; background:transparent; color:var(--slate); font:750 10px 'Inter',sans-serif; white-space:nowrap; }
 .progress-sync-status.saved { color:var(--teal-dark); }
 .progress-sync-status.pending { color:var(--orange-dark); cursor:pointer; }
+.progress-sync-status.login { color:var(--rose); cursor:pointer; }
 .progress-sync-status.pending:hover { text-decoration:underline; }
+.progress-sync-status.login:hover { text-decoration:underline; }
 .progress-sync-status:disabled { opacity:1; cursor:default; }
 
 @media(max-width:600px){
@@ -10126,13 +10128,14 @@ function updateProgressSyncStatus(state='saved'){
   const settings={
     saved:{icon:'cloud-check',text:'Salvo',title:'Progresso salvo na nuvem'},
     saving:{icon:'rotate fa-spin',text:'Salvando...',title:'Enviando o progresso'},
-    pending:{icon:'cloud-arrow-up',text:'Salvo no aparelho · enviar',title:'O progresso está seguro neste aparelho. Toque para tentar enviar agora.'}
+    pending:{icon:'cloud-arrow-up',text:'Salvo no aparelho · enviar',title:'O progresso está seguro neste aparelho. Toque para tentar enviar agora.'},
+    login:{icon:'right-to-bracket',text:'Entrar novamente para enviar',title:'Sua sessão terminou. O progresso está seguro neste aparelho; toque para entrar novamente.'}
   };
   const current=settings[state]||settings.saved;
-  element.className=`progress-sync-status ${state==='pending'?'pending':state==='saved'?'saved':''}`;
+  element.className=`progress-sync-status ${['saved','pending','login'].includes(state)?state:''}`;
   element.innerHTML=`<i class="fa-solid fa-${current.icon}"></i><span>${current.text}</span>`;
   element.title=current.title;
-  element.disabled=state!=='pending';
+  element.disabled=!['pending','login'].includes(state);
   element.setAttribute('aria-label',current.title);
 }
 
@@ -10154,6 +10157,20 @@ function progressErrorText(error){
 function progressUsageColumnUnavailable(error){
   const text=progressErrorText(error);
   return (text.includes('usage')&&(text.includes('column')||text.includes('schema cache')))||error?.code==='42703'||error?.code==='PGRST204';
+}
+
+function progressAuthUnavailable(error){
+  const text=progressErrorText(error);
+  return Number(error?.status)===401||error?.name==='AuthSessionMissingError'||error?.code==='PGRST301'||
+    text.includes('jwt expired')||text.includes('invalid jwt')||text.includes('refresh token')||
+    text.includes('session missing')||text.includes('auth session missing')||text.includes('not authenticated');
+}
+
+function progressLoginRequiredError(){
+  const error=new Error('Sua sessão terminou. Entre novamente para enviar o progresso.');
+  error.name='AuthSessionMissingError';
+  error.status=401;
+  return error;
 }
 
 async function refreshProgressSession(){
@@ -10179,8 +10196,10 @@ async function readRemoteStudentProgress(studentId){
   if(progressUsageColumnUnavailable(result.error)){
     const basic=await read('xp,notas,unlocked');
     if(basic.ok)return basic;
+    result=basic;
   }
-  await refreshProgressSession();
+  if(!progressAuthUnavailable(result.error))return result;
+  if(!await refreshProgressSession())return {ok:false,data:null,error:progressLoginRequiredError()};
   result=await read('xp,notas,unlocked,usage');
   if(result.ok)return result;
   if(progressUsageColumnUnavailable(result.error))return read('xp,notas,unlocked');
@@ -10198,7 +10217,8 @@ async function writeRemoteStudentProgress(payload){
     const basic={...payload};delete basic.usage;
     return write(basic);
   }
-  await refreshProgressSession();
+  if(!progressAuthUnavailable(result.error))return result;
+  if(!await refreshProgressSession())return {data:null,error:progressLoginRequiredError()};
   result=await write(payload);
   if(result.error&&progressUsageColumnUnavailable(result.error)){
     const basic={...payload};delete basic.usage;
@@ -10212,7 +10232,20 @@ function saveStudentProgress(options={}){
     storePendingProgress(mergeProgressSnapshots(currentUser,readPendingProgress(currentUser.id)),currentUser.id);
     updateProgressSyncStatus('saving');
   }
-  const task=()=>saveStudentProgressNow(options);
+  const task=async()=>{
+    try{return await saveStudentProgressNow(options);}
+    catch(error){
+      console.warn('A tentativa de sincronização terminou com erro:',error);
+      if(progressAuthUnavailable(error)){
+        if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
+        updateProgressSyncStatus('login');
+      }else{
+        updateProgressSyncStatus('pending');
+        scheduleProgressRetry();
+      }
+      return false;
+    }
+  };
   const result=progressSaveChain.then(task,task);
   progressSaveChain=result.catch(()=>false);
   return result;
@@ -10278,6 +10311,9 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
   ]);
   const tableOk=tableResult.status==='fulfilled'&&!tableResult.value.error;
   const authOk=authResult.status==='fulfilled'&&!authResult.value.error;
+  const tableError=tableResult.status==='fulfilled'?tableResult.value.error:tableResult.reason;
+  const authError=authResult.status==='fulfilled'?authResult.value.error:authResult.reason;
+  const needsLogin=progressAuthUnavailable(remoteResult.error)||progressAuthUnavailable(tableError)||progressAuthUnavailable(authError);
 
   // A tabela student_progress é a fonte do painel da professora. A cópia nos
   // metadados da conta ajuda na próxima abertura, mas não pode fazer um
@@ -10295,8 +10331,10 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
       tabela:tableOk?'ok':tableResult.status==='fulfilled'?tableResult.value.error:tableResult.reason,
       conta:authOk?'ok':authResult.status==='fulfilled'?authResult.value.error:authResult.reason
     });
-    updateProgressSyncStatus('pending');
-    scheduleProgressRetry();
+    updateProgressSyncStatus(needsLogin?'login':'pending');
+    if(needsLogin){
+      if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
+    }else scheduleProgressRetry();
     if(!silent)alert('Seu progresso ficou salvo neste aparelho e será enviado quando a conexão melhorar.');
   }
   return tableOk;
@@ -10310,8 +10348,16 @@ function retryPendingStudentProgress(){
   }
 }
 
-function manualRetryStudentProgress(){
-  if(currentUser?.role!=='student'||progressSyncState!=='pending')return;
+async function manualRetryStudentProgress(){
+  if(currentUser?.role!=='student'||!['pending','login'].includes(progressSyncState))return;
+  if(progressSyncState==='login'){
+    const email=currentUser.email||'';
+    await doLogout();
+    const field=document.getElementById('login-email');
+    if(field)field.value=email;
+    alert('Seu progresso continua guardado neste aparelho. Entre novamente com a mesma conta para enviá-lo.');
+    return;
+  }
   if(!navigator.onLine){
     alert('Seu progresso está seguro neste aparelho. Conecte-se à internet e toque novamente para enviar.');
     return;
