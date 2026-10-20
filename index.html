@@ -2546,6 +2546,13 @@ select.input { appearance: none; cursor: pointer; }
       </div>
     </div>
 
+    <div id="form-open-recovery" class="auth-card hidden">
+      <h2>Confirmar recuperação</h2>
+      <p style="color:rgba(255,255,255,.55);font-size:13px;line-height:1.6;margin:-8px 0 18px">Para proteger seu acesso, o link só será utilizado depois que você tocar no botão abaixo.</p>
+      <button id="recovery-continue-btn" onclick="continuePasswordRecovery()" class="btn btn-orange btn-lg w-full">Continuar e criar nova senha <i class="fa-solid fa-arrow-right"></i></button>
+      <div id="recovery-open-status" style="min-height:18px;margin-top:14px;color:#FFB4B4;font-size:12px;font-weight:700;line-height:1.5;text-align:center" aria-live="polite"></div>
+    </div>
+
     <div style="text-align:center;margin-top:24px">
       <button onclick="teacherQuickAccess()" style="background:none;border:none;color:rgba(255,255,255,.2);font-size:12px;cursor:pointer;font-weight:600;font-family:'Inter',sans-serif;transition:color .2s" onmouseover="this.style.color='rgba(255,255,255,.4)'" onmouseout="this.style.color='rgba(255,255,255,.2)'">
         <i class="fa-solid fa-chalkboard-user"></i> Acesso Administrativo
@@ -6507,13 +6514,24 @@ let DATABASE = {
    INIT
 ══════════════════════════════════════════════ */
 window.onload = async () => {
-  await loadCloudDB();
-  populateRegTurmas();
+  if(isPasswordRecoveryBridge()){
+    showPasswordRecoveryBridge();
+    return;
+  }
   const recoveryLink = isPasswordRecoveryLink();
   if(recoveryLink && window.supabase){
     if(!sbClient) sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    const recoveryError=passwordRecoveryError();
+    if(recoveryError){
+      console.warn('Recuperação recusada pelo Supabase:',recoveryError.code,recoveryError.description);
+      alert('Este link não pôde ser validado. Solicite um novo e abra somente o e-mail mais recente.');
+      clearPasswordRecoveryUrl();
+      showView('auth');
+      showAuthForm('form-forgot-password');
+      return;
+    }
     try {
-      const {data:{session}}=await withTimeout(sbClient.auth.getSession(),8000);
+      const session=await waitForPasswordRecoverySession(12000);
       if(session){
         showPasswordResetForm();
         return;
@@ -6525,6 +6543,8 @@ window.onload = async () => {
     showAuthForm('form-forgot-password');
     return;
   }
+  await loadCloudDB();
+  populateRegTurmas();
   if(localStorage.getItem('teacher_unlocked')==='true'){
     currentUser={role:'teacher',name:'Prof. Analice'};
     initTeacherPanel(); return;
@@ -6555,7 +6575,7 @@ function toggleAuth(){
 }
 
 function showAuthForm(formId){
-  ['form-login','form-register','form-forgot-password','form-reset-password'].forEach(id=>{
+  ['form-login','form-register','form-forgot-password','form-reset-password','form-open-recovery'].forEach(id=>{
     document.getElementById(id)?.classList.toggle('hidden',id!==formId);
   });
   showView('auth');
@@ -6580,7 +6600,84 @@ function passwordRecoveryRedirectUrl(){
 function isPasswordRecoveryLink(){
   const params=new URLSearchParams(window.location.search);
   const hash=new URLSearchParams(window.location.hash.replace(/^#/,''));
-  return params.get('recuperar-senha')==='1' || hash.get('type')==='recovery';
+  return params.get('recuperar-senha')==='1' || hash.get('type')==='recovery' || hash.get('error_code')==='otp_expired';
+}
+
+function passwordRecoveryError(){
+  const params=new URLSearchParams(window.location.search);
+  const hash=new URLSearchParams(window.location.hash.replace(/^#/,''));
+  const code=hash.get('error_code')||params.get('error_code')||hash.get('error')||params.get('error');
+  if(!code)return null;
+  return {
+    code,
+    description:hash.get('error_description')||params.get('error_description')||''
+  };
+}
+
+function waitForPasswordRecoverySession(timeoutMs=12000){
+  return new Promise(resolve=>{
+    const deadline=Date.now()+timeoutMs;
+    let finished=false;
+    let subscription=null;
+    const finish=session=>{
+      if(finished)return;
+      finished=true;
+      try{subscription?.unsubscribe();}catch(e){}
+      resolve(session||null);
+    };
+    const listener=sbClient.auth.onAuthStateChange((event,session)=>{
+      if(session && ['PASSWORD_RECOVERY','SIGNED_IN','INITIAL_SESSION'].includes(event)) finish(session);
+    });
+    subscription=listener?.data?.subscription||null;
+    if(finished)try{subscription?.unsubscribe();}catch(e){}
+    const check=async()=>{
+      if(finished)return;
+      try {
+        const {data}=await sbClient.auth.getSession();
+        if(data?.session){finish(data.session);return;}
+      } catch(e){console.warn('Aguardando sessão de recuperação:',e);}
+      if(Date.now()>=deadline){finish(null);return;}
+      setTimeout(check,300);
+    };
+    check();
+  });
+}
+
+let pendingPasswordRecoveryUrl='';
+
+function isPasswordRecoveryBridge(){
+  return new URLSearchParams(window.location.search).get('preparar-recuperacao')==='1';
+}
+
+function passwordRecoveryConfirmationUrl(){
+  const prefix='#confirmation_url=';
+  if(!window.location.hash.startsWith(prefix))return '';
+  let value=window.location.hash.slice(prefix.length);
+  try{value=decodeURIComponent(value);}catch(e){}
+  try {
+    const url=new URL(value);
+    if(url.protocol==='https:' && url.hostname==='ilcvihbawgoidmotvrky.supabase.co' && url.pathname.startsWith('/auth/v1/verify')) return url.href;
+  } catch(e){}
+  return '';
+}
+
+function showPasswordRecoveryBridge(){
+  pendingPasswordRecoveryUrl=passwordRecoveryConfirmationUrl();
+  showAuthForm('form-open-recovery');
+  const btn=document.getElementById('recovery-continue-btn');
+  const status=document.getElementById('recovery-open-status');
+  if(!pendingPasswordRecoveryUrl){
+    btn.disabled=true;
+    status.textContent='Este link está incompleto. Solicite um novo e-mail de recuperação.';
+  }
+}
+
+function continuePasswordRecovery(){
+  if(!pendingPasswordRecoveryUrl)return;
+  const btn=document.getElementById('recovery-continue-btn');
+  btn.disabled=true;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
+  window.location.assign(pendingPasswordRecoveryUrl);
 }
 
 function clearPasswordRecoveryUrl(){
