@@ -3294,7 +3294,7 @@ let progressRetryTimer = null;
 let progressRetryAttempts = 0;
 let progressAttemptSequence = 0;
 let progressSyncState = 'saved';
-const PROGRESS_SYNC_RELEASE = '20261021.2';
+const PROGRESS_SYNC_RELEASE = '20261021.5';
 let progressSyncDiagnostic = {phase:'idle',at:'',error:'',serverXp:null,serverAt:'',confirmedAt:''};
 let progressSyncWorkerVersion = '';
 let dailyWordCurrent = null;
@@ -6666,10 +6666,7 @@ window.onload = async () => {
   }
   await loadCloudDB();
   populateRegTurmas();
-  if(localStorage.getItem('teacher_unlocked')==='true'){
-    currentUser={role:'teacher',name:'Prof. Analice'};
-    initTeacherPanel(); return;
-  }
+  localStorage.removeItem('teacher_unlocked');
   try {
     if(window.supabase){
       if(!sbClient) sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -6878,12 +6875,14 @@ async function saveNewPassword(){
 }
 
 function teacherQuickAccess(){
-  const p=prompt("Senha administrativa:");
-  if(p==="admin123"){
-    localStorage.setItem('teacher_unlocked','true');
-    currentUser={role:'teacher',name:'Prof. Analice'};
-    initTeacherPanel();
-  } else if(p!==null) alert("Senha incorreta.");
+  showView('auth');
+  showAuthForm('form-login');
+  document.getElementById('login-email')?.focus();
+}
+
+// UI routing only. Database authorization comes from the signed JWT and RLS.
+function hasTeacherRole(user){
+  return Boolean(user?.id && user.app_metadata?.role==='teacher');
 }
 
 function populateRegTurmas(){
@@ -6958,6 +6957,11 @@ async function setupUserSession(user){
   dailyWordListened.clear();
   if(scheduledContentRefreshTimer)clearInterval(scheduledContentRefreshTimer);
   if(studentAccessCheckTimer)clearInterval(studentAccessCheckTimer);
+  if(hasTeacherRole(user)){
+    currentUser={id:user.id,email:user.email,role:'teacher',name:user.user_metadata?.name||'Professora'};
+    initTeacherPanel();
+    return;
+  }
   const m=user.user_metadata||{};
   const control=DATABASE.studentControls?.[user.id]||{};
   if(control.disabled){
@@ -6979,6 +6983,10 @@ async function setupUserSession(user){
   },30000);
   currentUser={id:user.id,email:user.email,role:'student',name:control.name||m.name||"Aluno",
     turma:control.turma||m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{},xpAwards:m.xpAwards||{},usage:normalizeStudentUsage(m.usage)};
+  try{
+    const recovery=readProgressRecoveryState(user.id);
+    if(recovery.lastKind==='auth'){recovery.lastKind='';recovery.nextAt=0;storeProgressRecoveryState(user.id,recovery);}
+  }catch(error){console.warn('Controle local de recuperação preservado:',error);}
   progressSyncDiagnostic={phase:'idle',at:'',error:'',serverXp:null,serverAt:'',confirmedAt:''};
   try{
     const previous=JSON.parse(localStorage.getItem(`ap_progress_sync_diagnostic_${user.id}`)||'null');
@@ -7070,13 +7078,14 @@ function updateStudentPreviewModeUi(){
 }
 
 function previewAsStudent(roomKey=adminSelectedRoom,inspectAll=true){
+  if(!isTeacherAdmin()&&!isTeacherPreview())return;
   const availableRooms=Object.keys(DATABASE.turmas||{});
   const selected=DATABASE.turmas?.[roomKey]?roomKey:availableRooms[0];
   if(!selected)return alert('Cadastre uma turma antes de abrir a pré-visualização.');
   adminSelectedRoom=selected;
   localStorage.setItem('ap_admin_selected_room',selected);
   currentUser={
-    role:'teacher',previewMode:true,inspectAll:Boolean(inspectAll),turma:selected,name:'Prévia da turma',
+    id:currentUser.id,email:currentUser.email,role:'teacher',previewMode:true,inspectAll:Boolean(inspectAll),turma:selected,name:'Prévia da turma',
     xp:0,unlockedFases:[],notas:{},xpAwards:{}
   };
   const roomSelect=document.getElementById('student-preview-room');
@@ -7104,9 +7113,10 @@ function toggleStudentPreviewMode(){
 }
 
 function exitStudentPreview(){
+  if(!isTeacherPreview())return;
   closeBookAudioLibrary();
   closeMusicPlayer();
-  currentUser={role:'teacher',name:'Prof. Analice'};
+  currentUser={id:currentUser.id,email:currentUser.email,role:'teacher',name:'Professora'};
   document.getElementById('student-preview-bar')?.classList.add('hidden');
   document.getElementById('btn-back-admin').classList.add('hidden');
   initTeacherPanel();
@@ -10211,7 +10221,7 @@ async function dispatchReport(act,result,{keepalive=false}={}){
 /* ══════════════════════════════════════════════
    TEACHER PANEL
 ══════════════════════════════════════════════ */
-function initTeacherPanel(){showView('teacher');renderAdminRooms();updateAdminSelects();renderAdminSemanas();renderAdminTrilhas();renderAdminMusicas();renderAdminBookAudioPicker();loadAdminBookReviewSelection();initTrilhaFormExtras();showTeacherTab('salas');}
+function initTeacherPanel(){if(!isTeacherAdmin()||!currentUser?.id){showView('auth');return;}showView('teacher');renderAdminRooms();updateAdminSelects();renderAdminSemanas();renderAdminTrilhas();renderAdminMusicas();renderAdminBookAudioPicker();loadAdminBookReviewSelection();initTrilhaFormExtras();showTeacherTab('salas');}
 
 function showTeacherTab(tab){
   ['salas','trilha-admin','aulas-admin','semanas-lista','musicas-admin','dashboard','homework'].forEach(t=>{
@@ -10286,7 +10296,8 @@ function normalizeProgressSnapshot(source){
   const data=source&&typeof source==='object'?source:{};
   const xp=Number(data.xp||0);
   const notas=data.notas&&typeof data.notas==='object'&&!Array.isArray(data.notas)?data.notas:{};
-  const xpAwards=data.xpAwards&&typeof data.xpAwards==='object'&&!Array.isArray(data.xpAwards)?data.xpAwards:{};
+  const awards=data.xpAwards||data.xp_awards;
+  const xpAwards=awards&&typeof awards==='object'&&!Array.isArray(awards)?awards:{};
   const unlocked=Array.isArray(data.unlockedFases)?data.unlockedFases:Array.isArray(data.unlocked)?data.unlocked:[];
   return {
     xp:Number.isFinite(xp)?Math.max(0,xp):0,
@@ -10312,7 +10323,10 @@ function mergeProgressSnapshots(...sources){
     Object.entries(item.xpAwards).forEach(([activityKey,record])=>{
       if(!record||typeof record!=='object')return;
       const previous=merged.xpAwards[activityKey];
-      if(!previous||Number(record.lastAt||0)>=Number(previous.lastAt||0))merged.xpAwards[activityKey]={...record};
+      const newer=!previous||Number(record.lastAt||0)>Number(previous.lastAt||0);
+      const tied=previous&&Number(record.lastAt||0)===Number(previous.lastAt||0);
+      if(newer||(tied&&(Number(record.count||0)>Number(previous.count||0)||
+        Number(record.count||0)===Number(previous.count||0)&&Number(record.firstAt||0)<Number(previous.firstAt||0))))merged.xpAwards[activityKey]={...record};
     });
     item.unlockedFases.forEach(value=>unlocked.add(value));
   });
@@ -10389,9 +10403,12 @@ function updateProgressSyncStatus(state='saved'){
   const element=document.getElementById('progress-sync-status');
   if(!element)return;
   const settings={
-    saved:{icon:'cloud-check',text:'Salvo',title:'Progresso salvo na nuvem'},
+    saved:{icon:'cloud-check',text:'Progresso salvo',title:'Progresso salvo na nuvem'},
+    recovering:{icon:'rotate fa-spin',text:'Recuperação em andamento',title:'A cópia local está preservada'},
+    recovered:{icon:'cloud-check',text:'Progresso recuperado',title:'O painel confirmou o progresso pendente'},
+    persistent:{icon:'cloud-arrow-up',text:'Erro persistente: dados preservados',title:'O envio precisa de verificação; os dados continuam no aparelho'},
     saving:{icon:'rotate fa-spin',text:'Salvando... · detalhes',title:'Ver andamento do salvamento e fazer backup'},
-    pending:{icon:'cloud-arrow-up',text:'Salvo no aparelho · enviar',title:'O progresso está seguro neste aparelho. Toque para tentar enviar agora.'},
+    pending:{icon:'cloud-arrow-up',text:'Salvo no aparelho, aguardando envio',title:'O envio será tentado automaticamente. Toque para ver os detalhes.'},
     login:{icon:'right-to-bracket',text:'Entrar novamente para enviar',title:'Sua sessão terminou. O progresso está seguro neste aparelho; toque para entrar novamente.'}
   };
   const current=settings[state]||settings.saved;
@@ -10423,7 +10440,7 @@ function recordProgressSyncPhase(phase,{error=null,attempt=null,...details}={}){
 function progressSyncDetailsText(){
   const snapshot=mergeProgressSnapshots(currentUser,readPendingProgress(currentUser?.id));
   const info=progressSyncDiagnostic;
-  const labels={idle:'Aguardando envio',queued:'Envio na fila',reading:'Consultando o progresso na nuvem',merging:'Reunindo progresso do aparelho e da nuvem',writing:'Enviando para o painel da professora',saved:'Painel confirmou o recebimento',failed:'Envio interrompido'};
+  const labels={idle:'Aguardando envio',queued:'Envio na fila',reading:'Consultando o progresso na nuvem',merging:'Reunindo progresso do aparelho e da nuvem',writing:'Enviando para o painel da professora',saved:'Painel confirmou o recebimento',failed:'Envio interrompido','recovery-pending':'Canal alternativo consultado; cópia local preservada','recovery-blocked':'Canal alternativo precisa de verificação'};
   const date=value=>value?new Date(value).toLocaleString('pt-BR'):'Ainda não confirmado';
   return [
     `Verificação do salvamento · ${PROGRESS_SYNC_RELEASE}`,
@@ -10435,7 +10452,8 @@ function progressSyncDetailsText(){
     `Última consulta ao painel: ${info.serverXp===null?'ainda não concluída':`${info.serverXp} XP · atualizado em ${date(info.serverAt)}`}`,
     `Último envio confirmado: ${date(info.confirmedAt)}`,
     `Conexão informada pelo celular: ${navigator.onLine?'conectado':'sem conexão'}`,
-    info.error?`Motivo registrado: ${info.error}`:''
+    info.error?`Motivo registrado: ${info.error}`:'',
+    info.recoveryPending!=null?`Canal alternativo: ${info.recoveryConfirmed||0} confirmados, ${info.recoveryPending} pendentes, ${info.recoveryRejected||0} rejeitados`:''
   ].filter(Boolean).join('\n');
 }
 
@@ -10569,6 +10587,11 @@ async function requestProgressRest(path,options={},timeoutMs=8000,attempt=null){
     ...(options.headers||{})
   };
   return runProgressRequest(async signal=>{
+    const sessionResult=await sbClient.auth.getSession();
+    const session=sessionResult?.data?.session;
+    if(sessionResult?.error)throw sessionResult.error;
+    if(!session?.access_token||(attempt&&session.user?.id!==attempt.studentId))throw progressLoginRequiredError();
+    headers.Authorization=`Bearer ${session.access_token}`;
     const response=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{...options,headers,signal,cache:'no-store'});
     const text=await response.text();
     if(!response.ok)throw progressRestError(response,text);
@@ -10580,7 +10603,9 @@ async function requestProgressRest(path,options={},timeoutMs=8000,attempt=null){
 function scheduleProgressRetry(){
   if(progressRetryTimer||!currentUser||currentUser.role==='teacher')return;
   const delays=[5000,15000,30000,60000,120000,300000];
-  const delay=delays[Math.min(progressRetryAttempts,delays.length-1)];
+  const state=readProgressRecoveryState(currentUser.id);
+  if(state.blocked)return;
+  const delay=Math.max(delays[Math.min(progressRetryAttempts,delays.length-1)],state.nextAt-Date.now());
   progressRetryAttempts++;
   progressRetryTimer=setTimeout(()=>{
     progressRetryTimer=null;
@@ -10611,6 +10636,199 @@ function progressLoginRequiredError(){
   return error;
 }
 
+// Uma única cópia por conta. Nunca contém sessão, nome, email ou credenciais.
+function readProgressRecoveryState(id){
+  try{
+    const state=JSON.parse(localStorage.getItem(`ap_progress_recovery_${id}`)||'null');
+    if(!state)return {protocol:2,failures:0,nextAt:0,blocked:false};
+    if(typeof state!=='object'||Array.isArray(state))throw new Error('Invalid recovery state');
+    if(state.protocol!==2){
+      state.protocol=2;state.blocked=false;state.recoveryBlocked=false;state.nextAt=0;
+      if(state.lastKind!=='auth')state.lastKind='';
+      storeProgressRecoveryState(id,state);
+    }
+    return state;
+  }
+  catch(e){throw progressRequestError('O controle de recuperação está ilegível; dados preservados.','RECOVERY_STORAGE');}
+}
+
+function storeProgressRecoveryState(id,state){
+  try{localStorage.setItem(`ap_progress_recovery_${id}`,JSON.stringify({...state,protocol:2}));}
+  catch(e){throw progressRequestError('Não foi possível preservar a recuperação neste aparelho.','RECOVERY_STORAGE');}
+}
+
+function progressFailureKind(error){
+  if(error?.code==='PROGRESS_RECORD_REJECTED')return 'records';
+  if(progressAuthUnavailable(error))return 'auth';
+  const status=Number(error?.status||0);
+  if(status===403)return 'permission';
+  if([400,404,405,409,413,422].includes(status)||['RECOVERY_STORAGE','RECOVERY_LIMIT','RECOVERY_INVALID_RESPONSE'].includes(error?.code))return 'validation';
+  if(status===429)return 'rate';
+  if(status>=500)return 'server';
+  if(error?.code?.includes('TIMEOUT')||error?.name==='AbortError')return 'timeout';
+  if(error instanceof TypeError||error?.name==='TypeError'||error?.code==='NETWORK_ERROR')return 'network';
+  return 'validation';
+}
+
+function progressCanonical(value){
+  if(Array.isArray(value))return value.map(progressCanonical);
+  if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().map(key=>[key,progressCanonical(value[key])]));
+  return value;
+}
+
+async function progressRecoveryRecords(id,snapshot){
+  const raw=[{kind:'xp',key:'total',value:snapshot.xp},
+    ...Object.entries(snapshot.notas).map(([key,value])=>({kind:'grade',key,value})),
+    ...snapshot.unlockedFases.map(key=>({kind:'unlock',key,value:true})),
+    {kind:'usage',key:'summary',value:snapshot.usage},
+    ...Object.entries(snapshot.xpAwards).map(([key,value])=>({kind:'award',key,value}))];
+  const records=[];
+  for(const record of raw){
+    const bytes=new TextEncoder().encode(JSON.stringify([2,id,record.kind,record.key,progressCanonical(record.value)]));
+    const digest=await crypto.subtle.digest('SHA-256',bytes);
+    records.push({id:Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join(''),...record});
+  }
+  return records;
+}
+
+function progressPacketBatches(id,records){
+  const batches=[];let batch=[];
+  for(const record of records){
+    if(new TextEncoder().encode(JSON.stringify(record)).length>60000)throw progressRequestError('Um registro excede o limite; cópia local preservada.','RECOVERY_LIMIT');
+    const next=[...batch,record];
+    if(batch.length&&(next.length>200||new TextEncoder().encode(JSON.stringify({version:2,accountId:id,records:next})).length>60000)){
+      batches.push(batch);batch=[];
+    }
+    batch.push(record);
+  }
+  if(batch.length)batches.push(batch);
+  return batches;
+}
+
+function checkProgressReceipt(result,id,records){
+  if(!result||result.version!==2||result.accountId!==id||!['confirmed','rejected','pending'].every(key=>Array.isArray(result[key])))throw progressRequestError('Confirmação incompleta.','RECOVERY_INVALID_RESPONSE');
+  const expected=new Set(records.map(record=>record.id));const seen=new Set();
+  for(const key of ['confirmed','rejected','pending'])for(const recordId of result[key]){
+    if(!expected.has(recordId)||seen.has(recordId))throw progressRequestError('Confirmação incompatível.','RECOVERY_INVALID_RESPONSE');
+    seen.add(recordId);
+  }
+  if(seen.size!==expected.size||result.confirmed.length&&(!result.progress||!Number.isFinite(result.progress.xp)||!result.updatedAt))throw progressRequestError('Persistência não confirmada.','RECOVERY_INVALID_RESPONSE');
+  if(result.confirmed.length){
+    const remote=result.progress;
+    if(!remote.notas||!remote.xpAwards||!remote.usage||!Array.isArray(remote.unlockedFases))throw progressRequestError('Snapshot confirmado incompleto.','RECOVERY_INVALID_RESPONSE');
+    for(const record of records.filter(r=>result.confirmed.includes(r.id))){
+      let covered=false;
+      if(record.kind==='xp')covered=remote.xp>=record.value;
+      if(record.kind==='grade')covered=Object.prototype.hasOwnProperty.call(remote.notas,record.key)&&Number(remote.notas[record.key])>=record.value;
+      if(record.kind==='unlock')covered=remote.unlockedFases.includes(record.key);
+      if(record.kind==='award'){
+        const award=remote.xpAwards[record.key];
+        covered=Boolean(award&&(award.lastAt>record.value.lastAt||award.lastAt===record.value.lastAt&&award.count>=record.value.count));
+      }
+      if(record.kind==='usage'){
+        const incoming=normalizeStudentUsage(record.value),actual=normalizeStudentUsage(remote.usage);
+        const fields=['sessionCount','activeSeconds','activitiesStarted','activitiesCompleted','audioStarted','audioCompleted','readingPartsCompleted'];
+        covered=fields.every(k=>actual[k]>=incoming[k])&&actual.lastSeenAt>=incoming.lastSeenAt&&actual.lastActiveAt>=incoming.lastActiveAt&&
+          (!incoming.firstSeenAt||Boolean(actual.firstSeenAt&&actual.firstSeenAt<=incoming.firstSeenAt))&&
+          mergeStudentUsage(incoming,actual).activeDays.every(day=>actual.activeDays.includes(day));
+      }
+      if(!covered)throw progressRequestError('O snapshot retornado não confirma os registros enviados.','RECOVERY_INVALID_RESPONSE');
+    }
+  }
+  return result;
+}
+
+async function sendProgressRecords(id,records,attempt,transport='normal',onReceipt=()=>{}){
+  let progress=null;const confirmed=[],rejected=[],pending=[];
+  for(const batch of progressPacketBatches(id,records)){
+    if(!canContinueProgressAttempt(attempt,id))throw progressRequestError('Conta alterada.','PROGRESS_CANCELLED');
+    const packet={version:2,accountId:id,records:batch};
+    let result;
+    if(transport==='normal'){
+      result=await requestProgressRest('rpc/merge_student_progress_v2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({p_packet:packet})},10000,attempt);
+    }else{
+      let token=await recoveryAccessToken(id,attempt);
+      const send=()=>runProgressRequest(async signal=>{
+        const response=await fetch(`${SUPABASE_URL}/functions/v1/progress-recovery`,{method:'POST',signal,
+          headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(packet)});
+        const text=await response.text();
+        if(!response.ok)throw progressRestError(response,text);
+        try{return JSON.parse(text);}catch(e){throw progressRequestError('Confirmação inválida.','RECOVERY_INVALID_RESPONSE');}
+      },10000,attempt);
+      try{result=await send();}catch(error){
+        if(!progressAuthUnavailable(error))throw error;
+        token=await recoveryAccessToken(id,attempt,true);result=await send();
+      }
+    }
+    checkProgressReceipt(result,id,batch);
+    if(!canContinueProgressAttempt(attempt,id))throw progressRequestError('Conta alterada.','PROGRESS_CANCELLED');
+    confirmed.push(...result.confirmed);rejected.push(...result.rejected);pending.push(...result.pending);
+    if(result.progress)progress=mergeProgressSnapshots(progress,result.progress);
+    await onReceipt(result);
+  }
+  return {progress,confirmed,rejected,pending};
+}
+
+
+async function recoveryAccessToken(id,attempt,refresh=false){
+  const result=await runProgressRequest(()=>refresh?sbClient.auth.refreshSession():sbClient.auth.getSession(),8000,attempt);
+  const session=result?.data?.session;
+  if(result?.error||!session?.access_token||session.user?.id!==id)throw progressLoginRequiredError();
+  return session.access_token;
+}
+
+async function recoverStudentProgress(id,attempt){
+  const state=readProgressRecoveryState(id);
+  const revision=readPendingProgressRevision(id);
+  const records=await progressRecoveryRecords(id,normalizeProgressSnapshot(readPendingProgress(id)));
+  if(!canContinueProgressAttempt(attempt,id))return false;
+  if(state.packet?.version===1){
+    const legacyKey=`ap_progress_recovery_v1_${id}`;
+    if(!localStorage.getItem(legacyKey))localStorage.setItem(legacyKey,JSON.stringify(state.packet));
+  }
+  const old=state.packet?.version===2?state.packet.records:[];
+  const packet={version:2,accountId:id,records:records.map(record=>({...record,
+    disposition:old.find(previous=>previous.id===record.id)?.disposition||'pending'}))};
+  state.packet=packet;storeProgressRecoveryState(id,state);
+  const outgoing=packet.records.filter(record=>record.disposition==='pending').map(({disposition,...record})=>record);
+  updateProgressSyncStatus('recovering');
+  const result=await sendProgressRecords(id,outgoing,attempt,'recovery',receipt=>{
+    for(const record of packet.records){
+      if(receipt.confirmed.includes(record.id))record.disposition='confirmed';
+      else if(receipt.rejected.includes(record.id))record.disposition='rejected';
+    }
+    state.packet=packet;storeProgressRecoveryState(id,state);
+  });
+  if(!canContinueProgressAttempt(attempt,id))return false;
+  if(result.progress)applyProgressSnapshot(mergeProgressSnapshots(currentUser,readPendingProgress(id),result.progress),id);
+  const complete=packet.records.every(record=>record.disposition==='confirmed');
+  // Only a matching full revision, including usage and awards, can leave the queue.
+  if(complete&&clearPendingProgress(id,revision)){
+    storeProgressRecoveryState(id,{failures:0,nextAt:0,blocked:false});
+    if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
+    recordProgressSyncPhase('saved',{confirmedAt:new Date().toISOString(),attempt});
+    updateProgressSyncStatus('recovered');return true;
+  }
+  recordProgressSyncPhase('recovery-pending',{attempt,recoveryConfirmed:packet.records.filter(r=>r.disposition==='confirmed').length,
+    recoveryPending:packet.records.filter(r=>r.disposition==='pending').length,recoveryRejected:packet.records.filter(r=>r.disposition==='rejected').length});
+  updateProgressSyncStatus(packet.records.some(r=>r.disposition==='rejected')?'persistent':'pending');
+  return false;
+}
+
+
+function deferProgressRecovery(id,error){
+  const state=readProgressRecoveryState(id);
+  const kind=progressFailureKind(error);
+  state.failures=Math.min(20,(state.failures||0)+1);
+  state.blocked=['permission','validation'].includes(kind);
+  state.lastKind=kind;
+  state.nextAt=Date.now()+(state.failures===1?5000:Math.min(300000,15000*2**Math.min(5,state.failures-2)));
+  storeProgressRecoveryState(id,state);
+  recordProgressSyncPhase('failed',{error,failedPhase:progressSyncDiagnostic.failedPhase||progressSyncDiagnostic.phase});
+  updateProgressSyncStatus(kind==='auth'?'login':state.blocked?'persistent':'pending');
+  if(kind!=='auth'&&!state.blocked)scheduleProgressRetry();
+}
+
 async function refreshProgressSession(){
   try{
     const {data,error}=await withTimeout(sbClient.auth.refreshSession(),8000);
@@ -10630,7 +10848,7 @@ async function readRemoteStudentProgress(studentId,attempt=null){
       return {ok:true,data:Array.isArray(rows)?rows[0]||null:null,error:null,transport:'rest'};
     }catch(error){return {ok:false,data:null,error,transport:'rest'};}
   };
-  let result=await read('xp,notas,unlocked,usage,updated_at');
+  let result=await read('xp,notas,unlocked,usage,xp_awards,updated_at');
   if(result.ok)return result;
   if(progressUsageColumnUnavailable(result.error)){
     const basic=await read('xp,notas,unlocked,updated_at');
@@ -10639,167 +10857,142 @@ async function readRemoteStudentProgress(studentId,attempt=null){
   }
   if(!progressAuthUnavailable(result.error))return result;
   if(!await refreshProgressSession())return {ok:false,data:null,error:progressLoginRequiredError()};
-  result=await read('xp,notas,unlocked,usage,updated_at');
+  result=await read('xp,notas,unlocked,usage,xp_awards,updated_at');
   if(result.ok)return result;
   if(progressUsageColumnUnavailable(result.error))return read('xp,notas,unlocked,updated_at');
   return result;
 }
 
 async function writeRemoteStudentProgress(payload,attempt=null){
-  const write=async value=>{
-    try{
-      await requestProgressRest('student_progress?on_conflict=id',{
-        method:'POST',
-        headers:{'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},
-        body:JSON.stringify(value)
-      },10000,attempt);
-      return {data:null,error:null};
+  const allRecords=await progressRecoveryRecords(payload.id,normalizeProgressSnapshot(payload));
+  const state=readProgressRecoveryState(payload.id);
+  const records=allRecords.filter(r=>!(state.rejectedIds||[]).includes(r.id));
+  const write=async()=>{
+    const result=await sendProgressRecords(payload.id,records,attempt);
+    if(!canContinueProgressAttempt(attempt,payload.id))throw progressRequestError('Conta alterada.','PROGRESS_CANCELLED');
+    const latest=readProgressRecoveryState(payload.id);
+    latest.rejectedIds=[...new Set([...(latest.rejectedIds||[]),...result.rejected])].filter(id=>allRecords.some(r=>r.id===id));
+    storeProgressRecoveryState(payload.id,latest);
+    if(latest.rejectedIds.length||result.pending.length){
+      const error=progressRequestError('Há registros não confirmados; cópia completa preservada.','PROGRESS_RECORD_REJECTED');
+      error.status=422;return {data:result.progress,error};
     }
-    catch(error){return {data:null,error};}
+    return {data:result.progress,error:null};
   };
-  let result=await write(payload);
-  if(!result.error)return result;
-  if(progressUsageColumnUnavailable(result.error)){
-    const basic={...payload};delete basic.usage;
-    return write(basic);
+  try{return await write();}catch(error){
+    if(progressAuthUnavailable(error)&&await refreshProgressSession()){
+      try{return await write();}catch(retryError){return {data:null,error:retryError};}
+    }
+    return {data:null,error};
   }
-  if(!progressAuthUnavailable(result.error))return result;
-  if(!await refreshProgressSession())return {data:null,error:progressLoginRequiredError()};
-  result=await write(payload);
-  if(result.error&&progressUsageColumnUnavailable(result.error)){
-    const basic={...payload};delete basic.usage;
-    return write(basic);
-  }
-  return result;
 }
 
+
 function saveStudentProgress(options={}){
+  const requestedId=currentUser?.id;
   if(currentUser?.id&&currentUser.role!=='teacher'){
-    storePendingProgress(mergeProgressSnapshots(currentUser,readPendingProgress(currentUser.id)),currentUser.id);
+    const local=mergeProgressSnapshots(currentUser,readPendingProgress(currentUser.id));
+    local.xp+=Math.max(0,Number(options.xpGain)||0);
+    applyProgressSnapshot(local,requestedId);
+    storePendingProgress(local,requestedId);
     updateProgressSyncStatus('saving');
   }
   const task=async()=>{
-    const attempt=createProgressAttempt(currentUser?.id||'');
-    try{return await runProgressAttempt(()=>saveStudentProgressNow({...options,attempt}),attempt);}
+    if(currentUser?.id!==requestedId)return false;
+    const attempt=createProgressAttempt(requestedId||'');
+    try{
+      const state=readProgressRecoveryState(requestedId);
+      if(state.blocked||state.lastKind==='auth'||Date.now()<state.nextAt){
+        updateProgressSyncStatus(state.lastKind==='auth'?'login':state.blocked?'persistent':'pending');
+        if(!state.blocked&&state.lastKind!=='auth')scheduleProgressRetry();
+        return false;
+      }
+      const saved=await runProgressAttempt(()=>saveStudentProgressNow({...options,xpGain:0,attempt}),attempt);
+      if(saved){
+        const recovered=Boolean(state.failures||state.packet);
+        if(!readPendingProgress(requestedId)){
+          storeProgressRecoveryState(requestedId,{failures:0,nextAt:0,blocked:false});
+          if(recovered)updateProgressSyncStatus('recovered');
+        }
+        return true;
+      }
+      const error=progressSyncDiagnostic.lastFailure||progressRequestError('Envio não confirmado.','NETWORK_ERROR');
+      throw error;
+    }
     catch(error){
       cancelProgressAttempt(attempt);
-      console.warn('A tentativa de sincronização terminou com erro:',error);
-      recordProgressSyncPhase('failed',{error});
-      if(progressAuthUnavailable(error)){
-        if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
-        updateProgressSyncStatus('login');
-      }else{
-        updateProgressSyncStatus('pending');
-        scheduleProgressRetry();
-      }
+      if(currentUser?.id!==requestedId)return false;
+      try{
+        deferProgressRecovery(requestedId,error);
+        const updated=readProgressRecoveryState(requestedId);
+        if(updated.failures>=2&&!updated.blocked&&!updated.recoveryBlocked&&updated.lastKind!=='auth'){
+          const recoveryAttempt=createProgressAttempt(requestedId);
+          try{if(await runProgressAttempt(()=>recoverStudentProgress(requestedId,recoveryAttempt),recoveryAttempt))return true;}
+          catch(recoveryError){
+            cancelProgressAttempt(recoveryAttempt);
+            const kind=progressFailureKind(recoveryError);
+            if(['permission','validation'].includes(kind)){
+              const latest=readProgressRecoveryState(requestedId);
+              latest.recoveryBlocked=true;
+              storeProgressRecoveryState(requestedId,latest);
+              recordProgressSyncPhase('recovery-blocked',{error:recoveryError});
+              updateProgressSyncStatus('persistent');
+            }else deferProgressRecovery(requestedId,recoveryError);
+          }
+          if(progressSyncState==='recovering')updateProgressSyncStatus('pending');
+        }
+      }catch(storageError){updateProgressSyncStatus('persistent');}
       return false;
     }
   };
-  const result=progressSaveChain.then(task,task);
+  const lockedTask=()=>navigator.locks?.request
+    ? navigator.locks.request(`ap-progress-${requestedId}`,{ifAvailable:true},lock=>{
+      if(lock)return task();
+      updateProgressSyncStatus('pending');scheduleProgressRetry();return false;
+    })
+    : task();
+  const result=progressSaveChain.then(lockedTask,lockedTask);
   progressSaveChain=result.catch(()=>false);
   return result;
 }
 
 async function saveStudentProgressNow({xpGain=0,silent=false,attempt=null}={}){
   if(!currentUser||currentUser.role==='teacher'||!currentUser.id)return true;
-  if(!sbClient)sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   const studentId=currentUser.id;
   if(!canContinueProgressAttempt(attempt,studentId))return false;
-  const studentName=currentUser.name||'Aluno';
-  const studentRoom=currentUser.turma||'';
-
-  const localBefore=mergeProgressSnapshots(currentUser,readPendingProgress(studentId));
-  const safeXpGain=Math.max(0,Number(xpGain)||0);
-  const provisional={...localBefore,xp:localBefore.xp+safeXpGain};
-  applyProgressSnapshot(provisional,studentId);
-  let pendingRevision=storePendingProgress(provisional,studentId);
-
-  recordProgressSyncPhase('reading',{attempt});
-  const remoteResult=await readRemoteStudentProgress(studentId,attempt);
-  if(!canContinueProgressAttempt(attempt,studentId))return false;
-  const remote=remoteResult.data;
-  const remoteReadOk=remoteResult.ok;
-  if(!remoteReadOk)console.warn('Não foi possível consultar o progresso mais recente:',remoteResult.error);
-
-  recordProgressSyncPhase('merging',{attempt,...(remoteReadOk?{serverXp:Number(remote?.xp||0),serverAt:remote?.updated_at||''}:{})});
-  const merged=mergeProgressSnapshots(provisional,remote);
-  merged.xp=Math.max(localBefore.xp,Number(remote?.xp||0))+safeXpGain;
+  const snapshot=mergeProgressSnapshots(currentUser,readPendingProgress(studentId));
+  snapshot.xp+=Math.max(0,Number(xpGain)||0);
   if(!studentUsageSessionApplied){
     const now=new Date().toISOString();
-    merged.usage=appendStudentUsageEvent(merged.usage,{type:'session',label:'Entrada no aplicativo',status:'started',at:now});
-    merged.usage.sessionCount++;
-    merged.usage.firstSeenAt=merged.usage.firstSeenAt||now;
-    merged.usage.lastSeenAt=now;
-    studentUsageSessionApplied=true;
+    snapshot.usage=appendStudentUsageEvent(snapshot.usage,{type:'session',label:'Entrada no aplicativo',status:'started',at:now});
+    snapshot.usage.sessionCount++;
+    snapshot.usage.firstSeenAt=snapshot.usage.firstSeenAt||now;
+    snapshot.usage.lastSeenAt=now;studentUsageSessionApplied=true;
   }
-  applyProgressSnapshot(merged,studentId);
-  pendingRevision=storePendingProgress(merged,studentId);
-
-  // Se outra conta entrou enquanto a gravação estava em andamento, preserva a
-  // cópia local do aluno anterior sem correr o risco de gravá-la na conta nova.
-  if(!canContinueProgressAttempt(attempt,studentId))return false;
-
-  const payload={
-    id:studentId,
-    name:studentName,
-    turma:studentRoom,
-    xp:merged.xp,
-    notas:merged.notas,
-    unlocked:merged.unlockedFases,
-    usage:merged.usage,
-    updated_at:new Date().toISOString()
-  };
-
+  applyProgressSnapshot(snapshot,studentId);
+  const revision=storePendingProgress(snapshot,studentId);
   recordProgressSyncPhase('writing',{attempt});
-  const [tableResult,authResult]=await Promise.allSettled([
-    remoteReadOk
-      ? writeRemoteStudentProgress(payload,attempt)
-      : Promise.reject(new Error('Gravação adiada até confirmar o progresso existente na nuvem.')),
-    withTimeout(sbClient.auth.updateUser({data:{
-      xp:merged.xp,
-      notas:merged.notas,
-      xpAwards:merged.xpAwards,
-      unlockedFases:merged.unlockedFases,
-      usage:merged.usage
-    }}),7000)
-  ]);
-  const tableOk=tableResult.status==='fulfilled'&&!tableResult.value.error;
-  const authOk=authResult.status==='fulfilled'&&!authResult.value.error;
-  const tableError=tableResult.status==='fulfilled'?tableResult.value.error:tableResult.reason;
-  const authError=authResult.status==='fulfilled'?authResult.value.error:authResult.reason;
-  const needsLogin=progressAuthUnavailable(remoteResult.error)||progressAuthUnavailable(tableError)||progressAuthUnavailable(authError);
+  const result=await writeRemoteStudentProgress({id:studentId,...snapshot},attempt);
   if(!canContinueProgressAttempt(attempt,studentId))return false;
-
-  // A tabela student_progress é a fonte do painel da professora. A cópia nos
-  // metadados da conta ajuda na próxima abertura, mas não pode fazer um
-  // progresso já gravado aparecer como se estivesse sem internet.
-  if(tableOk){
-    const pendingCleared=clearPendingProgress(studentId,pendingRevision);
-    recordProgressSyncPhase('saved',{attempt,confirmedAt:new Date().toISOString(),serverXp:payload.xp,serverAt:payload.updated_at});
-    progressRetryAttempts=0;
-    if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
-    if(pendingCleared)updateProgressSyncStatus('saved');
-    else{
-      updateProgressSyncStatus('pending');
-      scheduleProgressRetry();
-    }
-    if(!authOk){
-      console.warn('Progresso salvo no painel; a cópia no perfil será atualizada em uma próxima tentativa:',authResult.status==='fulfilled'?authResult.value.error:authResult.reason);
-    }
-  }else{
-    recordProgressSyncPhase('failed',{error:remoteReadOk?tableError:remoteResult.error,failedPhase:remoteReadOk?'writing':'reading'});
-    console.warn('Progresso aguardando nova tentativa:',{
-      tabela:tableOk?'ok':tableResult.status==='fulfilled'?tableResult.value.error:tableResult.reason,
-      conta:authOk?'ok':authResult.status==='fulfilled'?authResult.value.error:authResult.reason
-    });
-    updateProgressSyncStatus(needsLogin?'login':'pending');
-    if(needsLogin){
-      if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
-    }else scheduleProgressRetry();
-    if(!silent)alert('Seu progresso ficou salvo neste aparelho e será enviado quando a conexão melhorar.');
+  if(result.data)applyProgressSnapshot(mergeProgressSnapshots(currentUser,readPendingProgress(studentId),result.data),studentId);
+  if(result.error){
+    recordProgressSyncPhase('failed',{error:result.error,failedPhase:'writing'});
+    progressSyncDiagnostic.lastFailure={status:result.error.status,code:result.error.code,name:result.error.name,message:progressSyncErrorSummary(result.error)};
+    updateProgressSyncStatus(progressAuthUnavailable(result.error)?'login':'pending');
+    return false;
   }
-  return tableOk;
+  const cleared=clearPendingProgress(studentId,revision);
+  recordProgressSyncPhase('saved',{attempt,confirmedAt:new Date().toISOString(),serverXp:result.data.xp});
+  progressRetryAttempts=0;
+  if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
+  updateProgressSyncStatus(cleared?'saved':'pending');
+  if(!cleared)scheduleProgressRetry();
+  // Metadata remains a non-authoritative compatibility cache, never a commit receipt.
+  try{await runProgressRequest(()=>sbClient.auth.updateUser({data:normalizeProgressSnapshot(currentUser)}),2500,attempt);}
+  catch(error){console.warn('Cópia do perfil aguardando atualização:',error);}
+  return true;
 }
+
 
 function retryPendingStudentProgress(){
   if(currentUser?.role==='student'&&readPendingProgress(currentUser.id)&&progressSyncState!=='saving'){
@@ -10932,6 +11125,7 @@ async function saveStudentControlsCloud(){
 }
 
 async function adminSaveStudentEdit(){
+  if(!isTeacherAdmin()||!currentUser?.id)return;
   const studentId=document.getElementById('student-admin-id').value;
   const name=document.getElementById('student-admin-name').value.trim();
   const turma=document.getElementById('student-admin-room').value;
@@ -10951,14 +11145,16 @@ async function adminSaveStudentEdit(){
     button.innerHTML='<i class="fa-solid fa-check"></i> Salvar';
     return;
   }
+  let profileSaved=true;
   try{
-    await withTimeout(sbClient.from('student_progress').update({name,turma}).eq('id',studentId),7000);
-  }catch(error){console.warn('O cadastro será sincronizado quando o aluno entrar novamente:',error);}
+    const {error}=await withTimeout(sbClient.from('student_progress').update({name,turma}).eq('id',studentId),7000);
+    if(error)throw error;
+  }catch(error){profileSaved=false;console.warn('O cadastro será sincronizado quando o aluno entrar novamente:',error);}
   closeAdminStudentEditor();
   button.disabled=false;
   button.innerHTML='<i class="fa-solid fa-check"></i> Salvar';
   await renderDashboard();
-  alert('Dados do aluno atualizados. O progresso foi mantido.');
+  alert(profileSaved?'Dados do aluno atualizados. O progresso foi mantido.':'O controle foi salvo, mas o cadastro no painel ainda não foi confirmado. Atualize o painel e tente novamente.');
 }
 
 async function adminSetStudentAccess(studentId,allowAccess){
@@ -10986,6 +11182,7 @@ async function adminSetStudentAccess(studentId,allowAccess){
 }
 
 async function renderDashboard(){
+  if(!isTeacherAdmin()||!currentUser?.id)return;
   const cont=document.getElementById('dashboard-content');
   const summary=document.getElementById('dashboard-summary');
   cont.innerHTML='<div class="text-muted text-center" style="padding:24px">Carregando dados dos alunos...</div>';
