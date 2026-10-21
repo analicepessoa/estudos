@@ -1,11 +1,21 @@
 // Service Worker — Analice Pessoa · English
 // Troque a versão (v1, v2...) sempre que publicar uma atualização do app,
 // para forçar os celulares a baixarem a versão nova.
-const CACHE = 'ap-english-v127';
+const CACHE = 'ap-english-v128';
 
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'GET_PORTAL_VERSION') {
     event.ports?.[0]?.postMessage({ version: CACHE });
+  }
+  if (event.data?.type === 'ACTIVATE_PORTAL_UPDATE') {
+    // An older open tab may still have the unsafe controllerchange reload handler.
+    // Wait until only the requesting portal window remains before taking control.
+    event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const portalClients = clients.filter((client) => client.url.startsWith(self.registration.scope));
+      if (portalClients.length <= 1 && portalClients.some((client) => client.id === event.source?.id)) {
+        return self.skipWaiting();
+      }
+    }));
   }
 });
 
@@ -78,7 +88,7 @@ const APP_SHELL = [
 // Instala e guarda o esqueleto do app.
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())
+    caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL))
   );
 });
 
@@ -86,7 +96,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => /^ap-english-v\d+$/.test(k) && k !== CACHE).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });

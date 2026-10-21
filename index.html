@@ -3294,7 +3294,7 @@ let progressRetryTimer = null;
 let progressRetryAttempts = 0;
 let progressAttemptSequence = 0;
 let progressSyncState = 'saved';
-const PROGRESS_SYNC_RELEASE = '20261021.6';
+const PROGRESS_SYNC_RELEASE = '20261021.7';
 let progressSyncDiagnostic = {phase:'idle',at:'',error:'',serverXp:null,serverAt:'',confirmedAt:''};
 let progressSyncWorkerVersion = '';
 let dailyWordCurrent = null;
@@ -12826,31 +12826,79 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
     if(event.key === 'Escape') closeInstallHelp();
   });
 
-  // Registra o app instalável (PWA). Funciona apenas em hospedagem HTTPS.
+  // Atualiza o PWA somente depois de preservar o progresso local e sair de atividades.
   if ('serviceWorker' in navigator) {
-    let reloadingForAppUpdate = false;
-    function reloadForPortalUpdate(){
-      if(reloadingForAppUpdate) return;
-      reloadingForAppUpdate = true;
-      window.location.reload();
+    let portalRegistration=null,portalChecking=false,portalReloadPending=false;
+    let portalReloading=false,portalUpdateTimer=null,portalLastCheck=-Infinity;
+    let portalHadController=Boolean(navigator.serviceWorker.controller);
+    const portalVisible=id=>{
+      const el=document.getElementById(id);
+      return Boolean(el&&!el.classList.contains('hidden')&&el.style.display!=='none');
+    };
+    function portalCanApplyUpdate(){
+      if(document.visibilityState!=='visible'||!navigator.onLine)return false;
+      if(currentUser?.role==='teacher'||['saving','recovering'].includes(progressSyncState))return false;
+      if(['view-loading','view-auth','view-conversation','game-overlay','result-overlay',
+        'reading-overlay','view-music-player','book-audio-overlay'].some(portalVisible))return false;
+      if(window.BodyParts?.active()||window.isConversationInProgress?.()||window.speechSynthesis?.speaking)return false;
+      if(document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]'))return false;
+      return !Array.from(document.querySelectorAll('audio,video')).some(media=>!media.paused&&!media.ended);
     }
-
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if(window.BodyParts?.active())return;
-      // Do not replace the page while a student is in an active conversation.
-      // The fresh version will be used on the next normal visit or refresh.
-      if(typeof window.isConversationInProgress === 'function' && window.isConversationInProgress()){
-        console.info('Atualização pronta; ela será aplicada depois da conversa.');
-        return;
+    function portalCheckpointProgress(){
+      if(currentUser?.role!=='student'||!currentUser.id)return true;
+      try{
+        const id=currentUser.id;
+        const snapshot=mergeProgressSnapshots(currentUser,readPendingProgress(id));
+        if(!storePendingProgress(snapshot,id))return false;
+        return JSON.stringify(normalizeProgressSnapshot(readPendingProgress(id)))===
+          JSON.stringify(normalizeProgressSnapshot(snapshot));
+      }catch(error){console.warn('Atualização adiada: progresso local ainda não confirmado.',error);return false;}
+    }
+    function portalResumeProgress(){
+      if(document.visibilityState==='visible'&&navigator.onLine&&progressSyncState!=='recovering'){
+        retryPendingStudentProgress();
       }
-      reloadForPortalUpdate();
+    }
+    function portalApplyWhenSafe(){
+      if(portalUpdateTimer){clearTimeout(portalUpdateTimer);portalUpdateTimer=null;}
+      if(portalReloading||(!portalReloadPending&&!portalRegistration?.waiting))return;
+      if(portalCanApplyUpdate()&&portalCheckpointProgress()){
+        if(portalReloadPending){portalReloading=true;window.location.reload();return;}
+        portalRegistration.waiting.postMessage({type:'ACTIVATE_PORTAL_UPDATE'});
+      }
+      if(document.visibilityState==='visible')portalUpdateTimer=setTimeout(portalApplyWhenSafe,1500);
+    }
+    async function portalCheckForUpdate(){
+      if(portalChecking||!navigator.onLine||document.visibilityState!=='visible')return;
+      if(Date.now()-portalLastCheck<5000)return;
+      portalLastCheck=Date.now();portalChecking=true;
+      try{
+        if(!portalRegistration){
+          portalRegistration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
+          portalRegistration.addEventListener('updatefound',()=>{
+            portalRegistration.installing?.addEventListener('statechange',portalApplyWhenSafe);
+          });
+        }
+        await portalRegistration.update();
+        portalApplyWhenSafe();
+      }catch(error){console.warn('Atualização do portal aguardando conexão:',error);}
+      finally{portalChecking=false;}
+    }
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(!portalHadController){portalHadController=true;portalResumeProgress();return;}
+      portalReloadPending=true;portalApplyWhenSafe();
     });
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(() => console.log('✅ App instalável pronto.'))
-        .catch((e) => console.warn('Service worker não registrado:', e));
+    function portalOnReturn(){portalResumeProgress();portalCheckForUpdate();portalApplyWhenSafe();}
+    window.addEventListener('load',portalOnReturn);
+    window.addEventListener('pageshow',portalOnReturn);
+    window.addEventListener('focus',portalOnReturn);
+    window.addEventListener('online',portalOnReturn);
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState==='visible')portalOnReturn();
+      else if(portalUpdateTimer){clearTimeout(portalUpdateTimer);portalUpdateTimer=null;}
     });
   }
+
 </script>
 <script src="./assets/conversation-live.js"></script>
 <script src="./assets/body-parts/core.js?v=p3-stars-1"></script>
