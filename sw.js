@@ -1,7 +1,13 @@
 // Service Worker — Analice Pessoa · English
 // Troque a versão (v1, v2...) sempre que publicar uma atualização do app,
 // para forçar os celulares a baixarem a versão nova.
-const CACHE = 'ap-english-v121';
+const CACHE = 'ap-english-v122';
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'GET_PORTAL_VERSION') {
+    event.ports?.[0]?.postMessage({ version: CACHE });
+  }
+});
 
 // Arquivos do "esqueleto" do app que ficam guardados para abrir offline.
 const APP_SHELL = [

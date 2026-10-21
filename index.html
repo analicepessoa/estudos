@@ -2604,7 +2604,7 @@ select.input { appearance: none; cursor: pointer; }
     <div class="app-logo"><span style="color:var(--orange)">All</span><span style="color:var(--ink)">Net</span> <span style="font-size:13px;font-weight:600;color:var(--slate)">Inglês</span></div>
     <div style="display:flex;align-items:center;gap:10px">
       <button id="btn-back-admin" onclick="exitStudentPreview()" class="btn btn-ghost btn-sm hidden"><i class="fa-solid fa-arrow-left"></i> Admin</button>
-      <button id="progress-sync-status" type="button" class="progress-sync-status saved" title="Progresso salvo" onclick="manualRetryStudentProgress()" disabled><i class="fa-solid fa-cloud-check"></i><span>Salvo</span></button>
+      <button id="progress-sync-status" type="button" class="progress-sync-status saved" title="Ver salvamento e backup" onclick="openProgressSyncDetails()"><i class="fa-solid fa-cloud-check"></i><span>Salvo</span></button>
       <div class="badge" style="background:linear-gradient(135deg,var(--orange),var(--orange-light));color:white;border:none;box-shadow:0 2px 8px rgba(245,124,0,.2);padding:5px 14px"><i class="fa-solid fa-bolt"></i> <span id="student-xp">0</span> XP</div>
       <button onclick="doLogout()" class="btn-icon" style="background:none;border:none;cursor:pointer;color:var(--slate);font-size:16px;transition:color .2s" onmouseover="this.style.color='var(--rose)'" onmouseout="this.style.color='var(--slate)'"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
@@ -3293,6 +3293,9 @@ let progressSaveChain = Promise.resolve();
 let progressRetryTimer = null;
 let progressRetryAttempts = 0;
 let progressSyncState = 'saved';
+const PROGRESS_SYNC_RELEASE = '20261021.1';
+let progressSyncDiagnostic = {phase:'idle',at:'',error:'',serverXp:null,serverAt:'',confirmedAt:''};
+let progressSyncWorkerVersion = '';
 let dailyWordCurrent = null;
 let dailyWordCache = {key:'',word:null};
 const dailyWordListened = new Set();
@@ -6858,6 +6861,11 @@ async function setupUserSession(user){
   },30000);
   currentUser={id:user.id,email:user.email,role:'student',name:control.name||m.name||"Aluno",
     turma:control.turma||m.turma,xp:m.xp||0,unlockedFases:m.unlockedFases||["fase_1"],notas:m.notas||{},xpAwards:m.xpAwards||{},usage:normalizeStudentUsage(m.usage)};
+  progressSyncDiagnostic={phase:'idle',at:'',error:'',serverXp:null,serverAt:'',confirmedAt:''};
+  try{
+    const previous=JSON.parse(localStorage.getItem(`ap_progress_sync_diagnostic_${user.id}`)||'null');
+    if(previous&&typeof previous==='object')progressSyncDiagnostic={...progressSyncDiagnostic,...previous};
+  }catch(e){}
   studentUsageSessionApplied=false;
   startStudentUsageTracking();
   recordStudentUsageArea('inicio',false);
@@ -10224,7 +10232,7 @@ function updateProgressSyncStatus(state='saved'){
   if(!element)return;
   const settings={
     saved:{icon:'cloud-check',text:'Salvo',title:'Progresso salvo na nuvem'},
-    saving:{icon:'rotate fa-spin',text:'Salvando...',title:'Enviando o progresso'},
+    saving:{icon:'rotate fa-spin',text:'Salvando... · detalhes',title:'Ver andamento do salvamento e fazer backup'},
     pending:{icon:'cloud-arrow-up',text:'Salvo no aparelho · enviar',title:'O progresso está seguro neste aparelho. Toque para tentar enviar agora.'},
     login:{icon:'right-to-bracket',text:'Entrar novamente para enviar',title:'Sua sessão terminou. O progresso está seguro neste aparelho; toque para entrar novamente.'}
   };
@@ -10232,8 +10240,118 @@ function updateProgressSyncStatus(state='saved'){
   element.className=`progress-sync-status ${['saved','pending','login'].includes(state)?state:''}`;
   element.innerHTML=`<i class="fa-solid fa-${current.icon}"></i><span>${current.text}</span>`;
   element.title=current.title;
-  element.disabled=!['pending','login'].includes(state);
+  element.disabled=false;
   element.setAttribute('aria-label',current.title);
+  renderProgressSyncDetails();
+}
+
+function progressSyncErrorSummary(error){
+  if(!error)return '';
+  return [error.code||error.name||'',String(error.message||error.details||error||'')]
+    .filter(Boolean).join(': ').replace(/https?:\/\/\S+/g,'[endereço]')
+    .replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g,'[sessão]').slice(0,350);
+}
+
+function recordProgressSyncPhase(phase,{error=null,...details}={}){
+  const failedPhase=phase==='failed'?(details.failedPhase||progressSyncDiagnostic.phase):'';
+  progressSyncDiagnostic={...progressSyncDiagnostic,...details,phase,failedPhase,at:new Date().toISOString(),error:progressSyncErrorSummary(error)};
+  if(currentUser?.id){
+    try{localStorage.setItem(`ap_progress_sync_diagnostic_${currentUser.id}`,JSON.stringify(progressSyncDiagnostic));}catch(e){}
+  }
+  renderProgressSyncDetails();
+}
+
+function progressSyncDetailsText(){
+  const snapshot=mergeProgressSnapshots(currentUser,readPendingProgress(currentUser?.id));
+  const info=progressSyncDiagnostic;
+  const labels={idle:'Aguardando envio',queued:'Envio na fila',reading:'Consultando o progresso na nuvem',merging:'Reunindo progresso do aparelho e da nuvem',writing:'Enviando para o painel da professora',saved:'Painel confirmou o recebimento',failed:'Envio interrompido'};
+  const date=value=>value?new Date(value).toLocaleString('pt-BR'):'Ainda não confirmado';
+  return [
+    `Verificação do salvamento · ${PROGRESS_SYNC_RELEASE}`,
+    `Atualização do app: ${progressSyncWorkerVersion||'verificando...'}`,
+    `Etapa: ${labels[info.phase]||info.phase}`,
+    info.phase==='failed'?`Parou em: ${labels[info.failedPhase]||info.failedPhase||'preparação do envio'}`:'',
+    `Horário da etapa: ${date(info.at)}`,
+    `Neste aparelho: ${snapshot.xp} XP · ${Object.keys(snapshot.notas).length} notas · ${snapshot.unlockedFases.length} registros`,
+    `Última consulta ao painel: ${info.serverXp===null?'ainda não concluída':`${info.serverXp} XP · atualizado em ${date(info.serverAt)}`}`,
+    `Último envio confirmado: ${date(info.confirmedAt)}`,
+    `Conexão informada pelo celular: ${navigator.onLine?'conectado':'sem conexão'}`,
+    info.error?`Motivo registrado: ${info.error}`:''
+  ].filter(Boolean).join('\n');
+}
+
+function renderProgressSyncDetails(){
+  const text=document.getElementById('progress-sync-details-text');
+  if(!text)return;
+  text.textContent=progressSyncDetailsText();
+  const retry=document.getElementById('progress-sync-details-retry');
+  if(retry){retry.disabled=progressSyncState==='saving';retry.textContent=progressSyncState==='login'?'Entrar novamente':'Tentar enviar agora';}
+}
+
+async function openProgressSyncDetails(){
+  if(currentUser?.role!=='student')return;
+  if(!document.getElementById('progress-sync-details')){
+    const overlay=document.createElement('div');
+    overlay.id='progress-sync-details';
+    overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Salvamento do progresso');
+    overlay.style.cssText='position:fixed;inset:0;z-index:2500;background:rgba(15,23,42,.6);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto';
+    overlay.innerHTML=`<div class="card card-body" style="width:100%;max-width:480px;max-height:90vh;overflow:auto;background:white;padding:22px">
+      <h3 style="margin-bottom:12px">Seu progresso</h3>
+      <p style="font-size:13px;margin-bottom:14px">Se o envio estiver pendente, baixe uma cópia antes de apagar dados ou reinstalar o aplicativo.</p>
+      <pre id="progress-sync-details-text" style="white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.7 Inter,sans-serif"></pre>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px">
+        <button type="button" class="btn btn-primary btn-sm" id="progress-sync-details-retry" onclick="retryFromProgressSyncDetails()">Tentar enviar agora</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="downloadStudentProgressBackup()">Baixar cópia do progresso</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="copyProgressSyncDetails(this)">Copiar diagnóstico</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('progress-sync-details').remove()">Fechar</button>
+      </div></div>`;
+    document.body.appendChild(overlay);
+  }
+  renderProgressSyncDetails();
+  if(navigator.serviceWorker?.controller&&typeof MessageChannel!=='undefined'){
+    const channel=new MessageChannel();
+    const timer=setTimeout(()=>{channel.port1.close();progressSyncWorkerVersion='versão anterior ou sem resposta';renderProgressSyncDetails();},1500);
+    channel.port1.onmessage=event=>{
+      clearTimeout(timer);channel.port1.close();
+      progressSyncWorkerVersion=String(event.data?.version||'não identificada');renderProgressSyncDetails();
+    };
+    navigator.serviceWorker.controller.postMessage({type:'GET_PORTAL_VERSION'},[channel.port2]);
+  }else{progressSyncWorkerVersion='aberto sem cache instalado';renderProgressSyncDetails();}
+}
+
+async function copyProgressSyncDetails(button){
+  try{await navigator.clipboard.writeText(progressSyncDetailsText());button.textContent='Diagnóstico copiado';}
+  catch(e){alert(progressSyncDetailsText());}
+}
+
+function downloadStudentProgressBackup(){
+  if(currentUser?.role!=='student'||!currentUser.id)return;
+  const backup={format:'ap-english-student-progress',version:1,exportedAt:new Date().toISOString(),student:{id:currentUser.id,name:currentUser.name,turma:currentUser.turma},progress:mergeProgressSnapshots(currentUser,readPendingProgress(currentUser.id))};
+  const url=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}));
+  const link=document.createElement('a');link.href=url;link.download=`progresso-ingles-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+
+function retryFromProgressSyncDetails(){
+  if(progressSyncState==='saving')return;
+  if(progressSyncState==='login'){
+    document.getElementById('progress-sync-details')?.remove();manualRetryStudentProgress();return;
+  }
+  saveStudentProgress({silent:true});
+}
+
+async function runProgressQuery(query,timeoutMs){
+  const controller=new AbortController();
+  let timer;
+  try{
+    return await Promise.race([
+      query.abortSignal(controller.signal),
+      new Promise((_,reject)=>{timer=setTimeout(()=>{
+        const error=new Error('O servidor não confirmou esta etapa dentro do prazo. A cópia do aparelho foi mantida.');
+        error.code='PROGRESS_TIMEOUT';reject(error);controller.abort();
+      },timeoutMs);})
+    ]);
+  }finally{clearTimeout(timer);}
 }
 
 function scheduleProgressRetry(){
@@ -10284,28 +10402,28 @@ async function refreshProgressSession(){
 async function readRemoteStudentProgress(studentId){
   const read=async fields=>{
     try{
-      const response=await withTimeout(sbClient.from('student_progress').select(fields).eq('id',studentId).maybeSingle(),10000);
+      const response=await runProgressQuery(sbClient.from('student_progress').select(fields).eq('id',studentId).maybeSingle(),10000);
       return response.error?{ok:false,data:null,error:response.error}:{ok:true,data:response.data,error:null};
     }catch(error){return {ok:false,data:null,error};}
   };
-  let result=await read('xp,notas,unlocked,usage');
+  let result=await read('xp,notas,unlocked,usage,updated_at');
   if(result.ok)return result;
   if(progressUsageColumnUnavailable(result.error)){
-    const basic=await read('xp,notas,unlocked');
+    const basic=await read('xp,notas,unlocked,updated_at');
     if(basic.ok)return basic;
     result=basic;
   }
   if(!progressAuthUnavailable(result.error))return result;
   if(!await refreshProgressSession())return {ok:false,data:null,error:progressLoginRequiredError()};
-  result=await read('xp,notas,unlocked,usage');
+  result=await read('xp,notas,unlocked,usage,updated_at');
   if(result.ok)return result;
-  if(progressUsageColumnUnavailable(result.error))return read('xp,notas,unlocked');
+  if(progressUsageColumnUnavailable(result.error))return read('xp,notas,unlocked,updated_at');
   return result;
 }
 
 async function writeRemoteStudentProgress(payload){
   const write=async value=>{
-    try{return await withTimeout(sbClient.from('student_progress').upsert(value),12000);}
+    try{return await runProgressQuery(sbClient.from('student_progress').upsert(value),12000);}
     catch(error){return {data:null,error};}
   };
   let result=await write(payload);
@@ -10333,6 +10451,7 @@ function saveStudentProgress(options={}){
     try{return await saveStudentProgressNow(options);}
     catch(error){
       console.warn('A tentativa de sincronização terminou com erro:',error);
+      recordProgressSyncPhase('failed',{error});
       if(progressAuthUnavailable(error)){
         if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
         updateProgressSyncStatus('login');
@@ -10361,11 +10480,13 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
   applyProgressSnapshot(provisional,studentId);
   storePendingProgress(provisional,studentId);
 
+  recordProgressSyncPhase('reading');
   const remoteResult=await readRemoteStudentProgress(studentId);
   const remote=remoteResult.data;
   const remoteReadOk=remoteResult.ok;
   if(!remoteReadOk)console.warn('Não foi possível consultar o progresso mais recente:',remoteResult.error);
 
+  recordProgressSyncPhase('merging',remoteReadOk?{serverXp:Number(remote?.xp||0),serverAt:remote?.updated_at||''}:{});
   const merged=mergeProgressSnapshots(provisional,remote);
   merged.xp=Math.max(localBefore.xp,Number(remote?.xp||0))+safeXpGain;
   if(!studentUsageSessionApplied){
@@ -10394,6 +10515,7 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
     updated_at:new Date().toISOString()
   };
 
+  recordProgressSyncPhase('writing');
   const [tableResult,authResult]=await Promise.allSettled([
     remoteReadOk
       ? writeRemoteStudentProgress(payload)
@@ -10416,6 +10538,7 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
   // metadados da conta ajuda na próxima abertura, mas não pode fazer um
   // progresso já gravado aparecer como se estivesse sem internet.
   if(tableOk){
+    recordProgressSyncPhase('saved',{confirmedAt:new Date().toISOString(),serverXp:payload.xp,serverAt:payload.updated_at});
     clearPendingProgress(studentId);
     progressRetryAttempts=0;
     if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
@@ -10424,6 +10547,7 @@ async function saveStudentProgressNow({xpGain=0,silent=false}={}){
       console.warn('Progresso salvo no painel; a cópia no perfil será atualizada em uma próxima tentativa:',authResult.status==='fulfilled'?authResult.value.error:authResult.reason);
     }
   }else{
+    recordProgressSyncPhase('failed',{error:remoteReadOk?tableError:remoteResult.error,failedPhase:remoteReadOk?'writing':'reading'});
     console.warn('Progresso aguardando nova tentativa:',{
       tabela:tableOk?'ok':tableResult.status==='fulfilled'?tableResult.value.error:tableResult.reason,
       conta:authOk?'ok':authResult.status==='fulfilled'?authResult.value.error:authResult.reason
