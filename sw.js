@@ -1,7 +1,7 @@
 // Service Worker — Analice Pessoa · English
 // Troque a versão (v1, v2...) sempre que publicar uma atualização do app,
 // para forçar os celulares a baixarem a versão nova.
-const CACHE = 'ap-english-v120';
+const CACHE = 'ap-english-v121';
 
 // Arquivos do "esqueleto" do app que ficam guardados para abrir offline.
 const APP_SHELL = [
@@ -89,7 +89,13 @@ self.addEventListener('activate', (event) => {
 // e usa o cache como reserva quando estiver sem internet.
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+
+  // O cache do PWA deve cuidar apenas dos arquivos do próprio portal.
+  // Requisições externas (como o Supabase) precisam seguir direto para a
+  // rede: interceptá-las pode prender a resposta no Safari/iPhone e deixar o
+  // progresso eternamente em "Salvando...", mesmo com internet disponível.
+  if (req.method !== 'GET' || url.origin !== self.location.origin) return;
 
   event.respondWith(
     fetch(req)
