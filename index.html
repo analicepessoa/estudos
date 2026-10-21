@@ -3294,7 +3294,7 @@ let progressRetryTimer = null;
 let progressRetryAttempts = 0;
 let progressAttemptSequence = 0;
 let progressSyncState = 'saved';
-const PROGRESS_SYNC_RELEASE = '20261021.5';
+const PROGRESS_SYNC_RELEASE = '20261021.6';
 let progressSyncDiagnostic = {phase:'idle',at:'',error:'',serverXp:null,serverAt:'',confirmedAt:''};
 let progressSyncWorkerVersion = '';
 let dailyWordCurrent = null;
@@ -3410,6 +3410,23 @@ function scheduleStudentUsageSave(delay=2500){
   },delay);
 }
 
+// Best-effort Sheets report only: this transport cannot acknowledge persistence.
+// Reuse the existing payload; Supabase remains responsible for progress synchronization.
+function reportCompletedUsageToSheet(type,label,status,detail=''){
+  if(!currentUser?.id||currentUser.role==='teacher'||status!=='completed')return false;
+  if(type!=='audio'&&!(type==='activity'&&/^Body Parts\b/i.test(String(label))))return false;
+  const result=[type==='audio'?'Registro de escuta concluído':'Desafio de Body Parts concluído',String(detail||'')].filter(Boolean).join('\n');
+  try{
+    return Promise.resolve(dispatchReport(label,result)).catch(error=>{
+      console.warn('Não foi possível enviar o relatório complementar:',error);
+      return false;
+    });
+  }catch(error){
+    console.warn('Não foi possível enviar o relatório complementar:',error);
+    return false;
+  }
+}
+
 function recordStudentUsageEvent(type,label,status='opened',detail='',save=true){
   if(!currentUser?.id||currentUser.role==='teacher')return;
   let usage=appendStudentUsageEvent(currentUser.usage,{type,label,status,detail});
@@ -3421,6 +3438,7 @@ function recordStudentUsageEvent(type,label,status='opened',detail='',save=true)
   currentUser.usage=usage;
   studentUsageLastInteraction=Date.now();
   if(save)scheduleStudentUsageSave();
+  reportCompletedUsageToSheet(type,label,status,detail);
 }
 
 function recordStudentUsageArea(area,save=true){
@@ -12413,7 +12431,7 @@ function trackMusicListening(audio){
   const target=duration>0?Math.min(60,duration*.5):60;
   if(!activeMusicState.listenAwarded&&activeMusicState.listenSeconds>=target){
     activeMusicState.listenAwarded=true;
-    recordStudentUsageEvent('audio',`Música: ${activeMusicObj?.title||'atividade musical'}`,'completed','Escuta validada',false);
+    recordStudentUsageEvent('audio',`Música: ${activeMusicObj?.title||'atividade musical'}`,'completed',`${Math.floor(activeMusicState.listenSeconds)} s de escuta; critério: ${Math.round(target)} s`,false);
     awardMusicXp('listen',15,'Escuta da música');
   }
 }

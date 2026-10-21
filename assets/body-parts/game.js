@@ -214,7 +214,7 @@
       bestFunctionsFirst:isNewBest?functionsFirst:(p3Data.bestFunctionsFirst??functionsFirst),
       lastCompletedDate:new Date().toISOString()
     });
-    window.recordStudentUsageEvent?.('activity','Body Parts · Internal Organs','completed',`${totalFirst}/24 na primeira tentativa`,false);
+    window.recordStudentUsageEvent?.('activity','Body Parts · Internal Organs','completed',`${totalFirst}/24 na primeira tentativa; órgãos ${findFirst}/16; funções ${functionsFirst}/8; ${currentStars} estrela(s)`,false);
     Promise.resolve(window.saveStudentProgress?.({silent:true})).then(ok=>{cloudSaved=Boolean(ok);if(screen==='phase3-result')render();});
 
     screen='phase3-result';
@@ -241,7 +241,7 @@
       const rows=records().filter(r=>r.id!==sessionId);
       localStorage.setItem(key(),JSON.stringify([...rows,record].slice(-100)));
       saved=true;saveError=false;
-      window.recordStudentUsageEvent?.('activity',`Body Parts · ${current().title} · ${mode==='listen'?'Ouvir':'Prática'}`,'completed',`${sessionPoints()}/${order.length*10} pontos`,false);
+      window.recordStudentUsageEvent?.('activity',`Body Parts · ${current().title} · ${mode==='listen'?'Ouvir':'Prática'}`,'completed',`${record.points}/${record.total*10} pontos; ${record.first}/${record.total} na primeira tentativa; ${record.assisted} com ajuda`,false);
       Promise.resolve(window.saveStudentProgress?.({silent:true})).then(ok=>{cloudSaved=Boolean(ok);if(screen==='result')render();});
     }catch{saveError=true;}
   }
