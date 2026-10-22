@@ -3295,7 +3295,7 @@ let progressRetryTimer = null;
 let progressRetryAttempts = 0;
 let progressAttemptSequence = 0;
 let progressSyncState = 'saved';
-const PROGRESS_SYNC_RELEASE = '20261021.7';
+const PROGRESS_SYNC_RELEASE = '20261022.1';
 let progressSyncDiagnostic = {phase:'idle',at:'',error:'',serverXp:null,serverAt:'',confirmedAt:''};
 let progressSyncWorkerVersion = '';
 let dailyWordCurrent = null;
@@ -6689,6 +6689,7 @@ window.onload = async () => {
   try {
     if(window.supabase){
       if(!sbClient) sbClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+      installProgressAuthListener();
       const {data:{session}}=await withTimeout(sbClient.auth.getSession());
       if(session){await setupUserSession(session.user);return;}
     }
@@ -6967,6 +6968,7 @@ async function doLogout(){
 }
 
 async function setupUserSession(user){
+  installProgressAuthListener();
   stopStudentUsageTracking();
   if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
   progressRetryAttempts=0;
@@ -10608,6 +10610,7 @@ async function requestProgressRest(path,options={},timeoutMs=8000,attempt=null){
   return runProgressRequest(async signal=>{
     const sessionResult=await sbClient.auth.getSession();
     const session=sessionResult?.data?.session;
+    if(signal.aborted||!canContinueProgressAttempt(attempt,attempt?.studentId))throw progressRequestError('Tentativa encerrada.','PROGRESS_CANCELLED');
     if(sessionResult?.error)throw sessionResult.error;
     if(!session?.access_token||(attempt&&session.user?.id!==attempt.studentId))throw progressLoginRequiredError();
     headers.Authorization=`Bearer ${session.access_token}`;
@@ -10643,7 +10646,10 @@ function progressUsageColumnUnavailable(error){
 
 function progressAuthUnavailable(error){
   const text=progressErrorText(error);
-  return Number(error?.status)===401||error?.name==='AuthSessionMissingError'||error?.code==='PGRST301'||
+  const status=Number(error?.status||0);
+  if(status>=500||status===429||error?.name==='AuthRetryableFetchError'||error?.name==='AbortError'||
+    error?.name==='TypeError'||error?.code?.includes('TIMEOUT')||error?.code==='NETWORK_ERROR')return false;
+  return status===401||error?.name==='AuthSessionMissingError'||error?.code==='PGRST301'||
     text.includes('jwt expired')||text.includes('invalid jwt')||text.includes('refresh token')||
     text.includes('session missing')||text.includes('auth session missing')||text.includes('not authenticated');
 }
@@ -10683,6 +10689,7 @@ function progressFailureKind(error){
   if(status===403)return 'permission';
   if([400,404,405,409,413,422].includes(status)||['RECOVERY_STORAGE','RECOVERY_LIMIT','RECOVERY_INVALID_RESPONSE'].includes(error?.code))return 'validation';
   if(status===429)return 'rate';
+  if(error?.name==='AuthRetryableFetchError')return 'network';
   if(status>=500)return 'server';
   if(error?.code?.includes('TIMEOUT')||error?.name==='AbortError')return 'timeout';
   if(error instanceof TypeError||error?.name==='TypeError'||error?.code==='NETWORK_ERROR')return 'network';
@@ -10789,10 +10796,41 @@ async function sendProgressRecords(id,records,attempt,transport='normal',onRecei
 }
 
 
+let progressAuthListenerClient=null;
+
+function resumeProgressForSession(session){
+  const id=session?.user?.id;
+  if(!session?.access_token||!id||currentUser?.id!==id||currentUser.role!=='student'||
+    session.expires_at&&session.expires_at*1000<=Date.now())return false;
+  const state=readProgressRecoveryState(id);
+  if(state.lastKind!=='auth')return false;
+  state.lastKind='';state.nextAt=0;
+  storeProgressRecoveryState(id,state);
+  if(progressRetryTimer){clearTimeout(progressRetryTimer);progressRetryTimer=null;}
+  progressRetryAttempts=0;
+  return true;
+}
+
+function installProgressAuthListener(){
+  if(!sbClient?.auth?.onAuthStateChange||progressAuthListenerClient===sbClient)return;
+  sbClient.auth.onAuthStateChange((event,session)=>{
+    if(!['SIGNED_IN','TOKEN_REFRESHED','INITIAL_SESSION'].includes(event)||!session?.access_token)return;
+    // Run outside the Supabase Auth callback/lock; never await Auth in this callback.
+    setTimeout(()=>{
+      try{
+        if(resumeProgressForSession(session)&&readPendingProgress(session.user.id))saveStudentProgress({silent:true});
+      }catch(error){console.warn('Controle local de recuperação preservado:',error);}
+    },0);
+  });
+  progressAuthListenerClient=sbClient;
+}
+
 async function recoveryAccessToken(id,attempt,refresh=false){
   const result=await runProgressRequest(()=>refresh?sbClient.auth.refreshSession():sbClient.auth.getSession(),8000,attempt);
   const session=result?.data?.session;
-  if(result?.error||!session?.access_token||session.user?.id!==id)throw progressLoginRequiredError();
+  if(!canContinueProgressAttempt(attempt,id))throw progressRequestError('Tentativa encerrada.','PROGRESS_CANCELLED');
+  if(result?.error)throw result.error;
+  if(!session?.access_token||session.user?.id!==id||session.expires_at&&session.expires_at*1000<=Date.now())throw progressLoginRequiredError();
   return session.access_token;
 }
 
@@ -10848,15 +10886,9 @@ function deferProgressRecovery(id,error){
   if(kind!=='auth'&&!state.blocked)scheduleProgressRetry();
 }
 
-async function refreshProgressSession(){
-  try{
-    const {data,error}=await withTimeout(sbClient.auth.refreshSession(),8000);
-    if(error)throw error;
-    return Boolean(data?.session);
-  }catch(error){
-    console.warn('Sessão do aluno não pôde ser renovada agora:',error);
-    return false;
-  }
+async function refreshProgressSession(studentId=currentUser?.id,attempt=null){
+  await recoveryAccessToken(studentId,attempt,true);
+  return true;
 }
 
 async function readRemoteStudentProgress(studentId,attempt=null){
@@ -10875,7 +10907,8 @@ async function readRemoteStudentProgress(studentId,attempt=null){
     result=basic;
   }
   if(!progressAuthUnavailable(result.error))return result;
-  if(!await refreshProgressSession())return {ok:false,data:null,error:progressLoginRequiredError()};
+  try{await refreshProgressSession(studentId,attempt);}
+  catch(error){return {ok:false,data:null,error};}
   result=await read('xp,notas,unlocked,usage,xp_awards,updated_at');
   if(result.ok)return result;
   if(progressUsageColumnUnavailable(result.error))return read('xp,notas,unlocked,updated_at');
@@ -10899,13 +10932,44 @@ async function writeRemoteStudentProgress(payload,attempt=null){
     return {data:result.progress,error:null};
   };
   try{return await write();}catch(error){
-    if(progressAuthUnavailable(error)&&await refreshProgressSession()){
-      try{return await write();}catch(retryError){return {data:null,error:retryError};}
+    if(progressAuthUnavailable(error)){
+      try{await refreshProgressSession(payload.id,attempt);return await write();}
+      catch(retryError){return {data:null,error:retryError};}
     }
     return {data:null,error};
   }
 }
 
+
+// Bound acquisition only. A callback arriving after the deadline must never run task.
+function withProgressLock(id,task,timeoutMs=4000){
+  if(!navigator.locks?.request)return task();
+  return new Promise(resolve=>{
+    let expired=false;
+    const fail=error=>{
+      expired=true;
+      if(currentUser?.id===id){
+        try{
+          const state=readProgressRecoveryState(id);
+          recordProgressSyncPhase('lock-wait',{error:progressRequestError('Não foi possível adquirir o controle de sincronização.','PROGRESS_LOCK_TIMEOUT')});
+          updateProgressSyncStatus(state.lastKind==='auth'?'login':state.blocked?'persistent':'pending');
+          scheduleProgressRetry();
+        }catch(storageError){updateProgressSyncStatus('persistent');}
+      }
+      resolve(false);
+    };
+    const timer=setTimeout(()=>{expired=true;fail();},timeoutMs);
+    Promise.resolve().then(()=>navigator.locks.request(`ap-progress-${id}`,{ifAvailable:true},lock=>{
+      if(expired)return false;
+      clearTimeout(timer);
+      if(!lock){fail();return false;}
+      return task();
+    })).then(resolve,error=>{
+      clearTimeout(timer);
+      if(!expired)fail(error);
+    });
+  });
+}
 
 function saveStudentProgress(options={}){
   const requestedId=currentUser?.id;
@@ -10920,7 +10984,12 @@ function saveStudentProgress(options={}){
     if(currentUser?.id!==requestedId)return false;
     const attempt=createProgressAttempt(requestedId||'');
     try{
-      const state=readProgressRecoveryState(requestedId);
+      let state=readProgressRecoveryState(requestedId);
+      if(state.lastKind==='auth'&&!state.blocked){
+        const token=await recoveryAccessToken(requestedId,attempt);
+        resumeProgressForSession({access_token:token,user:{id:requestedId}});
+        state=readProgressRecoveryState(requestedId);
+      }
       if(state.blocked||state.lastKind==='auth'||Date.now()<state.nextAt){
         updateProgressSyncStatus(state.lastKind==='auth'?'login':state.blocked?'persistent':'pending');
         if(!state.blocked&&state.lastKind!=='auth')scheduleProgressRetry();
@@ -10964,12 +11033,7 @@ function saveStudentProgress(options={}){
       return false;
     }
   };
-  const lockedTask=()=>navigator.locks?.request
-    ? navigator.locks.request(`ap-progress-${requestedId}`,{ifAvailable:true},lock=>{
-      if(lock)return task();
-      updateProgressSyncStatus('pending');scheduleProgressRetry();return false;
-    })
-    : task();
+  const lockedTask=()=>withProgressLock(requestedId,task);
   const result=progressSaveChain.then(lockedTask,lockedTask);
   progressSaveChain=result.catch(()=>false);
   return result;
