@@ -219,7 +219,7 @@
     let html='';
     if(stage===1)html=`<p>Toque nas palavras para revelar os significados.</p><div class="n84-vocabulary">${w.vocabulary.map(v=>`<details><summary>${safe(v.word)}</summary>${safe(v.pt)}</details>`).join('')}</div>`;
     if(stage===2)html=Object.entries(w.language_check).map(([key,g])=>`<h3>${safe(key.replaceAll('_',' '))}</h3>${g.explanation?`<p>${safe(g.explanation)}</p>`:''}${g.words?`<p>${g.words.map(safe).join(' · ')}</p>`:''}${(g.examples||g.example||[]).map(e=>`<p>${safe(e)}</p>`).join('')}`).join('');
-    if(stage===5)html=`<p>Opcional: propostas para aula ou tarefa complementar. Não é preciso escrever para liberar a próxima semana.</p><details><summary>Speaking</summary><p>${safe(w.optional_classroom_mission.speaking.question)}</p>${w.optional_classroom_mission.speaking.sentence_starters.map(p=>`<p>${safe(p)}</p>`).join('')}</details><section class="n84-thoughts"><h3>Writing · ${safe(w.optional_classroom_mission.writing.word_target)}</h3><p>${safe(w.optional_classroom_mission.writing.prompt)}</p><label for="n84-optional-thoughts">Se quiser, escreva seus pensamentos</label><textarea id="n84-optional-thoughts" maxlength="1500" placeholder="Write here…">${safe(session.answers.optionalThoughts||'')}</textarea><small>Seu texto fica salvo somente neste aparelho e não é necessário para continuar.</small></section>`;
+    if(stage===5)html=`<p>Opcional: propostas para aula ou tarefa complementar. Não é preciso escrever para liberar a próxima semana.</p><details><summary>Speaking</summary><p>${safe(w.optional_classroom_mission.speaking.question)}</p>${w.optional_classroom_mission.speaking.sentence_starters.map(p=>`<p>${safe(p)}</p>`).join('')}</details><section class="n84-thoughts"><h3>Pensamentos finais e conclusão · ${safe(w.optional_classroom_mission.writing.word_target)}</h3><p>${safe(w.optional_classroom_mission.writing.prompt)}</p><label for="n84-optional-thoughts">Escreva seus pensamentos finais e sua conclusão</label><textarea id="n84-optional-thoughts" maxlength="1500" placeholder="Write here…">${safe(session.answers.optionalThoughts||'')}</textarea><small>Ao concluir a semana, seu texto será enviado como atividade para o relatório da professora.</small></section>`;
     html+=questions().map(questionHtml).join('');
     view(`<section class="n84-reader"><small>Week ${w.number} · After reading · ${stage+1}/6</small><h2>${STAGES[stage]}</h2>${html}<div class="n84-navigation">${stage>0?'<button type="button" data-n84-previous>Voltar</button>':''}<button type="button" class="n84-primary" data-n84-next>${stage===5?'Concluir semana '+w.number:'Continuar'}</button></div><p id="n84-gate" aria-live="polite"></p></section>`,'activities');
     questions().forEach(paintAnswer);
@@ -241,7 +241,10 @@
       let xp=0;
       if(!preview()){
         xp=claimXpReward(marker(session.week),200).amount;
-        recordStudentUsageEvent('activity',`1984 · Semana ${session.week}`,'completed','Capítulo e atividades concluídos',false);
+        const thoughts=String(session.answers.optionalThoughts||'').trim();
+        const label=thoughts?`1984 · Semana ${session.week} · Pensamentos finais e conclusão`:`1984 · Semana ${session.week}`;
+        const detail=thoughts?`Pensamentos finais e conclusão: ${thoughts}`:'Capítulo e atividades concluídos';
+        recordStudentUsageEvent('activity',label,'completed',detail,false);
       }
       persist('complete',xp);
     }

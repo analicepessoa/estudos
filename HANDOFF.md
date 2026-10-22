@@ -36,3 +36,9 @@
 - Cada alternativa fica bloqueada ao ser escolhida. Quick Check e Language Check exigem mais de metade das
   respostas corretas; com 50% ou menos, o aluno revisa o capítulo e inicia uma nova tentativa da etapa.
 - A missão final inclui um campo opcional para pensamentos, salvo apenas neste aparelho. Cache previsto: ap-english-v130.
+
+## 1984 — pensamentos finais no relatório, 2026-10-22
+
+- Ao concluir a semana, o texto de pensamentos finais e conclusão entra no histórico de atividades do aluno
+  e é sincronizado com o progresso; o painel da professora mostra o texto completo ao abrir o relatório do aluno.
+- A atividade sem texto continua registrando apenas a conclusão do capítulo. Cache previsto: ap-english-v131.

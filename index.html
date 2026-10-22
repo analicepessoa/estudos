@@ -3338,7 +3338,7 @@ function normalizeStudentUsage(source){
     label:String(event.label||'Atividade').slice(0,160),
     status:String(event.status||'opened').slice(0,30),
     at:usageIso(event.at),
-    detail:String(event.detail||'').slice(0,120)
+    detail:String(event.detail||'').slice(0,1500)
   })).filter(event=>event.at).slice(-24):[];
   const days=Array.isArray(data.activeDays)?data.activeDays.filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(String(day))).map(String):[];
   const lastActivity=data.lastActivity&&typeof data.lastActivity==='object'?{
@@ -3392,7 +3392,7 @@ function mergeStudentUsage(...sources){
 function appendStudentUsageEvent(usage,{type='activity',label='Atividade',status='opened',detail='',at=Date.now()}={}){
   const normalized=normalizeStudentUsage(usage);
   const iso=usageIso(at)||new Date().toISOString();
-  const event={id:`${iso}:${type}:${status}:${String(label).slice(0,80)}`,type,label:String(label).slice(0,160),status,detail:String(detail||'').slice(0,120),at:iso};
+  const event={id:`${iso}:${type}:${status}:${String(label).slice(0,80)}`,type,label:String(label).slice(0,160),status,detail:String(detail||'').slice(0,1500),at:iso};
   normalized.recentEvents=[...normalized.recentEvents,event].slice(-24);
   normalized.lastSeenAt=iso;
   normalized.lastActiveAt=iso;

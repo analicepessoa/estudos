@@ -93,6 +93,7 @@ async function main(){
   }
   await finishStages(1);
   assert.equal(await page.evaluate(()=>currentUser.xp),200);
+  assert.ok(await page.evaluate(()=>events.some(event=>event[0]==='activity'&&event[1]==='1984 · Semana 1 · Pensamentos finais e conclusão'&&event[3].includes('My thoughts about Winston.'))),'final thoughts are recorded as a report activity');
   await page.getByRole('button',{name:'Voltar à biblioteca',exact:true}).click();
   await page.reload();await page.locator('.n84-book').waitFor();
   assert.equal(await page.locator('.reading-week-row[data-n84-open="2"]').isDisabled(),false);
