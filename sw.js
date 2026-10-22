@@ -1,7 +1,7 @@
 // Service Worker — Analice Pessoa · English
 // Troque a versão (v1, v2...) sempre que publicar uma atualização do app,
 // para forçar os celulares a baixarem a versão nova.
-const CACHE = 'ap-english-v132';
+const CACHE = 'ap-english-v133';
 
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'GET_PORTAL_VERSION') {
@@ -23,8 +23,8 @@ self.addEventListener('message', (event) => {
 const APP_SHELL = [
   './',
   './index.html',
-  './assets/reading/reader-1984.js',
-  './assets/reading/reader-1984.css',
+  './assets/reading/reader-1984.js?v=133',
+  './assets/reading/reader-1984.css?v=133',
   './livros/1984/app/dictionary.json',
   './livros/1984/app/week1_app_content.json',
   './livros/1984/app/week2_app_content.json',

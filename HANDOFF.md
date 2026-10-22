@@ -47,3 +47,8 @@
 
 - A capa agora apresenta a cidade vigiada, as perguntas perigosas de Winston e convida o aluno a pensar diferente.
   Cache previsto: ap-english-v132.
+
+## 1984 — atualização da chamada para aplicativos já instalados, 2026-10-22
+
+- O CSS e o JavaScript do leitor agora usam URL versionada `v=133`, impedindo que uma cópia antiga do arquivo
+  esconda a nova chamada da capa após a atualização do portal. Cache previsto: ap-english-v133.

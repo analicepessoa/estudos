@@ -25,7 +25,7 @@ test('reader and integration scripts parse',()=>{
  const files=['index.html'];
  if(fs.existsSync(path.join(root,'scratch/release-1984/index.html')))files.push('scratch/release-1984/index.html');
  for(const file of files){
-  const html=fs.readFileSync(path.join(root,file),'utf8');assert.ok(html.includes('assets/reading/reader-1984.js'));
+  const html=fs.readFileSync(path.join(root,file),'utf8');assert.ok(html.includes('assets/reading/reader-1984.js?v=133'));
   for(const m of html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g))if(!m[1].includes('src=')&&m[2].trim())new vm.Script(m[2]);
  }
 });
