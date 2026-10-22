@@ -1,7 +1,7 @@
 // Service Worker — Analice Pessoa · English
 // Troque a versão (v1, v2...) sempre que publicar uma atualização do app,
 // para forçar os celulares a baixarem a versão nova.
-const CACHE = 'ap-english-v123';
+const CACHE = 'ap-english-v129';
 
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'GET_PORTAL_VERSION') {
@@ -13,6 +13,19 @@ self.addEventListener('message', (event) => {
 const APP_SHELL = [
   './',
   './index.html',
+  './assets/reading/reader-1984.js',
+  './assets/reading/reader-1984.css',
+  './livros/1984/app/dictionary.json',
+  './livros/1984/app/week1_app_content.json',
+  './livros/1984/app/week2_app_content.json',
+  './livros/1984/app/week3_app_content.json',
+  './livros/1984/app/assets/cover_nineteen_eighty_four_a2.webp',
+  './livros/1984/app/assets/week1_opening_victory_mansions.webp',
+  './livros/1984/app/assets/week1_story_winston_diary.webp',
+  './livros/1984/app/assets/week2_opening_ministry_of_truth.webp',
+  './livros/1984/app/assets/week2_story_room_above_shop.webp',
+  './livros/1984/app/assets/week3_opening_secret_note.webp',
+  './livros/1984/app/assets/week3_story_room_with_julia.webp',
   './assets/reading/cover-1984.png',
   './assets/body-parts/core.js',
   './assets/body-parts/game.js',

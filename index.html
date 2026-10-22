@@ -2456,6 +2456,7 @@ select.input { appearance: none; cursor: pointer; }
 }
 </style>
 <link rel="stylesheet" href="./assets/conversation-practice.css">
+<link rel="stylesheet" href="./assets/reading/reader-1984.css">
 </head>
 <body>
 
@@ -11035,7 +11036,7 @@ async function renderDashboard(){
       const currentWeek=AVAILABLE_READING_WEEKS.find(number=>!unlocked.includes(readingCompleteMarker(number)))||AVAILABLE_READING_WEEKS[AVAILABLE_READING_WEEKS.length-1];
       const readingParts=unlocked.filter(value=>String(value).startsWith(`reading__metamorphosis_w${currentWeek}_part_`)).length;
       const readingAnswersSent=unlocked.includes(readingAnswersMarker(currentWeek));
-      const readingLabel=allWeeksComplete?'🏆 livro concluído · semanas 1–6':readingAnswersSent?`📨 semana ${currentWeek}: respostas enviadas`:readingParts?`📖 semana ${currentWeek}: ${Math.min(readingParts,6)}/6`:completedWeeks.length?`📘 semana ${currentWeek} disponível`:'📕 leitura não iniciada';
+      const readingLabel=window.Portal1984?.studentLabel(unlocked)||(allWeeksComplete?'🏆 livro concluído · semanas 1–6':readingAnswersSent?`📨 semana ${currentWeek}: respostas enviadas`:readingParts?`📖 semana ${currentWeek}: ${Math.min(readingParts,6)}/6`:completedWeeks.length?`📘 semana ${currentWeek} disponível`:'📕 leitura não iniciada');
       const media=numNotas?(notas.reduce((sum,n)=>sum+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
       const nivel=Math.floor((a.xp||0)/200)+1;
       const usage=usageOf(a);
@@ -12641,6 +12642,7 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
 <script src="./assets/body-parts/core.js?v=p3-stars-1"></script>
 <script src="./assets/body-parts/game.js?v=p3-stars-1"></script>
 <script src="./assets/conversation-practice.js"></script>
+<script src="./assets/reading/reader-1984.js"></script>
 </body>
 </html>
 
