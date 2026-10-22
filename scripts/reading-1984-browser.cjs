@@ -22,6 +22,7 @@ async function main(){
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(`http://127.0.0.1:${server.address().port}/fixture`);
   await page.locator('.n84-book').waitFor();
+  assert.ok((await page.locator('.n84-book').innerText()).includes('Você teria coragem de pensar diferente?'));
   assert.equal(await page.locator('[data-n84-open="2"]').isDisabled(),true,'old book markers must not unlock new book');
   assert.equal(await page.locator('.n84-honours').innerText().then(t=>t.includes('Emiliana')),false);
   assert.ok((await page.locator('.n84-honours').innerText()).includes('Maria Eduarda'));

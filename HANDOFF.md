@@ -42,3 +42,8 @@
 - Ao concluir a semana, o texto de pensamentos finais e conclusão entra no histórico de atividades do aluno
   e é sincronizado com o progresso; o painel da professora mostra o texto completo ao abrir o relatório do aluno.
 - A atividade sem texto continua registrando apenas a conclusão do capítulo. Cache previsto: ap-english-v131.
+
+## 1984 — chamada da capa, 2026-10-22
+
+- A capa agora apresenta a cidade vigiada, as perguntas perigosas de Winston e convida o aluno a pensar diferente.
+  Cache previsto: ap-english-v132.
