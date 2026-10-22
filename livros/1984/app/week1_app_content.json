@@ -1,0 +1,441 @@
+{
+  "book": {
+    "display_title": "NINETEEN EIGHTY-FOUR",
+    "associated_title": "1984",
+    "subtitle": "A CEFR A2 Educational Adaptation of George Orwell",
+    "author": "George Orwell",
+    "cefr": "A2",
+    "cover_asset": "assets/cover_nineteen_eighty_four_a2.webp",
+    "editorial_rule": "Simplify the English, not Orwell."
+  },
+  "week": {
+    "number": 1,
+    "of": 6,
+    "chapter_number": 1,
+    "title": "The Diary",
+    "main_language_focus": "Present Simple + Adverbs of Frequency",
+    "main_theme": "Surveillance, thought and private truth",
+    "chapter_opening": {
+      "intro": "Oceania is a place where the government watches people all the time. Winston Smith works for the Party. He follows the rules. He does his job. He says the correct things. But inside his mind, Winston has thoughts that the Party must never hear. And one day, he decides to write them down.",
+      "asset": "assets/week1_opening_victory_mansions.webp",
+      "alt_text": "Winston Smith enters Victory Mansions on a gray day. A large Big Brother poster watches from the building above him. The city looks cold, damaged and controlled."
+    },
+    "story": {
+      "paragraphs": [
+        "It is a cold day in April.",
+        "Winston Smith walks quickly into Victory Mansions.",
+        "The building is old.",
+        "The hallway smells bad.",
+        "The elevator does not work, so Winston uses the stairs.",
+        "His apartment is on the seventh floor.",
+        "Winston is thirty-nine years old.",
+        "He is thin, and his body is not very strong.",
+        "There is a painful sore on his leg.",
+        "He climbs the stairs slowly.",
+        "On every floor, Winston sees the same enormous poster.",
+        "It shows the face of a man with dark hair and a heavy mustache.",
+        "The eyes seem to follow Winston.",
+        "Under the face are the words: BIG BROTHER IS WATCHING YOU.",
+        "Winston enters his apartment.",
+        "A voice is talking from a large screen on the wall.",
+        "It is called a telescreen.",
+        "The telescreen gives news, information and Party messages.",
+        "But it does something else too.",
+        "It watches.",
+        "Party members cannot turn it off.",
+        "Winston can make the sound quieter, but the screen is always there.",
+        "The Thought Police can use telescreens to watch people.",
+        "Nobody knows when they are watching.",
+        "Because of this, people must control everything: their words, their faces, their movements, and sometimes even their thoughts.",
+        "Winston stands near the window.",
+        "Outside, London looks gray and damaged.",
+        "In the distance, one enormous white building rises above the city.",
+        "It is the Ministry of Truth.",
+        "Winston works there.",
+        "On the building are three Party slogans:",
+        "WAR IS PEACE",
+        "FREEDOM IS SLAVERY",
+        "IGNORANCE IS STRENGTH",
+        "There are four important ministries in Oceania.",
+        "The Ministry of Truth controls news, education and information.",
+        "The Ministry of Peace deals with war.",
+        "The Ministry of Plenty controls the economy.",
+        "And the Ministry of Love deals with law and punishment.",
+        "The names sound strange to Winston.",
+        "But people do not question them.",
+        "Questioning the Party is dangerous.",
+        "Winston moves to a small table in the corner of his apartment.",
+        "The table is in a special place.",
+        "From there, the telescreen cannot see him clearly.",
+        "This is unusual.",
+        "Winston sits down.",
+        "He opens a drawer.",
+        "Inside is something dangerous.",
+        "A book.",
+        "It is old.",
+        "Its pages are cream-colored and beautiful.",
+        "Winston bought it in a small shop in an area where ordinary workers, called proles, live.",
+        "Buying the book was already dangerous.",
+        "Now he wants to use it as a diary.",
+        "Winston takes a pen.",
+        "For some time, he does not write anything.",
+        "He looks at the empty page.",
+        "He knows that keeping a diary is not officially described as a crime.",
+        "But that does not make it safe.",
+        "The Party does not want people to have private thoughts.",
+        "Winston knows the Thought Police can arrest a person for thoughtcrime.",
+        "A thought can be dangerous.",
+        "A memory can be dangerous.",
+        "A question can be dangerous.",
+        "Winston finally writes a date: April 4, 1984.",
+        "Then he stops.",
+        "Is it really 1984?",
+        "He is not completely sure.",
+        "The Party controls information about the past.",
+        "Dates can change.",
+        "Newspapers can change.",
+        "Old facts can disappear.",
+        "Sometimes Winston cannot know if a memory is real.",
+        "He looks at the page again.",
+        "His mind returns to something that happened earlier that day.",
+        "At the Ministry of Truth, Winston and other workers attended the Two Minutes Hate.",
+        "Party members must watch it.",
+        "A large screen showed the face of Emmanuel Goldstein.",
+        "Goldstein is the great enemy of the Party.",
+        "The Party says he is a traitor.",
+        "It says he wants to destroy Oceania.",
+        "When Goldstein appears on the screen, people around Winston begin to shout.",
+        "Their anger becomes stronger and stronger.",
+        "Winston feels it too.",
+        "It is difficult not to feel it when everyone around him is screaming.",
+        "But Winston also watches the people in the room.",
+        "There is a young woman with dark hair.",
+        "She works in the Fiction Department.",
+        "Winston does not know her name.",
+        "He does not trust her.",
+        "She looks loyal to the Party.",
+        "She wears the red belt of the Junior Anti-Sex League.",
+        "Winston thinks she may be dangerous.",
+        "Maybe she works for the Thought Police.",
+        "Maybe she watches him.",
+        "There is another person in the room.",
+        "O'Brien.",
+        "He is an important Party member.",
+        "Winston knows almost nothing about him.",
+        "But Winston feels something when he looks at O'Brien.",
+        "For one short moment, their eyes meet.",
+        "Winston has a strange idea.",
+        "Maybe O'Brien understands.",
+        "Maybe he also sees something wrong with the Party.",
+        "Winston has no proof.",
+        "It is only a feeling.",
+        "And feelings are dangerous too.",
+        "The face of Big Brother appears on the screen.",
+        "The people become calmer.",
+        "They repeat the Party slogans.",
+        "Winston repeats them too.",
+        "He knows how to look loyal.",
+        "He has practiced all his life.",
+        "But his mind is not loyal.",
+        "Now Winston is back in his apartment.",
+        "The diary is open in front of him.",
+        "The telescreen continues talking behind him.",
+        "Winston begins to write.",
+        "At first, his words are confused.",
+        "Then something changes.",
+        "His hand moves faster.",
+        "Again and again, he writes the same words: DOWN WITH BIG BROTHER.",
+        "He stops.",
+        "He looks at the page.",
+        "His heart beats quickly.",
+        "He feels afraid.",
+        "He cannot take the words back.",
+        "He cannot make them disappear from his mind.",
+        "Maybe the Thought Police are already watching him.",
+        "Maybe somebody will knock on the door tonight.",
+        "Maybe they will come tomorrow.",
+        "It does not matter.",
+        "Winston understands something.",
+        "The important crime did not begin when he wrote the words.",
+        "The crime began when he thought them.",
+        "For the first time, Winston has put his private truth on paper.",
+        "Outside, Big Brother's face watches the city.",
+        "Inside the apartment, the telescreen continues to speak.",
+        "Winston closes the diary.",
+        "But the words are still there.",
+        "And now there is no way back."
+      ],
+      "secondary_illustration": {
+        "asset": "assets/week1_story_winston_diary.webp",
+        "alt_text": "Winston sits at a small table in a dark apartment, writing secretly in his diary while a telescreen with Big Brother's face remains on the wall nearby."
+      }
+    },
+    "end_of_chapter": [
+      "Winston has not attacked the Party.",
+      "He has not joined a rebellion.",
+      "He has only written what he thinks.",
+      "In Oceania, that may be enough."
+    ],
+    "quick_check": [
+      {
+        "type": "multiple_choice",
+        "question": "Where does Winston live?",
+        "options": [
+          "Eastasia",
+          "Oceania",
+          "Eurasia",
+          "America"
+        ],
+        "answer": "Oceania"
+      },
+      {
+        "type": "multiple_choice",
+        "question": "What is a telescreen?",
+        "options": [
+          "Only a television",
+          "A telephone",
+          "A screen that gives information and can watch people",
+          "A computer Winston uses at work"
+        ],
+        "answer": "A screen that gives information and can watch people"
+      },
+      {
+        "type": "multiple_choice",
+        "question": "Where does Winston work?",
+        "options": [
+          "Ministry of Love",
+          "Ministry of Peace",
+          "Ministry of Plenty",
+          "Ministry of Truth"
+        ],
+        "answer": "Ministry of Truth"
+      },
+      {
+        "type": "multiple_choice",
+        "question": "Why is the diary dangerous?",
+        "options": [
+          "It is very expensive.",
+          "It contains private thoughts.",
+          "Winston stole it from work.",
+          "It belongs to O'Brien."
+        ],
+        "answer": "It contains private thoughts."
+      },
+      {
+        "type": "true_false",
+        "question": "Winston is completely sure that the year is 1984.",
+        "answer": false
+      },
+      {
+        "type": "multiple_choice",
+        "question": "During the Two Minutes Hate, Winston sees:",
+        "options": [
+          "the dark-haired woman and O'Brien",
+          "his mother and father",
+          "Mr. Charrington and the dark-haired woman",
+          "O'Brien and Goldstein together"
+        ],
+        "answer": "the dark-haired woman and O'Brien"
+      },
+      {
+        "type": "true_false",
+        "question": "Winston trusts the dark-haired woman.",
+        "answer": false
+      },
+      {
+        "type": "multiple_choice",
+        "question": "What does Winston write repeatedly in his diary?",
+        "options": [
+          "FREEDOM IS SLAVERY",
+          "I LOVE JULIA",
+          "DOWN WITH BIG BROTHER",
+          "WAR IS PEACE"
+        ],
+        "answer": "DOWN WITH BIG BROTHER"
+      }
+    ],
+    "vocabulary": [
+      {
+        "word": "watch",
+        "pt": "observar / vigiar"
+      },
+      {
+        "word": "telescreen",
+        "pt": "teletela"
+      },
+      {
+        "word": "Party",
+        "pt": "Partido"
+      },
+      {
+        "word": "thought",
+        "pt": "pensamento"
+      },
+      {
+        "word": "thoughtcrime",
+        "pt": "crime de pensamento"
+      },
+      {
+        "word": "truth",
+        "pt": "verdade"
+      },
+      {
+        "word": "diary",
+        "pt": "diário"
+      },
+      {
+        "word": "past",
+        "pt": "passado"
+      },
+      {
+        "word": "memory",
+        "pt": "memória"
+      },
+      {
+        "word": "dangerous",
+        "pt": "perigoso"
+      },
+      {
+        "word": "loyal",
+        "pt": "leal"
+      },
+      {
+        "word": "hate",
+        "pt": "ódio"
+      }
+    ],
+    "language_check": {
+      "present_simple": {
+        "explanation": "We use the Present Simple for routines, facts and repeated actions.",
+        "examples": [
+          "Winston works at the Ministry of Truth.",
+          "The Party controls information.",
+          "The telescreen watches people.",
+          "People follow the rules."
+        ],
+        "questions": [
+          {
+            "question": "Winston work / works at the Ministry of Truth.",
+            "answer": "works"
+          },
+          {
+            "question": "The Party control / controls information.",
+            "answer": "controls"
+          },
+          {
+            "question": "People follow / follows the Party's rules.",
+            "answer": "follow"
+          },
+          {
+            "question": "The telescreen watch / watches Winston.",
+            "answer": "watches"
+          }
+        ]
+      },
+      "adverbs_of_frequency": {
+        "words": [
+          "always",
+          "usually",
+          "sometimes",
+          "never"
+        ],
+        "examples": [
+          "The telescreen is always on.",
+          "Winston sometimes questions his memories.",
+          "People usually hide dangerous thoughts.",
+          "Winston can never know when the Thought Police are watching."
+        ],
+        "questions": [
+          {
+            "question": "The telescreen is ______ active.",
+            "options": [
+              "always",
+              "never"
+            ],
+            "answer": "always"
+          },
+          {
+            "question": "Winston ______ knows when the Thought Police are watching.",
+            "options": [
+              "always",
+              "never"
+            ],
+            "answer": "never"
+          }
+        ]
+      }
+    },
+    "orwells_question": {
+      "question": "What is most dangerous to the Party?",
+      "options": [
+        "A person who is physically strong.",
+        "A person who has a lot of money.",
+        "A person who can think independently.",
+        "A person who lives alone."
+      ],
+      "preferred_answer": "A person who can think independently.",
+      "feedback": {
+        "preferred": "Think deeper: The Party does not only want to control what people do. It also wants to control what they believe is true.",
+        "other": "Think again: Winston has no army, no money and no political power. But his private thoughts are still dangerous to the Party."
+      }
+    },
+    "second_reflection": {
+      "question": "What does privacy mean in Oceania?",
+      "options": [
+        "Being alone in a room.",
+        "Having thoughts that belong only to you.",
+        "Closing a door.",
+        "Not going to work."
+      ],
+      "preferred_answer": "Having thoughts that belong only to you.",
+      "feedback": "A closed door is not enough in Oceania. The Party wants access to something much more private: the human mind."
+    },
+    "optional_classroom_mission": {
+      "speaking": {
+        "question": "Would you write a diary if writing your true thoughts was dangerous?",
+        "sentence_starters": [
+          "I would / wouldn't because...",
+          "I think Winston...",
+          "In my opinion..."
+        ]
+      },
+      "writing": {
+        "prompt": "What is more important: safety or freedom to think?",
+        "word_target": "50–70 words",
+        "blocking": false
+      }
+    },
+    "learning_outcomes": [
+      "Identify Winston Smith and his role in Oceania.",
+      "Understand what Big Brother represents.",
+      "Understand how telescreens affect privacy.",
+      "Understand the meaning of thoughtcrime.",
+      "Explain why the diary is dangerous.",
+      "Recognize why private thought is important in Oceania."
+    ],
+    "next_week": {
+      "chapter": "Chapter 2 — Changing the Past",
+      "teaser": "Winston works at the Ministry of Truth. Every day, he changes old information. But if the past can always change, how can anyone know what is true?"
+    }
+  },
+  "implementation_notes": {
+    "primary_goal": "Story first. Learning around the story, not in the way of the story.",
+    "reading_rules": [
+      "Do not interrupt the story with mandatory exercises.",
+      "Allow the learner to read the full chapter before showing required questions.",
+      "Short page breaks or scene breaks are allowed for readability, but they must not insert tasks between story sections.",
+      "The secondary illustration may appear inside the story as visual support only, with no blocking question attached."
+    ],
+    "interaction_rules": [
+      "Quick Check, Language Check, Orwell's Question and Second Reflection appear only after End of Chapter.",
+      "Orwell's Question and Second Reflection must be multiple-choice or choice-based, not open writing.",
+      "Speaking and Writing are optional classroom activities and must never block progress.",
+      "Vocabulary should work best as tap-to-open cards, popovers or lightweight glossary support."
+    ],
+    "ui_tone": [
+      "Cold, oppressive, adult, literary.",
+      "Avoid playful or childish gamification.",
+      "Use strong contrast, muted grayscale and restrained red accents."
+    ]
+  }
+}

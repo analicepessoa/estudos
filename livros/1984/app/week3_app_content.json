@@ -1,0 +1,514 @@
+{
+  "book": {
+    "display_title": "NINETEEN EIGHTY-FOUR",
+    "associated_title": "1984",
+    "subtitle": "A CEFR A2 Educational Adaptation of George Orwell",
+    "author": "George Orwell",
+    "cefr": "A2",
+    "cover_asset": "assets/cover_nineteen_eighty_four_a2.webp",
+    "editorial_rule": "Simplify the English, not Orwell."
+  },
+  "week": {
+    "number": 3,
+    "of": 6,
+    "chapter_number": 3,
+    "title": "The Note",
+    "main_language_focus": "Past Simple + Sequencing Words",
+    "main_theme": "Love, secrecy and private life",
+    "chapter_opening": {
+      "intro": "Winston thinks the dark-haired woman may be watching him. He believes she could work for the Thought Police. Then, one day, she falls near him in a corridor. Winston helps her. For one second, their hands touch. She puts something small into his hand. Later, Winston opens it. There are only three words: I LOVE YOU.",
+      "asset": "assets/week3_opening_secret_note.webp",
+      "alt_text": "Winston bends down to help Julia in a cold Ministry corridor while Party workers pass nearby. She secretly places a small folded note into his hand under surveillance cameras."
+    },
+    "story": {
+      "paragraphs": [
+        "For several days, Winston cannot stop thinking about the dark-haired woman.",
+        "He sees her sometimes at the Ministry of Truth.",
+        "Each time, he becomes nervous.",
+        "Why does she appear near him so often?",
+        "Did she follow him to Mr. Charrington's shop?",
+        "Does she know about the diary?",
+        "Does she work for the Thought Police?",
+        "Winston does not know.",
+        "And in Oceania, not knowing is dangerous.",
+        "One day, Winston walks through a corridor at the Ministry.",
+        "The dark-haired woman is ahead of him.",
+        "Suddenly, she falls.",
+        "She cries out in pain.",
+        "Her arm is already injured, and the fall hurts her.",
+        "For a second, Winston hesitates.",
+        "Then he walks toward her.",
+        "Are you all right?",
+        "She looks at him.",
+        "Yes.",
+        "Winston helps her stand.",
+        "Their hands touch.",
+        "The moment lasts only a second.",
+        "Then she walks away.",
+        "Winston continues down the corridor.",
+        "Something is in his hand.",
+        "A small piece of paper.",
+        "His heart begins to beat faster.",
+        "He cannot open it there.",
+        "There are telescreens everywhere.",
+        "There are people everywhere.",
+        "He puts the paper into his pocket.",
+        "For the next few minutes, Winston can think about nothing else.",
+        "Maybe the note says: I know what you are doing.",
+        "Maybe it is from the Thought Police.",
+        "Maybe it is a warning.",
+        "Maybe it is an order.",
+        "He wants to read it immediately.",
+        "But he cannot.",
+        "He returns to his desk.",
+        "He begins working.",
+        "Messages arrive.",
+        "Documents wait.",
+        "The telescreen talks.",
+        "Winston tries to act normally.",
+        "Finally, when nobody is looking directly at him, he opens the paper.",
+        "He reads: I LOVE YOU.",
+        "Winston stares at the words.",
+        "For a moment, he cannot think.",
+        "This is not what he expected.",
+        "The woman does not want to arrest him.",
+        "She wants to meet him.",
+        "Or at least Winston hopes that is true.",
+        "Now Winston has a new problem.",
+        "How can he speak to her?",
+        "Party members are watched at work.",
+        "They are watched at home.",
+        "They are watched in public places.",
+        "Even a long conversation can look suspicious.",
+        "For several days, Winston tries to get close to her.",
+        "It is difficult.",
+        "Sometimes too many people are nearby.",
+        "Sometimes she is surrounded by coworkers.",
+        "Sometimes a telescreen is directly above them.",
+        "Winston becomes impatient.",
+        "Finally, he sees her alone in the canteen.",
+        "Winston quickly sits near her.",
+        "They do not look directly at each other.",
+        "They speak quietly.",
+        "Can you meet me?",
+        "Yes.",
+        "They arrange a place.",
+        "They cannot stay together for long.",
+        "Someone may notice.",
+        "Their first plan is simple.",
+        "They will meet in a crowded public square.",
+        "A large crowd can sometimes hide two people better than an empty room.",
+        "Later, Winston arrives at the square.",
+        "Many people are there.",
+        "A group of prisoners is passing through.",
+        "People move closer to see.",
+        "The crowd becomes dense.",
+        "Winston finds the dark-haired woman.",
+        "They stand next to each other.",
+        "They do not look like lovers.",
+        "They do not even look like friends.",
+        "Their hands touch for a moment inside the crowd.",
+        "She gives him instructions.",
+        "A place outside the city.",
+        "A time.",
+        "A path to follow.",
+        "Then they separate.",
+        "On the day of the meeting, Winston travels out of London.",
+        "He follows her instructions carefully.",
+        "He takes a train.",
+        "Then he walks.",
+        "He passes fields and trees.",
+        "The city becomes distant.",
+        "There are fewer telescreens.",
+        "There are fewer people.",
+        "For the first time in a long time, Winston hears natural sounds.",
+        "Birds.",
+        "Wind.",
+        "Leaves.",
+        "He feels strange.",
+        "The countryside seems almost unreal.",
+        "Then he sees her.",
+        "The dark-haired woman is waiting.",
+        "She leads him through the trees.",
+        "They do not speak much at first.",
+        "Winston is still suspicious.",
+        "Finally, they reach a quiet place.",
+        "There are no people nearby.",
+        "She turns toward him.",
+        "My name is Julia.",
+        "Now Winston knows her name.",
+        "Julia.",
+        "They sit together.",
+        "Julia explains that she hates the Party.",
+        "She knows how to look loyal.",
+        "She wears the red belt.",
+        "She joins Party activities.",
+        "She follows rules when people are watching.",
+        "But she does not believe in the Party.",
+        "Winston is surprised.",
+        "He thought she was one of the most loyal people he knew.",
+        "Julia laughs.",
+        "Looking loyal is useful.",
+        "It keeps people from asking questions.",
+        "Winston begins to understand her.",
+        "But Julia is different from him.",
+        "Winston thinks about history.",
+        "He thinks about truth.",
+        "He thinks about the past.",
+        "He wants to understand how the Party controls everything.",
+        "Julia is less interested in these questions.",
+        "She hates the Party because it tries to control her life.",
+        "She wants small freedoms.",
+        "Food.",
+        "Privacy.",
+        "Love.",
+        "Pleasure.",
+        "Time away from Party rules.",
+        "For Julia, rebellion is personal.",
+        "For Winston, it is also political.",
+        "They begin meeting secretly.",
+        "Every meeting is dangerous.",
+        "They cannot use the same place too often.",
+        "They cannot walk together openly.",
+        "They cannot send normal messages.",
+        "They need to plan every movement.",
+        "But Winston changes.",
+        "He feels less alone.",
+        "For years, he believed nobody understood what he felt.",
+        "Now there is another person who also hates the Party.",
+        "Eventually, Winston thinks about Mr. Charrington's room.",
+        "The room above the shop.",
+        "The room without a telescreen.",
+        "Winston knows renting it is dangerous.",
+        "But he wants a private place.",
+        "He and Julia begin using the room.",
+        "For a short time, it feels like another world.",
+        "There is an old bed.",
+        "Old furniture.",
+        "The glass paperweight is there.",
+        "The room smells different from Party buildings.",
+        "Outside, people live their ordinary lives.",
+        "Inside, Winston and Julia can talk.",
+        "They can sit together.",
+        "They can sleep.",
+        "They can be silent.",
+        "They do not need to perform for the Party.",
+        "Julia brings real coffee.",
+        "She brings sugar.",
+        "She brings bread that is better than Party food.",
+        "Sometimes she has small things that are difficult to find.",
+        "Winston asks where she gets them.",
+        "Julia knows people.",
+        "She knows how the system works.",
+        "She breaks rules without speaking about revolution all the time.",
+        "Winston finds this fascinating.",
+        "One afternoon, Julia sees the glass paperweight.",
+        "She asks what it is.",
+        "Winston explains that it is old.",
+        "The small piece of coral is protected inside the glass.",
+        "To Winston, it feels like their secret life.",
+        "Small.",
+        "Beautiful.",
+        "Separated from the outside world.",
+        "He imagines that he and Julia are inside the glass too.",
+        "Protected.",
+        "Invisible.",
+        "Safe.",
+        "But Winston knows they are not really safe.",
+        "He tells Julia: We are already dead.",
+        "He means that one day the Party will discover them.",
+        "Julia does not want to think about that day.",
+        "She wants to enjoy the time they have.",
+        "Winston cannot stop thinking about the future.",
+        "Still, he continues returning to the room.",
+        "For the first time in years, Winston experiences something like happiness.",
+        "He has someone to speak to.",
+        "Someone to touch.",
+        "Someone who understands what it means to hate the Party.",
+        "The room becomes important to him.",
+        "The paperweight becomes important.",
+        "Julia becomes important.",
+        "For a short time, Winston believes a private world can exist.",
+        "A world for two people.",
+        "A world where Big Brother cannot enter."
+      ],
+      "secondary_illustration": {
+        "asset": "assets/week3_story_room_with_julia.webp",
+        "alt_text": "Winston and Julia sit close together in the warm room above Mr. Charrington's shop. The glass paperweight with coral rests on the table beside them, creating a brief sense of privacy and safety."
+      }
+    },
+    "end_of_chapter": [
+      "Winston once believed Julia might be his enemy.",
+      "Now she is the person he trusts most.",
+      "The Party wants loyalty to Big Brother.",
+      "Winston gives his loyalty to another person.",
+      "That makes their relationship dangerous.",
+      "But the room above the shop feels safe.",
+      "And Winston wants to believe that feeling."
+    ],
+    "quick_check": [
+      {
+        "type": "multiple_choice",
+        "question": "What does Julia secretly give Winston?",
+        "options": [
+          "A key",
+          "A photograph",
+          "A note",
+          "A Party document"
+        ],
+        "answer": "A note"
+      },
+      {
+        "type": "multiple_choice",
+        "question": "What does the note say?",
+        "options": [
+          "MEET O'BRIEN",
+          "I LOVE YOU",
+          "DOWN WITH BIG BROTHER",
+          "YOU ARE IN DANGER"
+        ],
+        "answer": "I LOVE YOU"
+      },
+      {
+        "type": "multiple_choice",
+        "question": "Why can't Winston read the note immediately?",
+        "options": [
+          "He cannot read.",
+          "There are people and telescreens around him.",
+          "Julia tells him to wait one week.",
+          "The note is written in Newspeak."
+        ],
+        "answer": "There are people and telescreens around him."
+      },
+      {
+        "type": "multiple_choice",
+        "question": "Where do Winston and Julia first plan a private meeting?",
+        "options": [
+          "At Victory Mansions",
+          "At O'Brien's apartment",
+          "Outside the city",
+          "At the Ministry of Love"
+        ],
+        "answer": "Outside the city"
+      },
+      {
+        "type": "true_false",
+        "question": "Julia is completely loyal to the Party.",
+        "answer": false
+      },
+      {
+        "type": "true_false",
+        "question": "Winston and Julia rebel against the Party in exactly the same way.",
+        "answer": false
+      },
+      {
+        "type": "multiple_choice",
+        "question": "Why do Winston and Julia use the room above Mr. Charrington's shop?",
+        "options": [
+          "It is close to Winston's office.",
+          "It appears to have no telescreen.",
+          "Julia works there.",
+          "O'Brien told them to use it."
+        ],
+        "answer": "It appears to have no telescreen."
+      },
+      {
+        "type": "multiple_choice",
+        "question": "What does the paperweight begin to represent?",
+        "options": [
+          "Their small private world",
+          "Big Brother",
+          "The Ministry of Truth",
+          "Julia's work"
+        ],
+        "answer": "Their small private world"
+      }
+    ],
+    "vocabulary": [
+      {
+        "word": "note",
+        "pt": "bilhete"
+      },
+      {
+        "word": "secret",
+        "pt": "segredo / secreto"
+      },
+      {
+        "word": "meet",
+        "pt": "encontrar"
+      },
+      {
+        "word": "crowd",
+        "pt": "multidão"
+      },
+      {
+        "word": "countryside",
+        "pt": "zona rural / campo"
+      },
+      {
+        "word": "trust",
+        "pt": "confiar"
+      },
+      {
+        "word": "loyal",
+        "pt": "leal"
+      },
+      {
+        "word": "private",
+        "pt": "privado"
+      },
+      {
+        "word": "relationship",
+        "pt": "relacionamento"
+      },
+      {
+        "word": "safe",
+        "pt": "seguro"
+      },
+      {
+        "word": "freedom",
+        "pt": "liberdade"
+      },
+      {
+        "word": "rebel",
+        "pt": "rebelar-se"
+      }
+    ],
+    "language_check": {
+      "sequencing_words": {
+        "words": [
+          "First",
+          "Then",
+          "After that",
+          "Later",
+          "Finally"
+        ],
+        "example": [
+          "First, Julia gives Winston a note.",
+          "Then, Winston reads it.",
+          "Later, they meet outside the city.",
+          "Finally, they begin using the room above the shop."
+        ],
+        "order_items": [
+          {
+            "id": "A",
+            "event": "Winston and Julia use the room above the shop."
+          },
+          {
+            "id": "B",
+            "event": "Julia gives Winston the note."
+          },
+          {
+            "id": "C",
+            "event": "They meet outside London."
+          },
+          {
+            "id": "D",
+            "event": "Winston reads I LOVE YOU."
+          }
+        ],
+        "answer": [
+          "B",
+          "D",
+          "C",
+          "A"
+        ]
+      },
+      "past_simple_review": {
+        "questions": [
+          {
+            "question": "Julia give / gave Winston a note.",
+            "answer": "gave"
+          },
+          {
+            "question": "Winston read / reads the message later.",
+            "answer": "read"
+          },
+          {
+            "question": "They meet / met outside the city.",
+            "answer": "met"
+          },
+          {
+            "question": "Julia tell / told Winston her name.",
+            "answer": "told"
+          },
+          {
+            "question": "Winston begin / began to trust Julia.",
+            "answer": "began"
+          }
+        ]
+      }
+    },
+    "orwells_question": {
+      "question": "Why is Winston and Julia's relationship dangerous to the Party?",
+      "options": [
+        "Because Julia does not work hard enough.",
+        "Because private loyalty can become stronger than loyalty to the Party.",
+        "Because Winston wants a different apartment.",
+        "Because relationships are always illegal."
+      ],
+      "preferred_answer": "Because private loyalty can become stronger than loyalty to the Party.",
+      "feedback": "The Party wants people to direct their deepest loyalty toward Big Brother. Winston and Julia create something the Party cannot completely control: a private relationship."
+    },
+    "second_reflection": {
+      "question": "Winston and Julia both hate the Party. But why are they different?",
+      "options": [
+        "Winston thinks more about truth and history; Julia focuses more on personal freedom.",
+        "Julia loves Big Brother but Winston does not.",
+        "Winston wants to work more.",
+        "There is no difference between them."
+      ],
+      "preferred_answer": "Winston thinks more about truth and history; Julia focuses more on personal freedom.",
+      "feedback": "Two people can resist the same system for different reasons. Winston wants to understand the Party. Julia mainly wants the Party to leave her private life alone."
+    },
+    "optional_classroom_mission": {
+      "speaking": {
+        "question": "Which is more dangerous to a system like the Party: a political rebellion or a private relationship?",
+        "sentence_starters": [
+          "I think...",
+          "The Party wants...",
+          "Winston and Julia..."
+        ]
+      },
+      "writing": {
+        "prompt": "Winston believes the room above the shop is safe. Would you trust this place? Why or why not?",
+        "word_target": "60–80 words",
+        "blocking": false
+      }
+    },
+    "learning_outcomes": [
+      "Understand why Winston initially fears Julia.",
+      "Understand how Julia gives Winston the note.",
+      "Explain why communication is difficult under surveillance.",
+      "Understand how Winston and Julia meet.",
+      "Compare Winston and Julia's ideas about rebellion.",
+      "Explain why the room above the shop matters.",
+      "Understand what the paperweight begins to symbolize.",
+      "Explain why private relationships are dangerous to the Party."
+    ],
+    "next_week": {
+      "chapter": "Chapter 4 — We Are the Dead",
+      "teaser": "Winston believes O'Brien may also hate the Party. Then O'Brien finally gives him a reason to visit. For Winston, this may be the beginning of resistance — or something much worse."
+    }
+  },
+  "implementation_notes": {
+    "primary_goal": "Story first. Learning around the story, not in the way of the story.",
+    "reading_rules": [
+      "Do not interrupt the story with mandatory exercises.",
+      "Allow the learner to read the full chapter before showing required questions.",
+      "Short page breaks or scene breaks are allowed for readability, but they must not insert tasks between story sections.",
+      "The secondary illustration may appear inside the story as visual support only, with no blocking question attached."
+    ],
+    "interaction_rules": [
+      "Quick Check, Language Check, Orwell's Question and Second Reflection appear only after End of Chapter.",
+      "Orwell's Question and Second Reflection must be multiple-choice or choice-based, not open writing.",
+      "Speaking and Writing are optional classroom activities and must never block progress.",
+      "Vocabulary should work best as tap-to-open cards, popovers or lightweight glossary support."
+    ],
+    "ui_tone": [
+      "Weeks 1–2 are cold and oppressive. Week 3 may become warmer and more intimate inside the room, but should still feel fragile and unsafe.",
+      "Avoid playful or childish gamification.",
+      "Use restrained red accents and warm amber only in the secret room scenes."
+    ]
+  }
+}

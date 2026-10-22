@@ -1,0 +1,525 @@
+{
+  "book": {
+    "display_title": "NINETEEN EIGHTY-FOUR",
+    "associated_title": "1984",
+    "subtitle": "A CEFR A2 Educational Adaptation of George Orwell",
+    "author": "George Orwell",
+    "cefr": "A2",
+    "cover_asset": "assets/cover_nineteen_eighty_four_a2.webp",
+    "editorial_rule": "Simplify the English, not Orwell."
+  },
+  "week": {
+    "number": 2,
+    "of": 6,
+    "chapter_number": 2,
+    "title": "Changing the Past",
+    "main_language_focus": "Past Simple — Facts, Memories and Changes",
+    "main_theme": "Truth, memory and control",
+    "chapter_opening": {
+      "intro": "Winston works at the Ministry of Truth. His job is not to discover facts. His job is to change them. Every day, old newspapers disappear. New versions replace them. The Party is always correct. And when the Party is wrong... the past must change.",
+      "asset": "assets/week2_opening_ministry_of_truth.webp",
+      "alt_text": "Winston sits at his desk in the enormous Ministry of Truth, surrounded by desks, papers, pneumatic tubes and memory holes under cold artificial light."
+    },
+    "story": {
+      "paragraphs": [
+        "Every morning, Winston goes to the Ministry of Truth.",
+        "The building is enormous.",
+        "Inside, there are long corridors, offices, machines and thousands of workers.",
+        "Winston works in the Records Department.",
+        "Messages arrive at his desk through pneumatic tubes.",
+        "Many of them contain old newspaper articles.",
+        "Winston reads the messages carefully.",
+        "Then he changes the past.",
+        "One morning, Winston receives an old issue of The Times.",
+        "In the newspaper, Big Brother made a prediction about the war.",
+        "The prediction was wrong.",
+        "But the Party cannot be wrong.",
+        "So Winston changes the article.",
+        "He writes a new version.",
+        "In the new version, Big Brother's prediction is correct.",
+        "The original newspaper disappears into a memory hole.",
+        "The memory hole leads to a furnace.",
+        "The old information burns.",
+        "A new newspaper replaces it.",
+        "Now the Party was never wrong.",
+        "Winston does this every day.",
+        "Sometimes he changes numbers.",
+        "Sometimes he changes names.",
+        "Sometimes he changes speeches.",
+        "Sometimes he removes a person completely.",
+        "When the Party decides that a person never existed, that person becomes an unperson.",
+        "Their name disappears.",
+        "Their photographs disappear.",
+        "Their work disappears.",
+        "The past changes.",
+        "And after enough changes, there is no proof that the old past ever existed.",
+        "Winston knows something strange.",
+        "The Party says: Who controls the past controls the future. Who controls the present controls the past.",
+        "Winston understands the logic.",
+        "If people cannot prove what happened yesterday, the Party can tell them what happened.",
+        "If the Party controls memory, it can control truth.",
+        "But Winston still remembers things.",
+        "Not everything.",
+        "His memories are incomplete.",
+        "Sometimes they are only images.",
+        "Sometimes he does not know if they are real.",
+        "That frightens him.",
+        "One day, while working, Winston finds something extraordinary.",
+        "It is a photograph.",
+        "The photograph shows three men: Jones, Aaronson and Rutherford.",
+        "Years earlier, the Party accused these men of being traitors.",
+        "They confessed to terrible crimes.",
+        "Later, they were executed.",
+        "But Winston remembers something important.",
+        "Their confessions said they were in another country on a specific day.",
+        "The photograph proves they were somewhere else.",
+        "The confession was false.",
+        "For a few seconds, Winston holds physical proof that the Party lied.",
+        "His heart beats faster.",
+        "This small photograph is dangerous.",
+        "More dangerous than many weapons.",
+        "It shows that the Party can change the truth.",
+        "Winston looks at it.",
+        "Then he drops it into the memory hole.",
+        "The photograph disappears.",
+        "The proof burns.",
+        "For years after that moment, Winston remembers it.",
+        "But he cannot show it to anyone.",
+        "He has only his memory.",
+        "And the Party says memory is not enough.",
+        "At lunch, Winston sits near a man named Syme.",
+        "Syme works with language.",
+        "He is helping to create a new edition of the Newspeak Dictionary.",
+        "Syme loves his work.",
+        "He explains Newspeak to Winston.",
+        "The purpose of Newspeak is not to create more words.",
+        "It is to create fewer words.",
+        "Why have many words when one word is enough? Syme explains.",
+        "Words disappear every year.",
+        "If a word disappears, an idea can become harder to express.",
+        "For example, if there is no word for political freedom, how can people easily talk about political freedom?",
+        "Syme believes that one day thoughtcrime will become impossible.",
+        "There will be no words to express dangerous thoughts.",
+        "Winston listens.",
+        "Syme is intelligent.",
+        "Too intelligent.",
+        "Winston suddenly thinks: Syme will disappear one day.",
+        "He does not know when.",
+        "But he feels certain.",
+        "A man named Parsons joins them.",
+        "Parsons is Winston's neighbor.",
+        "He is very loyal to the Party.",
+        "He talks proudly about his children.",
+        "His children belong to Party organizations.",
+        "They watch people.",
+        "They report suspicious behavior.",
+        "Parsons thinks this is excellent.",
+        "Winston remembers the children at Victory Mansions.",
+        "They played games about catching traitors.",
+        "To them, the Thought Police are exciting.",
+        "Winston thinks about the future.",
+        "A world where children watch their parents.",
+        "A world where language becomes smaller.",
+        "A world where the past changes every day.",
+        "Then an announcement comes from the telescreen.",
+        "The Party says the chocolate ration is increasing to twenty grams.",
+        "People around Winston are happy.",
+        "But Winston remembers that only one day before, the Party announced that the ration would be reduced to twenty grams.",
+        "Reduced. Not increased.",
+        "Now everyone celebrates an increase.",
+        "Winston looks around.",
+        "Does nobody remember?",
+        "Perhaps they remember but are afraid.",
+        "Perhaps they really believe the new version.",
+        "This is what the Party wants.",
+        "Not only silence.",
+        "Belief.",
+        "That evening, Winston writes in his diary again.",
+        "He thinks about the ordinary people of Oceania.",
+        "The Party calls them proles.",
+        "Most of the population are proles.",
+        "They live differently from Party members.",
+        "The Party watches them less closely.",
+        "They work.",
+        "They marry.",
+        "They argue.",
+        "They sing.",
+        "They buy things in small markets.",
+        "Their lives are difficult, but they still have some ordinary human habits.",
+        "Winston writes: If there is hope, it lies in the proles.",
+        "There are many more proles than Party members.",
+        "If they understood their power, perhaps they could change everything.",
+        "But Winston also knows a problem.",
+        "The proles do not seem interested in political rebellion.",
+        "They are busy living.",
+        "Winston wants to understand the past.",
+        "One evening, he walks into a prole area.",
+        "He knows Party members do not usually go there without a reason.",
+        "That makes the walk dangerous.",
+        "The streets are crowded.",
+        "People stand outside shops.",
+        "Children play.",
+        "Women talk from windows.",
+        "For a moment, the city feels different.",
+        "Less controlled.",
+        "Winston sees an old man entering a pub.",
+        "The man is very old.",
+        "He lived before the Revolution.",
+        "Winston follows him.",
+        "Inside, Winston asks questions.",
+        "What was life like before the Revolution?",
+        "Were rich people very powerful?",
+        "Were ordinary people happier?",
+        "The old man remembers small things.",
+        "Beer.",
+        "Clothes.",
+        "Arguments.",
+        "People he knew.",
+        "But he cannot give Winston the clear answer he wants.",
+        "His memories are personal and incomplete.",
+        "Winston becomes frustrated.",
+        "Once again, the past is there... but he cannot reach it clearly.",
+        "Later, Winston walks along another street.",
+        "He recognizes a small secondhand shop.",
+        "It is the same shop where he bought the diary.",
+        "He enters.",
+        "The owner is an old man named Mr. Charrington.",
+        "Mr. Charrington is polite and quiet.",
+        "The shop is filled with old objects.",
+        "Things from another time.",
+        "Winston looks at them with fascination.",
+        "Then he sees a small glass object.",
+        "Inside the glass is a piece of coral.",
+        "It is beautiful.",
+        "It has no practical use.",
+        "That makes Winston like it even more.",
+        "The Party wants everything to have a purpose.",
+        "But this object exists simply because it is beautiful.",
+        "Winston buys it.",
+        "Mr. Charrington shows Winston another part of the shop.",
+        "There is a small room upstairs.",
+        "The room has a bed.",
+        "A table.",
+        "Old furniture.",
+        "A picture on the wall.",
+        "And something very unusual: there is no telescreen.",
+        "Winston looks around.",
+        "For a moment, the room feels impossible.",
+        "A private room.",
+        "A room where nobody can see him.",
+        "A place that seems connected to another world.",
+        "Winston begins to imagine renting it.",
+        "He knows this idea is dangerous.",
+        "Very dangerous.",
+        "But he cannot stop thinking about it.",
+        "Winston leaves the shop.",
+        "He walks back toward the main streets.",
+        "Then he sees someone.",
+        "The dark-haired woman from the Fiction Department.",
+        "She is walking near the shop.",
+        "Winston freezes.",
+        "Why is she here?",
+        "Did she follow him?",
+        "Does she work for the Thought Police?",
+        "His fear returns immediately.",
+        "The shop.",
+        "The diary.",
+        "The paperweight.",
+        "The questions about the past.",
+        "Maybe the Party already knows everything.",
+        "Winston walks away quickly.",
+        "He does not look back.",
+        "The glass paperweight is hidden in his pocket.",
+        "A small piece of the past.",
+        "And now Winston is no longer sure if anyone can have a private life at all."
+      ],
+      "secondary_illustration": {
+        "asset": "assets/week2_story_room_above_shop.webp",
+        "alt_text": "Winston sits alone in the room above Mr. Charrington's shop, studying the glass paperweight in warm lamplight. The room feels old, private and fragile."
+      }
+    },
+    "end_of_chapter": [
+      "Winston changes the past for the Party.",
+      "But he also searches for the real past.",
+      "He destroys evidence.",
+      "But he also wants proof.",
+      "He works inside the system.",
+      "And at the same time, he is beginning to move against it.",
+      "Then he sees the dark-haired woman.",
+      "And once again, Winston does not know: Is he remembering the truth — or walking directly into a trap?"
+    ],
+    "quick_check": [
+      {
+        "type": "multiple_choice",
+        "question": "What does Winston do in the Records Department?",
+        "options": [
+          "He arrests people.",
+          "He changes old information.",
+          "He writes novels.",
+          "He teaches Newspeak."
+        ],
+        "answer": "He changes old information."
+      },
+      {
+        "type": "multiple_choice",
+        "question": "What is a memory hole?",
+        "options": [
+          "A place for storing memories.",
+          "A machine that reads thoughts.",
+          "An opening where documents are destroyed.",
+          "A room in the Ministry of Love."
+        ],
+        "answer": "An opening where documents are destroyed."
+      },
+      {
+        "type": "multiple_choice",
+        "question": "What does the photograph of Jones, Aaronson and Rutherford prove?",
+        "options": [
+          "They worked for Big Brother.",
+          "Their confessions were false.",
+          "Winston knew them personally.",
+          "Goldstein took the photograph."
+        ],
+        "answer": "Their confessions were false."
+      },
+      {
+        "type": "multiple_choice",
+        "question": "What does Winston do with the photograph?",
+        "options": [
+          "He keeps it in his diary.",
+          "He gives it to O'Brien.",
+          "He hides it at home.",
+          "He destroys it in the memory hole."
+        ],
+        "answer": "He destroys it in the memory hole."
+      },
+      {
+        "type": "multiple_choice",
+        "question": "What is Syme helping to create?",
+        "options": [
+          "The Newspeak Dictionary",
+          "A new telescreen",
+          "A newspaper",
+          "Goldstein's book"
+        ],
+        "answer": "The Newspeak Dictionary"
+      },
+      {
+        "type": "true_false",
+        "question": "Newspeak creates more and more words every year.",
+        "answer": false
+      },
+      {
+        "type": "multiple_choice",
+        "question": "Why does Winston go into the prole area?",
+        "options": [
+          "He wants to buy food.",
+          "He wants to understand the past.",
+          "He is looking for Julia.",
+          "He works there."
+        ],
+        "answer": "He wants to understand the past."
+      },
+      {
+        "type": "multiple_choice",
+        "question": "What does Winston buy from Mr. Charrington?",
+        "options": [
+          "A photograph",
+          "A clock",
+          "A glass paperweight with coral",
+          "A book about Big Brother"
+        ],
+        "answer": "A glass paperweight with coral"
+      },
+      {
+        "type": "multiple_choice",
+        "question": "What is unusual about the room above the shop?",
+        "options": [
+          "It has no windows.",
+          "It has no telescreen.",
+          "It belongs to O'Brien.",
+          "It is inside the Ministry of Truth."
+        ],
+        "answer": "It has no telescreen."
+      },
+      {
+        "type": "multiple_choice",
+        "question": "Who does Winston see near the shop at the end?",
+        "options": [
+          "O'Brien",
+          "Parsons",
+          "Syme",
+          "The dark-haired woman"
+        ],
+        "answer": "The dark-haired woman"
+      }
+    ],
+    "vocabulary": [
+      {
+        "word": "record",
+        "pt": "registro"
+      },
+      {
+        "word": "past",
+        "pt": "passado"
+      },
+      {
+        "word": "proof",
+        "pt": "prova / evidência"
+      },
+      {
+        "word": "memory hole",
+        "pt": "buraco da memória"
+      },
+      {
+        "word": "unperson",
+        "pt": "pessoa apagada dos registros"
+      },
+      {
+        "word": "Newspeak",
+        "pt": "Novafala"
+      },
+      {
+        "word": "language",
+        "pt": "linguagem"
+      },
+      {
+        "word": "freedom",
+        "pt": "liberdade"
+      },
+      {
+        "word": "ration",
+        "pt": "ração / quantidade permitida"
+      },
+      {
+        "word": "prole",
+        "pt": "proletário"
+      },
+      {
+        "word": "shop",
+        "pt": "loja"
+      },
+      {
+        "word": "paperweight",
+        "pt": "peso de papel"
+      }
+    ],
+    "language_check": {
+      "past_simple": {
+        "explanation": "We use the Past Simple for completed events in the past.",
+        "examples": [
+          "Winston found a photograph.",
+          "The Party changed the information.",
+          "Winston bought a paperweight.",
+          "The old man remembered small details."
+        ],
+        "questions": [
+          {
+            "question": "Winston find / found an important photograph.",
+            "answer": "found"
+          },
+          {
+            "question": "The Party change / changed old information.",
+            "answer": "changed"
+          },
+          {
+            "question": "Winston buy / bought the glass paperweight.",
+            "answer": "bought"
+          },
+          {
+            "question": "The old man remember / remembered small things from the past.",
+            "answer": "remembered"
+          }
+        ]
+      },
+      "present_vs_past": {
+        "questions": [
+          {
+            "question": "Today Winston works / worked at the Ministry of Truth.",
+            "answer": "works"
+          },
+          {
+            "question": "Years earlier, the Party accuses / accused Jones, Aaronson and Rutherford.",
+            "answer": "accused"
+          },
+          {
+            "question": "Winston remembers / remembered that the photograph proved something important.",
+            "answer": "remembers"
+          }
+        ]
+      }
+    },
+    "orwells_question": {
+      "question": "If the Party controls old newspapers, what happens to the truth?",
+      "options": [
+        "Nothing changes because people always remember everything.",
+        "The truth becomes difficult to prove.",
+        "Only newspapers become less useful.",
+        "The past becomes more interesting."
+      ],
+      "preferred_answer": "The truth becomes difficult to prove.",
+      "feedback": "The Party does not need to erase every memory immediately. If it destroys the evidence, each individual person must fight alone against the official version."
+    },
+    "second_reflection": {
+      "question": "Why is Newspeak powerful?",
+      "options": [
+        "It gives people more ways to express ideas.",
+        "It helps people learn foreign languages.",
+        "It reduces the words people can use to express dangerous ideas.",
+        "It makes newspapers shorter."
+      ],
+      "preferred_answer": "It reduces the words people can use to express dangerous ideas.",
+      "feedback": "If people lose the language for an idea, expressing and sharing that idea can become much harder. The Party is not only changing information. It is changing the tools people use to think."
+    },
+    "optional_classroom_mission": {
+      "speaking": {
+        "question": "Which is more powerful: changing history or changing language?",
+        "sentence_starters": [
+          "I think...",
+          "History is important because...",
+          "Language is powerful because..."
+        ]
+      },
+      "writing": {
+        "prompt": "Winston finds proof that the Party lied, but he destroys it. Was this understandable, cowardly, necessary, or something else?",
+        "word_target": "60–80 words",
+        "blocking": false
+      }
+    },
+    "learning_outcomes": [
+      "Understand how Winston changes historical records.",
+      "Understand what a memory hole does.",
+      "Understand what an unperson is.",
+      "Explain why the photograph is important.",
+      "Understand how Newspeak reduces language.",
+      "Explain why Winston looks to the proles for hope.",
+      "Explain why Mr. Charrington's shop attracts Winston.",
+      "Understand why the room without a telescreen feels important.",
+      "Explain why seeing the dark-haired woman frightens Winston."
+    ],
+    "next_week": {
+      "chapter": "Chapter 3 — The Note",
+      "teaser": "Winston thinks the dark-haired woman is watching him. Then one day, she secretly puts a small piece of paper into his hand. Winston opens it. It contains only three words: I LOVE YOU."
+    }
+  },
+  "implementation_notes": {
+    "primary_goal": "Story first. Learning around the story, not in the way of the story.",
+    "reading_rules": [
+      "Do not interrupt the story with mandatory exercises.",
+      "Allow the learner to read the full chapter before showing required questions.",
+      "Short page breaks or scene breaks are allowed for readability, but they must not insert tasks between story sections.",
+      "The secondary illustration may appear inside the story as visual support only, with no blocking question attached."
+    ],
+    "interaction_rules": [
+      "Quick Check, Language Check, Orwell's Question and Second Reflection appear only after End of Chapter.",
+      "Orwell's Question and Second Reflection must be multiple-choice or choice-based, not open writing.",
+      "Speaking and Writing are optional classroom activities and must never block progress.",
+      "Vocabulary should work best as tap-to-open cards, popovers or lightweight glossary support."
+    ],
+    "ui_tone": [
+      "Cold, oppressive, adult, literary.",
+      "Avoid playful or childish gamification.",
+      "Use strong contrast, muted grayscale and restrained red accents."
+    ]
+  }
+}
