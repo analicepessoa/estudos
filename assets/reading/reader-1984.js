@@ -85,6 +85,7 @@
     overlay().scrollTo({top:0});
   }
   function close(){
+    stopChapterAudio();
     if(valid()&&session.mode==='story'){session.answers._scroll=overlay().scrollTop;saveAnswers();}
     session=null;
     dictionaryDialog?.close();
@@ -125,12 +126,55 @@
     // The existing save path preserves local pending progress before sending it.
     Promise.resolve(saveStudentProgress({silent:true})).catch(()=>{});
   }
+  function chapterAudioText(){
+    if(!session)return '';
+    const w=session.data.week;
+    return [w.chapter_opening.intro,...w.story.paragraphs,...w.end_of_chapter].join(' ');
+  }
+  function stopChapterAudio(){
+    if(!session?.audioPlaying)return;
+    window.speechSynthesis?.cancel();
+    session.audioPlaying=false;
+    const button=page()?.querySelector('[data-n84-audio]');
+    if(button)button.textContent='Ouvir capítulo';
+    const status=page()?.querySelector('#n84-audio-status');
+    if(status)status.textContent='Áudio pausado.';
+  }
+  async function playChapterAudio(){
+    if(!valid())return close();
+    if(session.audioPlaying)return stopChapterAudio();
+    const status=page()?.querySelector('#n84-audio-status');
+    if(typeof playTTS!=='function'){
+      if(status)status.textContent='O áudio não está disponível neste navegador.';
+      return;
+    }
+    session.audioPlaying=true;
+    const button=page()?.querySelector('[data-n84-audio]');
+    if(button)button.textContent='Parar áudio';
+    if(status)status.textContent='Lendo o capítulo em inglês…';
+    try{
+      const last=await playTTS(chapterAudioText(),.82,'en-US');
+      if(last)last.onend=()=>{
+        if(session?.audioPlaying){
+          session.audioPlaying=false;
+          const activeButton=page()?.querySelector('[data-n84-audio]');
+          if(activeButton)activeButton.textContent='Ouvir capítulo';
+          const activeStatus=page()?.querySelector('#n84-audio-status');
+          if(activeStatus)activeStatus.textContent='Fim do áudio do capítulo.';
+        }
+      };
+    }catch(error){
+      session.audioPlaying=false;
+      if(button)button.textContent='Ouvir capítulo';
+      if(status)status.textContent='Não foi possível iniciar o áudio. Tente novamente.';
+    }
+  }
   function words(text){return String(text).split(/([A-Za-z]+(?:['’][A-Za-z]+)*)/g).map((part,i)=>i%2?`<button type="button" class="n84-word" data-n84-word="${safe(part.toLowerCase().replace(/’/g,"'"))}" aria-label="Significado de ${safe(part)}">${safe(part)}</button>`:safe(part)).join('');}
   function read(){
     if(!valid())return close();
     const w=session.data.week;
     const insertAt={1:115,2:174,3:160}[session.week];
-    view(`<article class="n84-reader"><small>Week ${w.number} of 6 · Chapter ${w.chapter_number}</small><h1>${safe(w.title)}</h1><p class="n84-hint">Toque em qualquer palavra em inglês para ver uma explicação em português, sem sair da leitura.</p><p>${words(w.chapter_opening.intro)}</p><img class="n84-illustration" src="${BASE+w.chapter_opening.asset}" alt="${safe(w.chapter_opening.alt_text)}"><hr>${w.story.paragraphs.map((p,i)=>`${i===insertAt?`<img class="n84-illustration ${w.number===3?'n84-warm':''}" src="${BASE+w.story.secondary_illustration.asset}" alt="${safe(w.story.secondary_illustration.alt_text)}">`:''}<p class="n84-story">${words(p)}</p>`).join('')}<section class="n84-end"><small>End of Chapter</small>${w.end_of_chapter.map(p=>`<p>${words(p)}</p>`).join('')}<button type="button" class="n84-primary" data-n84-story-done>Concluir leitura e ir para as atividades</button></section></article>`,'story');
+    view(`<article class="n84-reader"><small>Week ${w.number} of 6 · Chapter ${w.chapter_number}</small><h1>${safe(w.title)}</h1><div class="n84-audio"><button type="button" data-n84-audio><i class="fa-solid fa-volume-high"></i> Ouvir capítulo</button><span id="n84-audio-status" aria-live="polite">Áudio em inglês, com a voz disponível no seu aparelho.</span></div><p class="n84-hint">Toque em qualquer palavra em inglês para ver uma explicação em português, sem sair da leitura.</p><p>${words(w.chapter_opening.intro)}</p><img class="n84-illustration" src="${BASE+w.chapter_opening.asset}" alt="${safe(w.chapter_opening.alt_text)}"><hr>${w.story.paragraphs.map((p,i)=>`${i===insertAt?`<img class="n84-illustration ${w.number===3?'n84-warm':''}" src="${BASE+w.story.secondary_illustration.asset}" alt="${safe(w.story.secondary_illustration.alt_text)}">`:''}<p class="n84-story">${words(p)}</p>`).join('')}<section class="n84-end"><small>End of Chapter</small>${w.end_of_chapter.map(p=>`<p>${words(p)}</p>`).join('')}<button type="button" class="n84-primary" data-n84-story-done>Concluir leitura e ir para as atividades</button></section></article>`,'story');
     const owner=session.owner;
     requestAnimationFrame(()=>{if(valid()&&session.owner===owner&&session.mode==='story')overlay().scrollTo({top:Number(session.answers._scroll)||0});});
   }
@@ -153,14 +197,18 @@
     if(stage===3||stage===4)return [{...(stage===3?w.orwells_question:w.second_reflection),id:stage===3?'orwell':'reflection',reflect:true}];
     return [];
   }
-  function stagePassed(stage){
-    return questions(stage).every(q=>{
+  function stageResult(stage=session.stage){
+    const items=questions(stage);
+    const answered=items.every(q=>{
       const index=session.answers[q.id];
-      return Number.isInteger(index)&&index>=0&&index<q.options.length&&(q.reflect||q.options[index]===q.answer);
+      return Number.isInteger(index)&&index>=0&&index<q.options.length;
     });
+    const scored=items.filter(q=>!q.reflect);
+    const correct=scored.filter(q=>q.options[session.answers[q.id]]===q.answer).length;
+    return {answered,correct,total:scored.length,passed:answered&&(!scored.length||correct/scored.length>.5)};
   }
   function questionHtml(q){
-    return `<section class="n84-question" data-question="${q.id}"><h3>${safe(q.question)}</h3><div class="n84-choices">${q.options.map((o,i)=>`<button type="button" data-n84-answer="${q.id}" data-index="${i}" aria-pressed="false">${safe(o===true?'True':o===false?'False':o)}</button>`).join('')}</div><div class="n84-feedback" aria-live="polite"></div></section>`;
+    return `<section class="n84-question" data-question="${q.id}"><h3>${safe(q.question)}</h3><div class="n84-choices">${q.options.map((o,i)=>`<button type="button" data-n84-answer="${q.id}" data-index="${i}" aria-pressed="false">${safe(o===true?'True':o===false?'False':o)}</button>`).join('')}</div><p class="n84-answer-note">Depois de escolher, sua resposta fica registrada nesta tentativa.</p><div class="n84-feedback" aria-live="polite"></div></section>`;
   }
   function activities(){
     if(!valid())return close();
@@ -171,7 +219,7 @@
     let html='';
     if(stage===1)html=`<p>Toque nas palavras para revelar os significados.</p><div class="n84-vocabulary">${w.vocabulary.map(v=>`<details><summary>${safe(v.word)}</summary>${safe(v.pt)}</details>`).join('')}</div>`;
     if(stage===2)html=Object.entries(w.language_check).map(([key,g])=>`<h3>${safe(key.replaceAll('_',' '))}</h3>${g.explanation?`<p>${safe(g.explanation)}</p>`:''}${g.words?`<p>${g.words.map(safe).join(' · ')}</p>`:''}${(g.examples||g.example||[]).map(e=>`<p>${safe(e)}</p>`).join('')}`).join('');
-    if(stage===5)html=`<p>Opcional: propostas para aula ou tarefa complementar. Não é preciso escrever para liberar a próxima semana.</p><details><summary>Speaking</summary><p>${safe(w.optional_classroom_mission.speaking.question)}</p>${w.optional_classroom_mission.speaking.sentence_starters.map(p=>`<p>${safe(p)}</p>`).join('')}</details><details><summary>Writing · ${safe(w.optional_classroom_mission.writing.word_target)}</summary><p>${safe(w.optional_classroom_mission.writing.prompt)}</p></details>`;
+    if(stage===5)html=`<p>Opcional: propostas para aula ou tarefa complementar. Não é preciso escrever para liberar a próxima semana.</p><details><summary>Speaking</summary><p>${safe(w.optional_classroom_mission.speaking.question)}</p>${w.optional_classroom_mission.speaking.sentence_starters.map(p=>`<p>${safe(p)}</p>`).join('')}</details><section class="n84-thoughts"><h3>Writing · ${safe(w.optional_classroom_mission.writing.word_target)}</h3><p>${safe(w.optional_classroom_mission.writing.prompt)}</p><label for="n84-optional-thoughts">Se quiser, escreva seus pensamentos</label><textarea id="n84-optional-thoughts" maxlength="1500" placeholder="Write here…">${safe(session.answers.optionalThoughts||'')}</textarea><small>Seu texto fica salvo somente neste aparelho e não é necessário para continuar.</small></section>`;
     html+=questions().map(questionHtml).join('');
     view(`<section class="n84-reader"><small>Week ${w.number} · After reading · ${stage+1}/6</small><h2>${STAGES[stage]}</h2>${html}<div class="n84-navigation">${stage>0?'<button type="button" data-n84-previous>Voltar</button>':''}<button type="button" class="n84-primary" data-n84-next>${stage===5?'Concluir semana '+w.number:'Continuar'}</button></div><p id="n84-gate" aria-live="polite"></p></section>`,'activities');
     questions().forEach(paintAnswer);
@@ -181,8 +229,8 @@
     if(!Number.isInteger(i)||i<0||i>=q.options.length)return;
     const selected=q.options[i],el=page().querySelector(`[data-question="${q.id}"]`);
     if(!el)return;
-    el.querySelectorAll('[data-n84-answer]').forEach((b,n)=>b.setAttribute('aria-pressed',String(n===i)));
-    const feedback=q.reflect?(typeof q.feedback==='string'?q.feedback:q.feedback[selected===q.preferred_answer?'preferred':'other']):selected===q.answer?'Correto.':'Releia a frase e tente novamente.';
+    el.querySelectorAll('[data-n84-answer]').forEach((b,n)=>{b.setAttribute('aria-pressed',String(n===i));b.disabled=true;});
+    const feedback=q.reflect?(typeof q.feedback==='string'?q.feedback:q.feedback[selected===q.preferred_answer?'preferred':'other']):selected===q.answer?'Correto.':'Resposta registrada. Revise o capítulo antes de fazer uma nova tentativa.';
     el.querySelector('.n84-feedback').textContent=feedback;
   }
   function finish(){
@@ -223,21 +271,44 @@
     if(!target.closest('#reading-content')||!session)return;
     if(!valid())return close();
     if(target.hasAttribute('data-n84-word'))return dictionary(target);
+    if(target.hasAttribute('data-n84-audio'))return void playChapterAudio();
     if(target.hasAttribute('data-n84-close'))return close();
-    if(target.hasAttribute('data-n84-story-done')){persist('story');session.stage=0;return activities();}
+    if(target.hasAttribute('data-n84-story-done')){
+      persist('story');
+      session.stage=Number.isInteger(session.answers._retryStage)?session.answers._retryStage:0;
+      delete session.answers._retryStage;saveAnswers();
+      return activities();
+    }
     if(session.mode!=='activities')return;
     if(target.hasAttribute('data-n84-answer')){
       const q=questions().find(q=>q.id===target.dataset.n84Answer),i=Number(target.dataset.index);
       if(!q||!Number.isInteger(i)||i<0||i>=q.options.length)return;
+      if(Number.isInteger(session.answers[q.id]))return;
       session.answers[q.id]=i;saveAnswers();paintAnswer(q);return;
+    }
+    if(target.hasAttribute('data-n84-review-retry')){
+      const stage=session.stage;
+      questions(stage).forEach(q=>delete session.answers[q.id]);
+      session.answers._retryStage=stage;saveAnswers();
+      return read();
     }
     if(target.hasAttribute('data-n84-previous')){session.stage=Math.max(0,session.stage-1);return activities();}
     if(target.hasAttribute('data-n84-next')){
-      if(!stagePassed()){document.getElementById('n84-gate').textContent='Responda às questões antes de continuar. Em compreensão e gramática, tente novamente até acertar.';return;}
+      const result=stageResult();
+      if(!result.answered){document.getElementById('n84-gate').textContent='Responda a todas as questões. Cada resposta só pode ser escolhida uma vez nesta tentativa.';return;}
+      if(!result.passed){
+        document.getElementById('n84-gate').innerHTML=`Você acertou ${result.correct} de ${result.total}. É preciso acertar mais da metade para continuar.<br><button type="button" data-n84-review-retry>Revisar o capítulo e tentar novamente</button>`;
+        return;
+      }
       persist(`stage_${session.stage}`);
       if(session.stage===5)return finish();
       session.stage++;activities();
     }
+  });
+  document.addEventListener('input',event=>{
+    if(event.target.id!=='n84-optional-thoughts'||!valid()||session.mode!=='activities'||session.stage!==5)return;
+    session.answers.optionalThoughts=event.target.value.slice(0,1500);
+    saveAnswers();
   });
   let scrollSaveTimer;
   overlay()?.addEventListener('scroll',()=>{

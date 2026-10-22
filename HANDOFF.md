@@ -29,3 +29,10 @@
   relatórios e Body Parts preservadas fora desta alteração. Cache da leitura: ap-english-v129.
 - Nenhum teste escreveu no Supabase ou em planilha real. Sincronização remota depende do fluxo
   existente do portal; testes desta entrega não comprovam gravação real no backend.
+
+## 1984 — áudio, respostas e escrita opcional, 2026-10-22
+
+- O capítulo agora pode ser ouvido em inglês pela voz disponível no aparelho; há controle para parar a leitura.
+- Cada alternativa fica bloqueada ao ser escolhida. Quick Check e Language Check exigem mais de metade das
+  respostas corretas; com 50% ou menos, o aluno revisa o capítulo e inicia uma nova tentativa da etapa.
+- A missão final inclui um campo opcional para pensamentos, salvo apenas neste aparelho. Cache previsto: ap-english-v130.
