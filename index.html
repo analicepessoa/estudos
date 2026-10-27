@@ -3273,6 +3273,7 @@ select.input { appearance: none; cursor: pointer; }
   </div>
 </div>
 
+<script src="assets/azure-audio-pilot.js?v=134"></script>
 <script src="book-audio-data.js"></script>
 <script src="book-audio-data-2.js"></script>
 <script src="./livros/a%20metamorfose/reading-data.js"></script>
@@ -7197,6 +7198,7 @@ function updateStudentPreviewModeUi(){
   if(title)title.innerHTML=reviewing
     ? '<i class="fa-solid fa-magnifying-glass"></i> Revisão da professora'
     : '<i class="fa-solid fa-eye"></i> Prévia fiel da turma';
+  if(title&&typeof azurePilotEnabled==='function'&&azurePilotEnabled())title.insertAdjacentHTML('beforeend',' <span style="font-size:12px;background:#0f766e;color:white;padding:3px 7px;border-radius:8px">Azure piloto</span>');
   if(subtitle)subtitle.textContent=reviewing
     ? 'Todas as fases ficam abertas somente para sua conferência. Os alunos continuam com os bloqueios normais.'
     : 'Conteúdo publicado e bloqueios reais · progresso de um aluno novo.';
@@ -9596,7 +9598,7 @@ function engineFlashcard(){
 }
 function handleListen(btn,text){
   btn.classList.add('playing');
-  playTTS(text,0.7,'en-US');
+  (async()=>{const audio=typeof playAzurePilot==='function'?await playAzurePilot(text,.75):null;if(!audio)playTTS(text,0.7,'en-US')})();
   setTimeout(()=>btn.classList.remove('playing'),2000);
 }
 
@@ -9798,8 +9800,9 @@ async function handleDictPlay(text,mode='slow',sourceButton=null){
     normal:{rate:0.82,label:'normal',text},
     words:{rate:0.58,label:'palavra por palavra',text:String(text).replace(/[.,!?;:]+/g,'').split(/\s+/).join(', ')}
   }[mode]||{rate:0.62,label:'devagar',text};
-  const utterance=await playTTS(settings.text,settings.rate,'en-US');
-  counter.textContent=`Ouvido ${dictPlayCount}x · modo ${settings.label} · repita quantas vezes precisar`;
+  const pilotAudio=typeof playAzurePilot==='function'?await playAzurePilot(settings.text,Math.max(.75,settings.rate)):null;
+  const utterance=pilotAudio || await playTTS(settings.text,settings.rate,'en-US');
+  counter.textContent=utterance?.paused&&typeof azurePilotEnabled==='function'&&azurePilotEnabled()?'Áudio pronto. Toque novamente para ouvir.':`Ouvido ${dictPlayCount}x · modo ${settings.label} · repita quantas vezes precisar`;
   const finish=()=>document.querySelectorAll('.dictation-play,.dictation-audio-btn').forEach(button=>button.classList.remove('playing'));
   if(utterance)utterance.onend=utterance.onerror=finish;
   else finish();
