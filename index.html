@@ -11676,18 +11676,56 @@ function deleteHomeworkRecord(id){
   saveHomeworkRecords(records.filter(item=>item.id!==id));selectedHomeworkId='';renderHomeworkTracker();
 }
 
+let cloudCatalogBaseline=null;
+
+function catalogSignature(value){
+  const ordered=item=>Array.isArray(item)?item.map(ordered):item&&typeof item==='object'
+    ?Object.fromEntries(Object.keys(item).sort().map(key=>[key,ordered(item[key])])):item;
+  return JSON.stringify(ordered(value));
+}
+
+function isCloudCatalog(data){
+  return Boolean(data&&typeof data==='object'&&!Array.isArray(data)&&
+    ['turmas','trilhas','semanas','musicas'].every(key=>data[key]&&typeof data[key]==='object'&&!Array.isArray(data[key]))&&
+    ['trilhas','semanas','musicas'].every(key=>Object.values(data[key]).every(Array.isArray)));
+}
+
+function preserveCatalogRecovery(candidate,incoming){
+  const count=data=>['trilhas','semanas'].reduce((total,section)=>total+
+    Object.values(data?.[section]||{}).reduce((sum,items)=>sum+(Array.isArray(items)?items.reduce((n,item)=>n+1+
+      ['teoria','pratica','vocab','chunks','erros','ditado'].reduce((m,key)=>m+(Array.isArray(item?.[key])?item[key].length:0),0),0):0),0),0);
+  try{
+    // Keep a recovery copy only; never merge or restore old content automatically.
+    if(count(candidate)>count(incoming)&&!localStorage.getItem('english_hub_catalog_recovery_v1')){
+      localStorage.setItem('english_hub_catalog_recovery_v1',JSON.stringify({savedAt:new Date().toISOString(),catalog:candidate}));
+    }
+  }catch(error){console.warn('Não foi possível preservar a cópia de conteúdo:',error);}
+}
+
 function saveLocalDB(){localStorage.setItem('english_hub_db',JSON.stringify(DATABASE));}
 
 async function saveCloudDB(){
   // Always save to localStorage as cache
   saveLocalDB();
+  if(!cloudCatalogBaseline){
+    alert('Não foi possível confirmar o conteúdo da nuvem. A edição ficou salva neste aparelho, mas não foi enviada para evitar substituir o catálogo por uma cópia incompleta.');
+    return false;
+  }
   // Save to Supabase cloud
   try {
     if(!sbClient) sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     // A page opened before a catalog release can still have an older copy in memory.
     // Preserve songs from completed catalog migrations once, without bringing
     // them back after an intentional deletion in a current page.
-    const {data:latestRow,error:latestError}=await sbClient.from('app_content').select('data').eq('id','main').maybeSingle();
+    const {data:latestRow,error:latestError}=await sbClient.from('app_content').select('data,updated_at').eq('id','main').maybeSingle();
+    if(latestError||!isCloudCatalog(latestRow?.data)||!latestRow.updated_at){
+      alert('Não consegui conferir o conteúdo atual da nuvem. A edição local foi preservada e não foi enviada.');
+      return false;
+    }
+    if(catalogSignature(latestRow.data)!==cloudCatalogBaseline){
+      alert('O conteúdo foi alterado em outra sessão. Não salvei na nuvem para evitar perda de material. A edição local foi preservada.');
+      return false;
+    }
     const catalogMigrations={
       songs_2026_09_29:['Too Sweet','The Fate of Ophelia'],
       songs_2026_10_05:['All For Us'],
@@ -11710,12 +11748,19 @@ async function saveCloudDB(){
       });
     }
     const cloudData = { turmas: DATABASE.turmas, semanas: DATABASE.semanas, aulasArquivadas: DATABASE.aulasArquivadas, trilhas: DATABASE.trilhas, musicas: DATABASE.musicas, audioRevisao: DATABASE.audioRevisao, studentControls: DATABASE.studentControls, musicCatalogMigrations: DATABASE.musicCatalogMigrations };
-    const { data, error } = await sbClient.from('app_content').upsert({ id: 'main', data: cloudData, updated_at: new Date().toISOString() });
+    const { data, error } = await sbClient.from('app_content')
+      .update({data:cloudData,updated_at:new Date().toISOString()})
+      .eq('id','main').eq('updated_at',latestRow.updated_at)
+      .select('data,updated_at').maybeSingle();
     if (error) {
       console.error('❌ Erro Supabase ao salvar:', error);
       alert('Erro ao salvar na nuvem: ' + error.message);
       return false;
+    } else if(!data?.data||!data.updated_at){
+      alert('O conteúdo mudou enquanto a edição era enviada. Não substituí a versão da nuvem. A edição local foi preservada.');
+      return false;
     } else {
+      cloudCatalogBaseline=catalogSignature(data.data);
       console.log('☁️ Salvo na nuvem!');
       return true;
     }
@@ -11726,6 +11771,7 @@ async function saveCloudDB(){
 }
 
 async function loadCloudDB(){
+  cloudCatalogBaseline=null;
   // 1. Load localStorage cache first (instant)
   const saved = localStorage.getItem('english_hub_db');
   if(saved){
@@ -11733,10 +11779,7 @@ async function loadCloudDB(){
       const p = JSON.parse(saved);
       if(p.trilhas && typeof p.trilhas === 'object' && !Array.isArray(p.trilhas)) {
         Object.keys(p.trilhas).forEach(k => {
-          if(!DATABASE.trilhas[k]) DATABASE.trilhas[k] = [];
-          (p.trilhas[k]||[]).forEach(t => {
-            if(!DATABASE.trilhas[k].find(e => e.id === t.id)) DATABASE.trilhas[k].push(t);
-          });
+          if(Array.isArray(p.trilhas[k])) DATABASE.trilhas[k]=p.trilhas[k];
         });
       }
       if(p.turmas) Object.keys(p.turmas).forEach(k => DATABASE.turmas[k] = p.turmas[k]);
@@ -11744,10 +11787,7 @@ async function loadCloudDB(){
       if(p.audioRevisao) DATABASE.audioRevisao = {...DATABASE.audioRevisao,...p.audioRevisao};
       if(p.studentControls) DATABASE.studentControls = {...DATABASE.studentControls,...p.studentControls};
       if(p.semanas) Object.keys(p.semanas).forEach(k => {
-        if(!DATABASE.semanas[k]) DATABASE.semanas[k] = [];
-        (p.semanas[k]||[]).forEach(sem => {
-          if(!DATABASE.semanas[k].find(e => e.title === sem.title)) DATABASE.semanas[k].push(sem);
-        });
+        if(Array.isArray(p.semanas[k])) DATABASE.semanas[k]=p.semanas[k];
       });
       if(p.musicas) Object.keys(p.musicas).forEach(k => {
         if(!DATABASE.musicas[k]) DATABASE.musicas[k] = [];
@@ -11761,9 +11801,11 @@ async function loadCloudDB(){
   // 2. Then load from Supabase cloud (overrides cache)
   try {
     if(!sbClient) sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data, error } = await withTimeout(sbClient.from('app_content').select('data').eq('id', 'main').single(), 8000);
-    if(!error && data && data.data) {
+    const { data, error } = await withTimeout(sbClient.from('app_content').select('data,updated_at').eq('id', 'main').single(), 8000);
+    if(!error && isCloudCatalog(data?.data) && data.updated_at) {
       const cloud = data.data;
+      preserveCatalogRecovery(DATABASE,cloud);
+      cloudCatalogBaseline=catalogSignature(cloud);
       if(cloud.turmas) DATABASE.turmas = { ...DATABASE.turmas, ...cloud.turmas };
       if(Array.isArray(cloud.aulasArquivadas)) DATABASE.aulasArquivadas = cloud.aulasArquivadas;
       if(cloud.audioRevisao) DATABASE.audioRevisao = {...DATABASE.audioRevisao,...cloud.audioRevisao};
@@ -11774,7 +11816,7 @@ async function loadCloudDB(){
       }
       if(cloud.trilhas && typeof cloud.trilhas === 'object' && !Array.isArray(cloud.trilhas)) {
         Object.keys(cloud.trilhas).forEach(k => {
-          if(Array.isArray(cloud.trilhas[k]) && cloud.trilhas[k].length) DATABASE.trilhas[k] = cloud.trilhas[k];
+          if(Array.isArray(cloud.trilhas[k])) DATABASE.trilhas[k] = cloud.trilhas[k];
         });
       }
       if(cloud.musicas) {
