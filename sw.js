@@ -1,7 +1,7 @@
 // Service Worker — Analice Pessoa · English
 // Troque a versão (v1, v2...) sempre que publicar uma atualização do app,
 // para forçar os celulares a baixarem a versão nova.
-const CACHE = 'ap-english-v138';
+const CACHE = 'ap-english-v139';
 const PILOT_AUDIO_CACHE = 'ap-is08-static-audio-v1';
 
 self.addEventListener('message', (event) => {

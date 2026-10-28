@@ -11676,8 +11676,50 @@ function deleteHomeworkRecord(id){
   saveHomeworkRecords(records.filter(item=>item.id!==id));selectedHomeworkId='';renderHomeworkTracker();
 }
 
-const CATALOG_WRITES_PAUSED_FOR_RECOVERY = true;
 const CATALOG_RECOVERY_KEY = 'english_hub_db_recovery_20261028';
+const CATALOG_DRAFT_KEY = 'english_hub_catalog_draft_v1';
+const CATALOG_FIELDS = ['turmas','semanas','aulasArquivadas','trilhas','musicas','audioRevisao','musicCatalogMigrations'];
+let catalogCloudRevision = null;
+let catalogCloudBase = null;
+let catalogWriteBlocked = false;
+let catalogSaveQueue = Promise.resolve();
+
+function validCloudCatalog(cloud){
+  return cloud && CATALOG_FIELDS.every(key => key==='aulasArquivadas'
+    ? Array.isArray(cloud[key])
+    : cloud[key] && typeof cloud[key]==='object' && !Array.isArray(cloud[key]));
+}
+
+function catalogSnapshot(){
+  return JSON.parse(JSON.stringify(Object.fromEntries(CATALOG_FIELDS.map(key => [key,DATABASE[key]]))));
+}
+
+function preserveCatalogDraft(catalog){
+  try{
+    // Store changed rooms only: duplicating the whole catalog can exhaust
+    // localStorage and prevent a small lesson from being saved.
+    const changes={};
+    CATALOG_FIELDS.forEach(field=>{
+      const current=catalog[field],base=catalogCloudBase?.[field];
+      if(Array.isArray(current)){
+        if(JSON.stringify(current)!==JSON.stringify(base))changes[field]={replace:current};
+        return;
+      }
+      const set={},remove=[];
+      Object.keys(current||{}).forEach(key=>{
+        if(JSON.stringify(current[key])!==JSON.stringify(base?.[key]))set[key]=current[key];
+      });
+      Object.keys(base||{}).forEach(key=>{if(!(key in (current||{})))remove.push(key);});
+      if(Object.keys(set).length||remove.length)changes[field]={set,remove};
+    });
+    const draft=JSON.stringify({savedAt:new Date().toISOString(),baseRevision:catalogCloudRevision,changes});
+    localStorage.setItem(CATALOG_DRAFT_KEY,draft);
+    return draft;
+  }catch(error){
+    console.warn('Não foi possível preservar o rascunho do catálogo.',error);
+    return null;
+  }
+}
 
 function saveLocalDB(){
   try{
@@ -11697,58 +11739,62 @@ function saveLocalDB(){
   }
 }
 
-async function saveCloudDB(){
-  if(CATALOG_WRITES_PAUSED_FOR_RECOVERY){
-    alert('A edição do conteúdo está temporariamente pausada para recuperar o catálogo. O progresso dos alunos continua sendo salvo. Use a página recuperar-catalogo.html para exportar uma cópia anterior deste navegador.');
-    return false;
+function saveCloudDB(){
+  if(!isTeacherAdmin()){
+    alert('Entre com a conta da professora para editar o conteúdo.');
+    return Promise.resolve(false);
   }
-  // Always save to localStorage as cache
+  if(!catalogCloudRevision||!catalogCloudBase||catalogWriteBlocked){
+    alert('A edição precisa de uma cópia atual do catálogo na nuvem. Copie o texto da sua aula e reabra o Portal com internet antes de salvar.');
+    return Promise.resolve(false);
+  }
+  // Capture each edit now; serial saves must not read later edits from DATABASE.
+  const snapshot=catalogSnapshot();
+  const draft=preserveCatalogDraft(snapshot);
+  if(!draft){
+    alert('Não foi possível preservar sua edição neste navegador. Copie o texto da aula antes de tentar novamente.');
+    return Promise.resolve(false);
+  }
   saveLocalDB();
-  // Save to Supabase cloud
-  try {
-    if(!sbClient) sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    // A page opened before a catalog release can still have an older copy in memory.
-    // Preserve songs from completed catalog migrations once, without bringing
-    // them back after an intentional deletion in a current page.
-    const {data:latestRow,error:latestError}=await sbClient.from('app_content').select('data').eq('id','main').maybeSingle();
-    const catalogMigrations={
-      songs_2026_09_29:['Too Sweet','The Fate of Ophelia'],
-      songs_2026_10_05:['All For Us'],
-      songs_2026_10_08:['Shallow'],
-      songs_2026_10_08_somewhere:['Somewhere Only We Know'],
-      songs_2026_10_10_i_want_it_that_way:['I Want It That Way'],
-      songs_2026_10_15_free:['Free']
-    };
-    if(!latestError&&latestRow?.data){
-      Object.entries(catalogMigrations).forEach(([migration,titles])=>{
-        if(!latestRow.data.musicCatalogMigrations?.[migration]||DATABASE.musicCatalogMigrations?.[migration])return;
-        Object.entries(latestRow.data.musicas||{}).forEach(([room,songs])=>{
-          const local=DATABASE.musicas[room]||[];
-          (songs||[]).filter(song=>titles.includes(song?.title)).forEach(song=>{
-            if(!local.some(item=>item?.title===song.title))local.push(song);
-          });
-          DATABASE.musicas[room]=local;
-        });
-        DATABASE.musicCatalogMigrations={...DATABASE.musicCatalogMigrations,[migration]:true};
-      });
-    }
-    const cloudData = { turmas: DATABASE.turmas, semanas: DATABASE.semanas, aulasArquivadas: DATABASE.aulasArquivadas, trilhas: DATABASE.trilhas, musicas: DATABASE.musicas, audioRevisao: DATABASE.audioRevisao, studentControls: DATABASE.studentControls, musicCatalogMigrations: DATABASE.musicCatalogMigrations };
-    const { data, error } = await sbClient.from('app_content').upsert({ id: 'main', data: cloudData, updated_at: new Date().toISOString() });
-    if (error) {
-      console.error('❌ Erro Supabase ao salvar:', error);
-      alert('Erro ao salvar na nuvem: ' + error.message);
-      return false;
-    } else {
-      console.log('☁️ Salvo na nuvem!');
+  const operation=catalogSaveQueue.then(async()=>{
+    if(catalogWriteBlocked)return false;
+    try{
+      const cloudData={...catalogCloudBase,...snapshot};
+      const expectedRevision=catalogCloudRevision;
+      const {data,error}=await sbClient.from('app_content')
+        .update({data:cloudData,updated_at:expectedRevision})
+        .eq('id','main').eq('updated_at',expectedRevision)
+        .select('updated_at').maybeSingle();
+      if(error||!data?.updated_at||data.updated_at===expectedRevision){
+        // A lost response may hide a committed write. Require a fresh load,
+        // rather than retrying the full catalog against a different revision.
+        catalogWriteBlocked=true;
+        console.warn('Gravação do catálogo não confirmada.',error);
+        alert('A gravação na nuvem não foi confirmada. Seu rascunho foi preservado neste navegador. Copie o texto da aula e reabra o Portal antes de tentar novamente.');
+        return false;
+      }
+      catalogCloudRevision=data.updated_at;
+      catalogCloudBase=cloudData;
+      try{
+        if(localStorage.getItem(CATALOG_DRAFT_KEY)===draft)localStorage.removeItem(CATALOG_DRAFT_KEY);
+      }catch(error){console.warn('Rascunho local mantido após confirmação.',error);}
+      console.log('☁️ Catálogo confirmado na nuvem!');
       return true;
+    }catch(error){
+      catalogWriteBlocked=true;
+      console.warn('Erro ao salvar o catálogo.',error);
+      alert('Não foi possível confirmar a gravação. Seu rascunho foi preservado neste navegador. Copie o texto e reabra o Portal com internet.');
+      return false;
     }
-  } catch(e) {
-    console.warn('Erro fatal ao salvar na nuvem:', e);
-    return false;
-  }
+  });
+  catalogSaveQueue=operation.catch(()=>false);
+  return operation;
 }
 
 async function loadCloudDB(){
+  catalogCloudRevision=null;
+  catalogCloudBase=null;
+  catalogWriteBlocked=false;
   // 1. Load localStorage cache first (instant)
   const saved = localStorage.getItem('english_hub_db');
   if(saved){
@@ -11784,26 +11830,16 @@ async function loadCloudDB(){
   // 2. Then load from Supabase cloud (overrides cache)
   try {
     if(!sbClient) sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const { data, error } = await withTimeout(sbClient.from('app_content').select('data').eq('id', 'main').single(), 8000);
+    const { data, error } = await withTimeout(sbClient.from('app_content').select('data,updated_at').eq('id', 'main').single(), 8000);
     if(!error && data && data.data) {
       const cloud = data.data;
-      if(cloud.turmas) DATABASE.turmas = { ...DATABASE.turmas, ...cloud.turmas };
-      if(Array.isArray(cloud.aulasArquivadas)) DATABASE.aulasArquivadas = cloud.aulasArquivadas;
-      if(cloud.audioRevisao) DATABASE.audioRevisao = {...DATABASE.audioRevisao,...cloud.audioRevisao};
-      if(cloud.studentControls) DATABASE.studentControls = {...DATABASE.studentControls,...cloud.studentControls};
-      if(cloud.musicCatalogMigrations) DATABASE.musicCatalogMigrations = {...DATABASE.musicCatalogMigrations,...cloud.musicCatalogMigrations};
-      if(cloud.semanas) {
-        Object.keys(cloud.semanas).forEach(k => DATABASE.semanas[k] = cloud.semanas[k]);
-      }
-      if(cloud.trilhas && typeof cloud.trilhas === 'object' && !Array.isArray(cloud.trilhas)) {
-        Object.keys(cloud.trilhas).forEach(k => {
-          if(Array.isArray(cloud.trilhas[k]) && cloud.trilhas[k].length) DATABASE.trilhas[k] = cloud.trilhas[k];
-        });
-      }
-      if(cloud.musicas) {
-        // A nuvem é a fonte oficial do catálogo. Isso mantém exclusões persistentes.
-        Object.keys(cloud.musicas).forEach(k => DATABASE.musicas[k] = cloud.musicas[k]);
-      }
+      if(!validCloudCatalog(cloud)||!data.updated_at)throw new Error('Catálogo oficial incompleto; edição bloqueada.');
+      // Replace all curriculum fields, including empty arrays and deleted rooms.
+      // Local cache/defaults never become the base of a cloud catalog write.
+      CATALOG_FIELDS.forEach(key => DATABASE[key]=cloud[key]);
+      if(cloud.studentControls) DATABASE.studentControls={...DATABASE.studentControls,...cloud.studentControls};
+      catalogCloudBase=JSON.parse(JSON.stringify(cloud));
+      catalogCloudRevision=data.updated_at;
       // Lançamentos novos podem ser liberados por um registro pequeno e separado,
       // sem sobrescrever o catálogo completo de nenhuma turma.
       const {data:freeReleaseRow,error:freeReleaseError}=await withTimeout(
@@ -12190,7 +12226,7 @@ function adminToggleLockTrilha(rKey,i){
   saveCloudDB();renderAdminTrilhas();
 }
 
-function adminSaveSemana(){
+async function adminSaveSemana(){
   const editIdx = document.getElementById('admin-semana-idx').value;
   const rKey=document.getElementById('admin-semana-room').value;
   const modulo=document.getElementById('admin-semana-modulo').value.trim();
@@ -12217,15 +12253,31 @@ function adminSaveSemana(){
     ditado:document.getElementById('admin-semana-ditado').value.trim().split('\n').filter(Boolean)
   };
   
-  if (editIdx !== "") {
-    DATABASE.semanas[rKey][editIdx] = {...DATABASE.semanas[rKey][editIdx],...novaSemana};
-    alert("Aula atualizada com sucesso!");
-  } else {
-    DATABASE.semanas[rKey].push(novaSemana);
-    alert("Aula criada com sucesso!");
+  const saveButton=document.getElementById('btn-save-semana');
+  if(saveButton.disabled)return;
+  const previous=DATABASE.semanas[rKey]||[];
+  const next=[...previous];
+  if(editIdx!==""){
+    if(!next[Number(editIdx)])return alert('Esta aula não está mais disponível. Reabra o Portal.');
+    next[Number(editIdx)]={...next[Number(editIdx)],...novaSemana};
+  }else{
+    next.push(novaSemana);
   }
-  
-  saveCloudDB();renderAdminSemanas();adminCancelEditSemana();
+  saveButton.disabled=true;
+  DATABASE.semanas[rKey]=next;
+  try{
+    const saved=await saveCloudDB();
+    if(!saved){
+      DATABASE.semanas[rKey]=previous;
+      saveLocalDB();
+      return;
+    }
+    renderAdminSemanas();
+    adminCancelEditSemana();
+    alert(editIdx!==""?'Aula atualizada e confirmada na nuvem!':'Aula criada e confirmada na nuvem!');
+  }finally{
+    saveButton.disabled=false;
+  }
 }
 
 function adminEditSemana(rKey, idx) {
