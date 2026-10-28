@@ -1,0 +1,560 @@
+{
+  "version": 1,
+  "source": {
+    "room": "is08",
+    "weekIndex": 0,
+    "title": "SEMANA 01 - INTERMEDIATE 01 - END TERM 54 - 57",
+    "hash": "8aaeaddac4987ce0b826fc351957e245143a784a89ffaf7f77ccbbdd37ac14be"
+  },
+  "region": "brazilsouth",
+  "items": [
+    {
+      "id": "3bc9cc33472c496ea3a108c7e869ec250e1fac9767e6c24d9ad873c9a193d3ab",
+      "text": "arrangement",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 0
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/3bc9cc33472c496ea3a108c7e869ec250e1fac9767e6c24d9ad873c9a193d3ab.mp3"
+    },
+    {
+      "id": "1cf58a52890138609a4a9b42d2d2763489661a4197fbc0b124e20bbe49645502",
+      "text": "upcoming",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 1
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/1cf58a52890138609a4a9b42d2d2763489661a4197fbc0b124e20bbe49645502.mp3"
+    },
+    {
+      "id": "b46813d65dca6e5b521d52f6de033193b3ec62ae21b7f769b3b96044df42c47a",
+      "text": "accommodation",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 2
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/b46813d65dca6e5b521d52f6de033193b3ec62ae21b7f769b3b96044df42c47a.mp3"
+    },
+    {
+      "id": "53cafd3f9c31e342d4bb2e90b18d5ecb6669f0023434eb94cffd75fa2dfb4315",
+      "text": "tomorrow",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 3
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/53cafd3f9c31e342d4bb2e90b18d5ecb6669f0023434eb94cffd75fa2dfb4315.mp3"
+    },
+    {
+      "id": "e5488a3df16a1f548d464b350b47ad90c0db37a8a7bb7fbd243462a45fc7d9eb",
+      "text": "tomorrow morning",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 4
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/e5488a3df16a1f548d464b350b47ad90c0db37a8a7bb7fbd243462a45fc7d9eb.mp3"
+    },
+    {
+      "id": "71754292e42093d96448b0e6382f21491f80cf5119d13f9346a04ccfc5b150d1",
+      "text": "tomorrow afternoon",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 5
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/71754292e42093d96448b0e6382f21491f80cf5119d13f9346a04ccfc5b150d1.mp3"
+    },
+    {
+      "id": "ae660c91698e4730473a7a12e726ad1ee7c6a0b5fa0db65c71e4e2e3ee3e7f2a",
+      "text": "tomorrow evening",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 6
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/ae660c91698e4730473a7a12e726ad1ee7c6a0b5fa0db65c71e4e2e3ee3e7f2a.mp3"
+    },
+    {
+      "id": "2ff05d2f62a709dff402ba4671bb33e067b8d226c734552a1cc58431b0b1fca9",
+      "text": "the day after tomorrow",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 7
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/2ff05d2f62a709dff402ba4671bb33e067b8d226c734552a1cc58431b0b1fca9.mp3"
+    },
+    {
+      "id": "2a3c0eaabc18598d046e884e4f7edf09e9e1725be6c5d4f6231038efb577d270",
+      "text": "next week",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 8
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/2a3c0eaabc18598d046e884e4f7edf09e9e1725be6c5d4f6231038efb577d270.mp3"
+    },
+    {
+      "id": "e87d4cf90c1d09e36055e71835758093e6bad1a65e77264b2e17da67ae0a9722",
+      "text": "next weekend",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 9
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/e87d4cf90c1d09e36055e71835758093e6bad1a65e77264b2e17da67ae0a9722.mp3"
+    },
+    {
+      "id": "ca7d2a200ce2bde3942f4d5af5efb10de4ecca0cde2454f7ee611e193677a3d5",
+      "text": "next month",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 10
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/ca7d2a200ce2bde3942f4d5af5efb10de4ecca0cde2454f7ee611e193677a3d5.mp3"
+    },
+    {
+      "id": "5108064e4efe6f381352b731e876dcd37431277dcd5ee1a50b738259a8428109",
+      "text": "next year",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 11
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/5108064e4efe6f381352b731e876dcd37431277dcd5ee1a50b738259a8428109.mp3"
+    },
+    {
+      "id": "4d5b05cf948dda2c0d9c674aeb1e3a68438b1c62c39a39cf5e93dee4ef629bd2",
+      "text": "at Christmas",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 12
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/4d5b05cf948dda2c0d9c674aeb1e3a68438b1c62c39a39cf5e93dee4ef629bd2.mp3"
+    },
+    {
+      "id": "700997e047c70f987871f2b6d97a311f8e373c7e39b778a8cdd0600b6c6b8a68",
+      "text": "at Easter",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 13
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/700997e047c70f987871f2b6d97a311f8e373c7e39b778a8cdd0600b6c6b8a68.mp3"
+    },
+    {
+      "id": "fca3ef883f5d5d3d088620cb78aa645f4d0f0b3a560d84c994d6f4192f09e871",
+      "text": "at the beginning of",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 14
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/fca3ef883f5d5d3d088620cb78aa645f4d0f0b3a560d84c994d6f4192f09e871.mp3"
+    },
+    {
+      "id": "9fddd8d980da15bfa19ecd34ffc00631b8be3a5ee4c656ad4ea211053e3a87e5",
+      "text": "at the end of",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 15
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/9fddd8d980da15bfa19ecd34ffc00631b8be3a5ee4c656ad4ea211053e3a87e5.mp3"
+    },
+    {
+      "id": "b352975bf48cfe1f64a81f46f7be41d3e9c60cb94503f13fd7475dc4d23260b3",
+      "text": "disappointment",
+      "voice": "en-US-JennyNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "vocab",
+          "index": 16
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/b352975bf48cfe1f64a81f46f7be41d3e9c60cb94503f13fd7475dc4d23260b3.mp3"
+    },
+    {
+      "id": "1240c9bed2b6311912072cb104e263d7ea3732a919caec5123cb75683e0af124",
+      "text": "What are you doing tonight?",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 0
+        },
+        {
+          "kind": "ditado",
+          "index": 1
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/1240c9bed2b6311912072cb104e263d7ea3732a919caec5123cb75683e0af124.mp3"
+    },
+    {
+      "id": "8cecfe7fd0f7c03d02a9f775ade1f62f943d43e2e04bb85b89e9a9671729137b",
+      "text": "I'm having dinner with some friends.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 1
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/8cecfe7fd0f7c03d02a9f775ade1f62f943d43e2e04bb85b89e9a9671729137b.mp3"
+    },
+    {
+      "id": "50def11f7f0bd17755221cd3d438ce2537531da5523e52a6415e7221eb9a719e",
+      "text": "I am spending Christmas in New York.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 2
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/50def11f7f0bd17755221cd3d438ce2537531da5523e52a6415e7221eb9a719e.mp3"
+    },
+    {
+      "id": "eabb8c83489d637b93891f02ef2741ace4140377f2a32a3c25cd5c26f5b44613",
+      "text": "I am meeting mom and dad tomorrow afternoon.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 3
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/eabb8c83489d637b93891f02ef2741ace4140377f2a32a3c25cd5c26f5b44613.mp3"
+    },
+    {
+      "id": "ac8e14d1881406b8141cab8481492d6953ec042bb159111e76ec09373817dec8",
+      "text": "We are traveling to Salvador next Friday.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 4
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/ac8e14d1881406b8141cab8481492d6953ec042bb159111e76ec09373817dec8.mp3"
+    },
+    {
+      "id": "9e88ab4090f77c915ee3bcd284a372a9d31afa6d68b565e783e28efe074062d4",
+      "text": "She isn't working tomorrow morning.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 5
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/9e88ab4090f77c915ee3bcd284a372a9d31afa6d68b565e783e28efe074062d4.mp3"
+    },
+    {
+      "id": "69d19f7b6341903aeb3b2dd6674945ed842e8257e3e9eaf45960821e80912ccc",
+      "text": "Are you coming to the party tonight?",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 6
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/69d19f7b6341903aeb3b2dd6674945ed842e8257e3e9eaf45960821e80912ccc.mp3"
+    },
+    {
+      "id": "ba967f79a39230aa2159d56757abcdc7422d978d88f5421a45376f3c92755e9a",
+      "text": "They are taking the executive bus on Saturday.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 7
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/ba967f79a39230aa2159d56757abcdc7422d978d88f5421a45376f3c92755e9a.mp3"
+    },
+    {
+      "id": "15b9e05b9939ee344ff92b6810036c8417ff76b8548a8c1ef07b2481f67042b2",
+      "text": "They are visiting several art galleries.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 8
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/15b9e05b9939ee344ff92b6810036c8417ff76b8548a8c1ef07b2481f67042b2.mp3"
+    },
+    {
+      "id": "cb1def78f19b8a5b9a002651071710d955c9e562432c85aa7a3a9a14772cc80c",
+      "text": "Amanda and Edward are staying in a room next to theirs.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 9
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/cb1def78f19b8a5b9a002651071710d955c9e562432c85aa7a3a9a14772cc80c.mp3"
+    },
+    {
+      "id": "829dd1d0a397630d4d64490b54ec29237a9824e7cc21b7f94a43b869bf87b434",
+      "text": "He is working the whole weekend.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 10
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/829dd1d0a397630d4d64490b54ec29237a9824e7cc21b7f94a43b869bf87b434.mp3"
+    },
+    {
+      "id": "f44eac991751da3bb538278c6befea65e76e2d6690a16ca70b29dea731ec3b86",
+      "text": "Next month, I am meeting with my supervisor.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 11
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/f44eac991751da3bb538278c6befea65e76e2d6690a16ca70b29dea731ec3b86.mp3"
+    },
+    {
+      "id": "7b2340bd5cdf57db29788a2726634999289d7370361c879aae224659e71364d9",
+      "text": "At the beginning of next year, I am taking a course.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "chunks",
+          "index": 12
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/7b2340bd5cdf57db29788a2726634999289d7370361c879aae224659e71364d9.mp3"
+    },
+    {
+      "id": "0ca0afd06454a29b0820263d4f00131ce48ae2275a17c8bb9f795924fb820f20",
+      "text": "I am traveling tomorrow morning.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "ditado",
+          "index": 0
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/0ca0afd06454a29b0820263d4f00131ce48ae2275a17c8bb9f795924fb820f20.mp3"
+    },
+    {
+      "id": "0b4b227f0f517ba352e6bc58fb4c3b688c4c27fbd370dc784f9ece34a37ab3aa",
+      "text": "We are meeting next week.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "ditado",
+          "index": 2
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/0b4b227f0f517ba352e6bc58fb4c3b688c4c27fbd370dc784f9ece34a37ab3aa.mp3"
+    },
+    {
+      "id": "76bcec8854cbe849b9627d4d4ec0e1389c0a32b8e0483cca5a06e93b03c03c84",
+      "text": "She isn't working next weekend.",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "ditado",
+          "index": 3
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/76bcec8854cbe849b9627d4d4ec0e1389c0a32b8e0483cca5a06e93b03c03c84.mp3"
+    },
+    {
+      "id": "574032ba9af08545edd326d9fe30276d3964e3107fa1c28d58635d59f94b42f7",
+      "text": "Are you coming to the party?",
+      "voice": "en-US-BrianMultilingualNeural",
+      "locale": "en-US",
+      "rate": 1,
+      "format": "audio-16khz-32kbitrate-mono-mp3",
+      "ssmlVersion": "static-v1",
+      "uses": [
+        {
+          "kind": "ditado",
+          "index": 4
+        }
+      ],
+      "path": "assets/audio/azure-static/is08-week01/574032ba9af08545edd326d9fe30276d3964e3107fa1c28d58635d59f94b42f7.mp3"
+    }
+  ]
+}

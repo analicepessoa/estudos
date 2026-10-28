@@ -3274,6 +3274,7 @@ select.input { appearance: none; cursor: pointer; }
 </div>
 
 <script src="assets/azure-audio-pilot.js?v=134"></script>
+<script src="assets/azure-static-audio.js?v=135"></script>
 <script src="book-audio-data.js"></script>
 <script src="book-audio-data-2.js"></script>
 <script src="./livros/a%20metamorfose/reading-data.js"></script>
@@ -9183,6 +9184,7 @@ function openGame(title){
   updateGameProgress();
 }
 function closeGame(){
+  window.staticAudioPilot?.stop();
   document.getElementById('game-overlay').style.display='none';
   document.getElementById('game-overlay').classList.add('hidden');
   window.speechSynthesis?.cancel();
@@ -9518,6 +9520,7 @@ function startSemanaGame(rKey,idx,type){
 }
 
 function dispatchGameStep(){
+  window.staticAudioPilot?.stop();
   const t=activeGame.type;
   updateGameProgress();
   if(t.includes('vocab')||t.includes('chunks')||t==='trilha_teoria') engineFlashcard();
@@ -9598,8 +9601,29 @@ function engineFlashcard(){
 }
 function handleListen(btn,text){
   btn.classList.add('playing');
-  (async()=>{const audio=typeof playAzurePilot==='function'?await playAzurePilot(text,.75):null;if(!audio)playTTS(text,0.7,'en-US')})();
+  (async()=>{
+    const kind=activeGame.type==='semana_chunks'?'chunks':'vocab';
+    const staticResult=await window.staticAudioPilot?.play(text,kind,1,()=>{
+      btn.dataset.audioSource='fallback';
+      playTTS(text,0.7,'en-US');
+    });
+    if(staticResult){btn.dataset.audioSource=staticResult.blocked?'static-blocked':'static';return;}
+    btn.dataset.audioSource='fallback';
+    const audio=typeof playAzurePilot==='function'?await playAzurePilot(text,.75):null;
+    if(!audio)playTTS(text,0.7,'en-US');
+  })();
   setTimeout(()=>btn.classList.remove('playing'),2000);
+}
+
+async function playSemanaAnswer(text,language='en-US'){
+  const result=language==='en-US'?await window.staticAudioPilot?.play(text,'quiz',1,()=>{
+    const feedback=document.getElementById('quiz-fb');
+    if(feedback)feedback.dataset.audioSource='fallback';
+    playTTS(text,.8,language);
+  }):null;
+  const feedback=document.getElementById('quiz-fb');
+  if(feedback)feedback.dataset.audioSource=result?'static':'fallback';
+  return result || playTTS(text,.8,language);
 }
 
 /* ══ ENGINE: QUIZ ══ */
@@ -9631,15 +9655,15 @@ function handleQuiz(btn,ans,correct,language='auto'){
     registerCorrectAnswer();
     fb.className='answer-feedback ok';
     fb.innerHTML=`✅ <strong>Correto!</strong><br>A resposta é: ${correct}
-      <br><button class="answer-listen-btn" onclick="playTTS('${esc(correct)}',0.8,'${language}')"><i class="fa-solid fa-volume-high"></i> Ouvir resposta novamente</button>`;
-    playTTS(correct,0.8,language);
+      <br><button class="answer-listen-btn" onclick="playSemanaAnswer('${esc(correct)}','${language}')"><i class="fa-solid fa-volume-high"></i> Ouvir resposta novamente</button>`;
+    playSemanaAnswer(correct,language);
   } else {
     btn.classList.add('wrong');
     document.querySelectorAll('.quiz-option').forEach(b=>{if(b.textContent===correct)b.classList.add('correct');});
     fb.className='answer-feedback err';
     fb.innerHTML=`❌ <strong>Resposta incorreta.</strong><br>A resposta correta é: ${correct}
-      <br><button class="answer-listen-btn" onclick="playTTS('${esc(correct)}',0.8,'${language}')"><i class="fa-solid fa-volume-high"></i> Ouvir resposta correta</button>`;
-    playTTS(correct,0.8,language);
+      <br><button class="answer-listen-btn" onclick="playSemanaAnswer('${esc(correct)}','${language}')"><i class="fa-solid fa-volume-high"></i> Ouvir resposta correta</button>`;
+    playSemanaAnswer(correct,language);
   }
   document.getElementById('quiz-next-wrap').classList.remove('hidden');
 }
@@ -9800,9 +9824,14 @@ async function handleDictPlay(text,mode='slow',sourceButton=null){
     normal:{rate:0.82,label:'normal',text},
     words:{rate:0.58,label:'palavra por palavra',text:String(text).replace(/[.,!?;:]+/g,'').split(/\s+/).join(', ')}
   }[mode]||{rate:0.62,label:'devagar',text};
-  const pilotAudio=typeof playAzurePilot==='function'?await playAzurePilot(settings.text,Math.max(.75,settings.rate)):null;
-  const utterance=pilotAudio || await playTTS(settings.text,settings.rate,'en-US');
-  counter.textContent=utterance?.paused&&typeof azurePilotEnabled==='function'&&azurePilotEnabled()?'Áudio pronto. Toque novamente para ouvir.':`Ouvido ${dictPlayCount}x · modo ${settings.label} · repita quantas vezes precisar`;
+  const staticResult=mode==='words'?null:await window.staticAudioPilot?.play(text,'ditado',mode==='slow'?.75:1,()=>{
+    if(counter)counter.dataset.audioSource='fallback';
+    playTTS(settings.text,settings.rate,'en-US');
+  });
+  if(counter)counter.dataset.audioSource=staticResult?'static':'fallback';
+  const pilotAudio=staticResult?null:typeof playAzurePilot==='function'?await playAzurePilot(settings.text,Math.max(.75,settings.rate)):null;
+  const utterance=staticResult?.audio || pilotAudio || await playTTS(settings.text,settings.rate,'en-US');
+  counter.textContent=staticResult?.blocked||utterance?.paused&&typeof azurePilotEnabled==='function'&&azurePilotEnabled()?'Áudio pronto. Toque novamente para ouvir.':`Ouvido ${dictPlayCount}x · modo ${settings.label} · repita quantas vezes precisar`;
   const finish=()=>document.querySelectorAll('.dictation-play,.dictation-audio-btn').forEach(button=>button.classList.remove('playing'));
   if(utterance)utterance.onend=utterance.onerror=finish;
   else finish();
@@ -9862,7 +9891,7 @@ function checkDictation(correct){
       <button class="btn btn-primary w-full btn-lg" onclick="nextStep()">
         ${advanceLabel} <i class="fa-solid fa-arrow-right"></i>
       </button>`;
-    playTTS(correct,0.75,'en-US');
+    (async()=>{const result=await window.staticAudioPilot?.play(correct,'ditado',1,()=>playTTS(correct,0.75,'en-US'));if(!result)playTTS(correct,0.75,'en-US')})();
   } else {
     dictationLastHint=buildDictationHint(comparison);
     fb.className='dictation-feedback hint';
