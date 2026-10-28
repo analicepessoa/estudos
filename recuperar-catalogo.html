@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Recuperar catálogo do Portal</title>
+<style>
+body{font:17px/1.6 system-ui,sans-serif;max-width:900px;margin:32px auto;padding:0 18px;color:#17243c;background:#f5f7fb}h1{font-size:1.7rem}article{background:white;padding:20px;border:1px solid #c8d3e1;border-radius:12px;margin:18px 0}button{font:inherit;background:#174e91;color:white;border:0;border-radius:8px;padding:12px 18px;cursor:pointer}table{border-collapse:collapse;width:100%;margin:12px 0}th,td{text-align:left;padding:7px;border-bottom:1px solid #dbe2ec}.summary{font-weight:700}.notice{background:#fff5d7;padding:14px;border-radius:8px}small{overflow-wrap:anywhere}button:focus-visible{outline:3px solid #d86e05;outline-offset:3px}
+</style>
+<h1>Recuperar catálogo salvo neste navegador</h1>
+<p>Abra esta página no mesmo navegador e perfil do notebook em que você administrava o Portal. Ela lê somente as cópias do catálogo deste navegador, sem carregar ou salvar dados na nuvem.</p>
+<p class="notice">Antes de voltar à página principal, exporte as cópias abaixo. Depois envie os arquivos à professora ou à conversa em que estamos recuperando o Portal. O arquivo contém o conteúdo das turmas; guarde-o em local privado.</p>
+<div id="copies"></div><p id="message" role="status" aria-live="polite"></p>
+<script>
+(()=>{
+  'use strict';
+  const keys=['english_hub_db_recovery_20261028','english_hub_db'];
+  const container=document.getElementById('copies'),message=document.getElementById('message');
+  const count=(value)=>Object.values(value&&typeof value==='object'?value:{}).reduce((n,list)=>n+(Array.isArray(list)?list.length:0),0);
+  let found=0;
+  for(const key of keys){
+    let raw;try{raw=localStorage.getItem(key)}catch{message.textContent='O navegador bloqueou o acesso ao armazenamento. Mantenha esta página aberta e peça ajuda para exportar a cópia.';break}
+    if(!raw)continue;
+    let data;try{data=JSON.parse(raw);if(!data||typeof data!=='object'||Array.isArray(data))throw Error()}catch{message.textContent='Uma cópia não pôde ser interpretada; ela será exportada sem alteração.';data=null}
+    found++;
+    const article=document.createElement('article'),title=document.createElement('h2');title.textContent=key.includes('recovery')?'Cópia preservada antes de atualizar':'Catálogo atual deste navegador';article.append(title);
+    const stats=document.createElement('p');stats.className='summary';stats.textContent=data?`${Object.keys(data.turmas||{}).length} turmas · ${count(data.semanas)} aulas · ${count(data.trilhas)} fases`:'Formato não reconhecido';article.append(stats);
+    const label=document.createElement('small');label.textContent=key;article.append(label);
+    if(data){
+      const table=document.createElement('table'),head=document.createElement('tr');for(const text of ['Turma','Aulas','Fases']){const th=document.createElement('th');th.textContent=text;head.append(th)}table.append(head);
+      const rooms=new Set([...Object.keys(data.turmas||{}),...Object.keys(data.semanas||{}),...Object.keys(data.trilhas||{})]);
+      for(const room of rooms){const row=document.createElement('tr');for(const value of [data.turmas?.[room]?.name||room,Array.isArray(data.semanas?.[room])?data.semanas[room].length:0,Array.isArray(data.trilhas?.[room])?data.trilhas[room].length:0]){const cell=document.createElement('td');cell.textContent=String(value);row.append(cell)}table.append(row)}article.append(table);
+    }
+    const button=document.createElement('button');button.textContent='Exportar esta cópia';button.onclick=()=>{
+      let exported=raw;
+      if(data){const catalog={};for(const field of ['turmas','semanas','trilhas','aulasArquivadas','musicas','audioRevisao','musicCatalogMigrations'])if(Object.hasOwn(data,field))catalog[field]=data[field];exported=JSON.stringify({recoveryVersion:1,exportedAt:new Date().toISOString(),sourceKey:key,catalog},null,2)}
+      const url=URL.createObjectURL(new Blob([exported],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download=`catalogo-recuperacao-${key.includes('recovery')?'preservado':'atual'}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);message.textContent='Cópia exportada. Confira o arquivo na pasta Downloads.';
+    };article.append(button);container.append(article);
+  }
+  if(!found&&!message.textContent)message.textContent='Não há catálogo salvo neste navegador. Tente o navegador e perfil usados anteriormente no notebook. Não limpe os dados dos outros perfis.';
+})();
+</script>
+</html>
