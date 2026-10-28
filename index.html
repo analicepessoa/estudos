@@ -5401,10 +5401,10 @@ let DATABASE = {
     "room_1781212946093": [{ id:"music_pretty_woman_iq190013", ...PRETTY_WOMAN_MUSIC }, { id:"music_wildflower_room_1781212946093", ...WILDFLOWER_MUSIC }, { id:"music_training_season_room_1781212946093", ...TRAINING_SEASON_MUSIC }, { id:"music_a_thousand_years_room_1781212946093", ...A_THOUSAND_YEARS_MUSIC }, { id:"music_the_fate_of_ophelia_room_1781212946093", ...THE_FATE_OF_OPHELIA_MUSIC }, { id:"music_too_sweet_room_1781212946093", ...TOO_SWEET_MUSIC }, { id:"music_all_for_us_room_1781212946093", ...ALL_FOR_US_MUSIC }, { id:"music_shallow_room_1781212946093", ...SHALLOW_MUSIC }, { id:"music_somewhere_only_we_know_room_1781212946093", ...SOMEWHERE_ONLY_WE_KNOW_MUSIC }, { id:"music_i_want_it_that_way_room_1781212946093", ...I_WANT_IT_THAT_WAY_MUSIC }, { id:"music_free_room_1781212946093", ...FREE_MUSIC }, { id:"music_just_the_way_you_are_room_1781212946093", ...JUST_THE_WAY_YOU_ARE_MUSIC }]
   },
   turmas: {
-    "iq15":   { name:"Turma IQ15/0003", pass:"iq15" },
-    "iq1904": { name:"Turma IQ19/0004 Quinta", pass:"iq194" },
-    "is08":   { name:"Turma IS08/0008", pass:"is08" },
-    "iq1907": { name:"Turma IQ19/0007", pass:"iq1907" }
+    "iq15":   { name:"Turma IQ15/0003" },
+    "iq1904": { name:"Turma IQ19/0004 Quinta" },
+    "is08":   { name:"Turma IS08/0008" },
+    "iq1907": { name:"Turma IQ19/0007" }
   },
   semanas: {
     "iq15": [], "iq1904": [],
@@ -11684,9 +11684,32 @@ function deleteHomeworkRecord(id){
   saveHomeworkRecords(records.filter(item=>item.id!==id));selectedHomeworkId='';renderHomeworkTracker();
 }
 
-function saveLocalDB(){localStorage.setItem('english_hub_db',JSON.stringify(DATABASE));}
+const CATALOG_WRITES_PAUSED_FOR_RECOVERY = true;
+const CATALOG_RECOVERY_KEY = 'english_hub_db_recovery_20261028';
+
+function saveLocalDB(){
+  try{
+    const previous=localStorage.getItem('english_hub_db');
+    if(previous&&!localStorage.getItem(CATALOG_RECOVERY_KEY)){
+      try{localStorage.setItem(CATALOG_RECOVERY_KEY,previous);}
+      catch(error){
+        console.warn('Cópia anterior preservada: não foi possível criar o backup local.',error);
+        return false;
+      }
+    }
+    localStorage.setItem('english_hub_db',JSON.stringify(DATABASE));
+    return true;
+  }catch(error){
+    console.warn('Não foi possível atualizar o cache do catálogo.',error);
+    return false;
+  }
+}
 
 async function saveCloudDB(){
+  if(CATALOG_WRITES_PAUSED_FOR_RECOVERY){
+    alert('A edição do conteúdo está temporariamente pausada para recuperar o catálogo. O progresso dos alunos continua sendo salvo. Use a página recuperar-catalogo.html para exportar uma cópia anterior deste navegador.');
+    return false;
+  }
   // Always save to localStorage as cache
   saveLocalDB();
   // Save to Supabase cloud
