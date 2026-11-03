@@ -11403,6 +11403,22 @@ async function adminSetStudentAccess(studentId,allowAccess){
   alert(`Acesso ${action==='desativar'?'desativado':'reativado'} com sucesso. O progresso foi preservado.`);
 }
 
+function dashboardBookReading(unlocked){
+  const markers=Array.isArray(unlocked)?unlocked:[];
+  const values=new Set(markers.filter(value=>typeof value==='string'));
+  const completedWeeks=AVAILABLE_READING_WEEKS.filter(number=>values.has(readingCompleteMarker(number)));
+  const bookComplete=AVAILABLE_READING_WEEKS.length>0&&completedWeeks.length===AVAILABLE_READING_WEEKS.length;
+  const answersSent=AVAILABLE_READING_WEEKS.some(number=>values.has(readingAnswersMarker(number)));
+  const historyStarted=[...values].some(value=>value.startsWith('reading__metamorphosis_'));
+  const historicalLabel=bookComplete?'livro concluído · 6/6 semanas':
+    historyStarted?`${completedWeeks.length}/${AVAILABLE_READING_WEEKS.length} semanas concluídas${answersSent?' · respostas registradas':''}`:'sem leitura registrada';
+  const currentStarted=[...values].some(value=>/^reading__1984_w\d+_/.test(value));
+  const currentCompleted=[...values].filter(value=>/^reading__1984_w\d+_complete$/.test(value)).length;
+  const currentLabel=window.Portal1984?.studentLabel(markers)||
+    (currentCompleted?`1984 · ${currentCompleted} semana(s) concluída(s)`:currentStarted?'1984 · leitura em andamento':'1984 · sem leitura registrada');
+  return {bookComplete,answersSent,historicalLabel,currentStarted,currentCompleted,currentLabel};
+}
+
 async function renderDashboard(){
   if(!isTeacherAdmin()||!currentUser?.id)return;
   const cont=document.getElementById('dashboard-content');
@@ -11430,8 +11446,11 @@ async function renderDashboard(){
     const minutosAtivos=Math.round(data.reduce((sum,a)=>sum+usageOf(a).activeSeconds,0)/60);
     const audiosConcluidos=data.reduce((sum,a)=>sum+usageOf(a).audioCompleted,0);
     const atividadesConcluidas=data.reduce((sum,a)=>sum+usageOf(a).activitiesCompleted,0);
-    const leitores=data.filter(a=>{const unlocked=Array.isArray(a.unlocked)?a.unlocked:[];return AVAILABLE_READING_WEEKS.some(number=>unlocked.includes(readingCompleteMarker(number)));}).length;
-    const respostasLeitura=data.filter(a=>{const unlocked=Array.isArray(a.unlocked)?a.unlocked:[];return AVAILABLE_READING_WEEKS.some(number=>unlocked.includes(readingAnswersMarker(number)));}).length;
+    const bookReadings=data.map(a=>dashboardBookReading(a.unlocked));
+    const metamorphosisComplete=bookReadings.filter(reading=>reading.bookComplete).length;
+    const metamorphosisAnswers=bookReadings.filter(reading=>reading.answersSent).length;
+    const readers1984=bookReadings.filter(reading=>reading.currentStarted).length;
+    const completed1984=bookReadings.filter(reading=>reading.currentCompleted>0).length;
 
     summary.innerHTML=`
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--orange)">${data.length}</div><div style="font-size:12px;color:var(--slate)">alunos no ranking</div></div>
@@ -11440,21 +11459,20 @@ async function renderDashboard(){
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#7C3AED">${minutosAtivos}</div><div style="font-size:12px;color:var(--slate)">minutos ativos</div></div>
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#4F46E5">${atividadesConcluidas}</div><div style="font-size:12px;color:var(--slate)">atividades concluídas</div></div>
       <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#0EA5E9">${audiosConcluidos}</div><div style="font-size:12px;color:var(--slate)">áudios concluídos</div></div>
-      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#7C2D12">${leitores}</div><div style="font-size:12px;color:var(--slate)">concluíram a leitura</div></div>
-      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#4F46E5">${respostasLeitura}</div><div style="font-size:12px;color:var(--slate)">enviaram respostas</div></div>
-      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--slate)">${disabledData.length}</div><div style="font-size:12px;color:var(--slate)">acessos desativados</div></div>`;
+      <div class="card card-body" style="flex:1;min-width:90px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:var(--slate)">${disabledData.length}</div><div style="font-size:12px;color:var(--slate)">acessos desativados</div></div>
+      <div style="flex-basis:100%;font-weight:800;color:var(--ink);margin-top:8px">Leitura atual · 1984</div>
+      <div class="card card-body" style="flex:1;min-width:180px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#2563EB">${readers1984}</div><div style="font-size:12px;color:var(--slate)">alunos com leitura registrada em 1984</div></div>
+      <div class="card card-body" style="flex:1;min-width:180px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#0D9488">${completed1984}</div><div style="font-size:12px;color:var(--slate)">concluíram ao menos 1 semana de 1984</div></div>
+      <div style="flex-basis:100%;font-weight:800;color:var(--ink);margin-top:8px">Histórico · A Metamorfose — período encerrado</div>
+      <div class="card card-body" style="flex:1;min-width:180px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#7C2D12">${metamorphosisComplete}</div><div style="font-size:12px;color:var(--slate)">concluíram A Metamorfose · 6/6 semanas</div></div>
+      <div class="card card-body" style="flex:1;min-width:180px;text-align:center;padding:14px"><div style="font-size:24px;font-weight:900;color:#4F46E5">${metamorphosisAnswers}</div><div style="font-size:12px;color:var(--slate)">enviaram respostas em ao menos 1 semana de A Metamorfose</div></div>`;
 
     const studentCard=(a,disabled=false)=>{
       const notas=a.notas&&typeof a.notas==='object'?Object.values(a.notas).map(Number).filter(Number.isFinite):[];
       const numNotas=notas.length;
       const unlocked=Array.isArray(a.unlocked)?a.unlocked:[];
       const atividades=unlocked.filter(value=>String(value).includes('__atividade_')).length;
-      const completedWeeks=AVAILABLE_READING_WEEKS.filter(number=>unlocked.includes(readingCompleteMarker(number)));
-      const allWeeksComplete=completedWeeks.length===AVAILABLE_READING_WEEKS.length;
-      const currentWeek=AVAILABLE_READING_WEEKS.find(number=>!unlocked.includes(readingCompleteMarker(number)))||AVAILABLE_READING_WEEKS[AVAILABLE_READING_WEEKS.length-1];
-      const readingParts=unlocked.filter(value=>String(value).startsWith(`reading__metamorphosis_w${currentWeek}_part_`)).length;
-      const readingAnswersSent=unlocked.includes(readingAnswersMarker(currentWeek));
-      const readingLabel=window.Portal1984?.studentLabel(unlocked)||(allWeeksComplete?'🏆 livro concluído · semanas 1–6':readingAnswersSent?`📨 semana ${currentWeek}: respostas enviadas`:readingParts?`📖 semana ${currentWeek}: ${Math.min(readingParts,6)}/6`:completedWeeks.length?`📘 semana ${currentWeek} disponível`:'📕 leitura não iniciada');
+      const reading=dashboardBookReading(unlocked);
       const media=numNotas?(notas.reduce((sum,n)=>sum+parseFloat(n||0),0)/numNotas).toFixed(1):'—';
       const nivel=Math.floor((a.xp||0)/200)+1;
       const usage=usageOf(a);
@@ -11466,7 +11484,7 @@ async function renderDashboard(){
       const ativo=dd!==null&&dd<=7;
       const mediaColor=media==='—'?'var(--slate)':parseFloat(media)>=8?'var(--teal)':parseFloat(media)>=5?'var(--orange)':'#DC2626';
       return `<div class="admin-item" style="margin-bottom:8px${disabled?';opacity:.68':''}">
-        <div style="flex:1;min-width:0"><div class="admin-item-name">${disabled?'🚫':ativo?'🟢':'⚪'} ${htmlSafe(a.name||'Aluno')}</div><div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · ${readingLabel} · ${accessLabel}</div><div class="usage-metrics"><span class="usage-metric"><i class="fa-solid fa-clock"></i>${usageDuration(usage.activeSeconds)} ativos</span><span class="usage-metric"><i class="fa-solid fa-calendar-check"></i>${usage.activeDays.length} dia(s)</span><span class="usage-metric"><i class="fa-solid fa-headphones"></i>${usage.audioCompleted} áudio(s)</span><span class="usage-metric"><i class="fa-solid fa-location-arrow"></i>${htmlSafe(usageAreaLabel(usage.lastArea))}</span></div></div>
+        <div style="flex:1;min-width:0"><div class="admin-item-name">${disabled?'🚫':ativo?'🟢':'⚪'} ${htmlSafe(a.name||'Aluno')}</div><div class="admin-item-sub">Nível ${nivel} · ${a.xp||0} XP · ${numNotas} teste(s) · ${atividades} atividade(s) · ${accessLabel}</div><div class="admin-item-sub" style="margin-top:6px;line-height:1.6"><div><strong>Leitura atual — 1984:</strong> ${htmlSafe(reading.currentLabel.replace(/^1984 · /,''))}</div><div><strong>A Metamorfose — período encerrado:</strong> ${htmlSafe(reading.historicalLabel)}</div></div><div class="usage-metrics"><span class="usage-metric"><i class="fa-solid fa-clock"></i>${usageDuration(usage.activeSeconds)} ativos</span><span class="usage-metric"><i class="fa-solid fa-calendar-check"></i>${usage.activeDays.length} dia(s)</span><span class="usage-metric"><i class="fa-solid fa-headphones"></i>${usage.audioCompleted} áudio(s)</span><span class="usage-metric"><i class="fa-solid fa-location-arrow"></i>${htmlSafe(usageAreaLabel(usage.lastArea))}</span></div></div>
         <div style="text-align:center;min-width:48px"><div style="font-size:20px;font-weight:900;color:${mediaColor}">${media}</div><div style="font-size:10px;color:var(--slate)">média</div></div>
         <div style="display:flex;gap:2px">
           <button class="admin-edit" title="Ver uso do aplicativo" onclick="openStudentUsageDetails('${esc(a.id)}')"><i class="fa-solid fa-chart-line"></i></button>
