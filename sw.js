@@ -1,7 +1,7 @@
 // Service Worker — Analice Pessoa · English
 // Troque a versão (v1, v2...) sempre que publicar uma atualização do app,
 // para forçar os celulares a baixarem a versão nova.
-const CACHE = 'ap-english-v140';
+const CACHE = 'ap-english-v141';
 const PILOT_AUDIO_CACHE = 'ap-is08-static-audio-v1';
 
 self.addEventListener('message', (event) => {
@@ -24,6 +24,10 @@ self.addEventListener('message', (event) => {
 const APP_SHELL = [
   './',
   './index.html',
+  './assets/ask-kookie/ask-kookie.js?v=20261126.3',
+  './assets/ask-kookie/ask-kookie.css?v=20261126.3',
+  './assets/ask-kookie/episode-01-do-does.webp',
+  './assets/ask-kookie/kookie-hero.webp',
   './assets/azure-static-audio.js?v=135',
   './assets/azure-audio-pilot.js?v=134',
   './assets/reading/reader-1984.js?v=133',
@@ -128,6 +132,9 @@ self.addEventListener('fetch', (event) => {
   // rede: interceptá-las pode prender a resposta no Safari/iPhone e deixar o
   // progresso eternamente em "Salvando...", mesmo com internet disponível.
   if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  // Videos and captions are requested only on demand, outside the shared PWA cache.
+  if (req.destination === 'video' || req.destination === 'track' || /\.(?:mp4|webm|mov|m4v|vtt)$/i.test(url.pathname)) return;
 
   // MP3 da IS08: sob demanda, com limite de 30 arquivos. Safari envia Range
   // diretamente à rede; em falhas o cliente recorre à voz do navegador.

@@ -2456,6 +2456,7 @@ select.input { appearance: none; cursor: pointer; }
 }
 </style>
 <link rel="stylesheet" href="./assets/conversation-practice.css">
+<link rel="stylesheet" href="./assets/ask-kookie/ask-kookie.css?v=20261126.3">
 <link rel="stylesheet" href="./assets/reading/reader-1984.css?v=133">
 </head>
 <body>
@@ -2654,6 +2655,9 @@ select.input { appearance: none; cursor: pointer; }
 
       <div class="home-explore-heading"><h2>O que você quer praticar?</h2><span>Escolha uma área</span></div>
       <div class="home-area-grid">
+        <button class="home-area-tile" type="button" onclick="switchStudentTab('ask-kookie')">
+          <i class="fa-regular fa-circle-question home-area-icon" aria-hidden="true"></i><div class="home-area-copy"><small>Pergunte e descubra</small><h2>Ask Kookie!</h2><p>Pequenas dúvidas. Grandes descobertas.</p><span class="home-card-status todo">Enviar dúvida e ver episódios</span></div>
+        </button>
         <button class="home-area-tile trail" type="button" onclick="switchStudentTab('jogos')">
           <i class="fa-solid fa-gamepad home-area-icon" aria-hidden="true"></i><div class="home-area-copy"><small>Explore e pratique</small><h2>Jogos</h2><p>Descubra as partes do corpo.</p><span class="home-card-status todo">Touch &amp; Learn</span></div>
         </button>
@@ -2743,6 +2747,7 @@ select.input { appearance: none; cursor: pointer; }
       </div>
     </section>
 
+    <section id="stab-ask-kookie" class="hidden" aria-label="Ask Kookie"><div id="ask-kookie-student"></div></section>
     <section id="stab-jogos" class="hidden" aria-label="Jogos de inglês"><div id="body-parts-root"></div></section>
 
     <!-- MÚSICAS LISTA -->
@@ -2759,6 +2764,7 @@ select.input { appearance: none; cursor: pointer; }
     <button onclick="switchStudentTab('inicio')" id="snav-inicio" class="nav-btn active">
       <i class="fa-solid fa-house"></i>Início
     </button>
+    <button onclick="switchStudentTab('ask-kookie')" id="snav-ask-kookie" class="nav-btn"><i class="fa-regular fa-circle-question"></i>Ask Kookie</button>
     <button onclick="switchStudentTab('trilha')" id="snav-trilha" class="nav-btn">
       <i class="fa-solid fa-map-location-dot"></i>Trilha
     </button>
@@ -2890,6 +2896,7 @@ select.input { appearance: none; cursor: pointer; }
   <div style="padding:16px 16px 8px">
     <div class="teacher-nav" id="teacher-nav">
       <button class="tnav-btn active" onclick="showTeacherTab('salas')" id="tnav-salas">Salas</button>
+      <button class="tnav-btn" onclick="showTeacherTab('ask-kookie')" id="tnav-ask-kookie">Ask Kookie!</button>
       <button class="tnav-btn" onclick="showTeacherTab('trilha-admin')" id="tnav-trilha-admin">Trilha</button>
       <button class="tnav-btn" onclick="showTeacherTab('aulas-admin')" id="tnav-aulas-admin">Aulas</button>
       <button class="tnav-btn" onclick="showTeacherTab('musicas-admin')" id="tnav-musicas-admin">🎧 Músicas</button>
@@ -2907,6 +2914,7 @@ select.input { appearance: none; cursor: pointer; }
   </div>
 
   <main class="app-main" style="padding-top:0">
+    <section id="ttab-ask-kookie" class="hidden" aria-label="Administração Ask Kookie"><div id="ask-kookie-admin"></div></section>
     <!-- SALAS -->
     <div id="ttab-salas">
       <div class="card admin-section">
@@ -6807,6 +6815,7 @@ window.onload = async () => {
 };
 
 function showView(v){
+  window.AskKookie?.reset();
   if(v!=='student')window.BodyParts?.reset();
   ['loading','auth','student','conversation','teacher'].forEach(x=>{
     const el=document.getElementById('view-'+x);
@@ -7864,7 +7873,8 @@ function renderStudentContextualNav(activeTab){
 
 function switchStudentTab(tab){
   if(tab!=='jogos'&&!document.getElementById('stab-jogos')?.classList.contains('hidden')&&window.BodyParts&&!BodyParts.leave())return;
-  ['inicio','trilha','semanas','audios','leitura','musica','jogos'].forEach(t=>{
+  window.AskKookie?.leave();
+  ['inicio','trilha','semanas','audios','leitura','musica','jogos','ask-kookie'].forEach(t=>{
     const el=document.getElementById('stab-'+t);
     if(el)el.classList.toggle('hidden',t!==tab);
     const btn=document.getElementById('snav-'+t);
@@ -7878,6 +7888,7 @@ function switchStudentTab(tab){
   if(tab==='leitura')renderReadingLibrary();
   if(tab==='musica')renderStudentMusicas();
   if(tab==='jogos')window.BodyParts?.open(currentUser?.id);
+  if(tab==='ask-kookie')window.AskKookie?.openStudent();
   recordStudentUsageArea(tab);
 }
 
@@ -10384,14 +10395,16 @@ async function dispatchReport(act,result,{keepalive=false}={}){
 function initTeacherPanel(){if(!isTeacherAdmin()||!currentUser?.id){showView('auth');return;}showView('teacher');renderAdminRooms();updateAdminSelects();renderAdminSemanas();renderAdminTrilhas();renderAdminMusicas();renderAdminBookAudioPicker();loadAdminBookReviewSelection();initTrilhaFormExtras();showTeacherTab('salas');}
 
 function showTeacherTab(tab){
-  ['salas','trilha-admin','aulas-admin','semanas-lista','musicas-admin','dashboard','homework'].forEach(t=>{
+  window.AskKookie?.leave();
+  ['salas','trilha-admin','aulas-admin','semanas-lista','musicas-admin','dashboard','homework','ask-kookie'].forEach(t=>{
     const el=document.getElementById('ttab-'+t);
     if(el)el.classList.toggle('hidden',t!==tab);
     const btn=document.getElementById('tnav-'+t);
     if(btn)btn.classList.toggle('active',t===tab);
   });
   const roomFocus=document.getElementById('admin-room-focus');
-  if(roomFocus)roomFocus.classList.toggle('hidden',tab==='salas');
+  if(roomFocus)roomFocus.classList.toggle('hidden',tab==='salas'||tab==='ask-kookie');
+  if(tab==='ask-kookie')window.AskKookie?.openAdmin();
   if(tab==='trilha-admin')renderAdminTrilhas();
   if(tab==='aulas-admin')loadAdminBookReviewSelection();
   if(tab==='semanas-lista')renderAdminSemanas();
@@ -10953,6 +10966,7 @@ function resumeProgressForSession(session){
 function installProgressAuthListener(){
   if(!sbClient?.auth?.onAuthStateChange||progressAuthListenerClient===sbClient)return;
   sbClient.auth.onAuthStateChange((event,session)=>{
+    globalThis.AskKookie?.authChanged?.(event,session?.user?.id);
     if(!['SIGNED_IN','TOKEN_REFRESHED','INITIAL_SESSION'].includes(event)||!session?.access_token)return;
     // Run outside the Supabase Auth callback/lock; never await Auth in this callback.
     setTimeout(()=>{
@@ -13150,6 +13164,7 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
       if(['view-loading','view-auth','view-conversation','game-overlay','result-overlay',
         'reading-overlay','view-music-player','book-audio-overlay'].some(portalVisible))return false;
       if(window.BodyParts?.active()||window.isConversationInProgress?.()||window.speechSynthesis?.speaking)return false;
+      if(window.AskKookie?.hasPendingWork())return false;
       if(document.activeElement?.matches?.('input,textarea,select,[contenteditable="true"]'))return false;
       return !Array.from(document.querySelectorAll('audio,video')).some(media=>!media.paused&&!media.ended);
     }
@@ -13214,6 +13229,7 @@ function esc(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").r
 <script src="./assets/body-parts/game.js?v=p3-stars-1"></script>
 <script src="./assets/conversation-practice.js"></script>
 <script src="./assets/reading/reader-1984.js?v=133"></script>
+<script src="./assets/ask-kookie/ask-kookie.js?v=20261126.3"></script>
 </body>
 </html>
 
